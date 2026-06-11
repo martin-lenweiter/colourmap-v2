@@ -518,12 +518,11 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'iran-leverage',
           title: "Hormuz is Iran's biggest non-nuclear lever",
-          bluf: 'Iran cannot close the Strait for long, but it can throttle it — and the cost of even a 14-day disruption is measured in tens of billions.',
+          bluf: "Iran can't slam Hormuz shut for long. It doesn't have to. Even two weeks of looking dangerous costs the world tens of billions.",
           body:
-            'Iran sits on the northern coast of Hormuz, with naval, missile, and mining capability concentrated on Bandar Abbas, Larak, and Qeshm islands. ' +
-            'A determined US-led coalition can keep the Strait open, but reopening takes time — minefields take weeks to clear, insurance markets reprice in hours. ' +
-            'The leverage is asymmetric: Iran does not have to win a war to inflict cost on Western customers; it only has to make the Strait look unsafe long enough for insurers to reprice. ' +
-            'That is exactly what happened during the late-February 2026 escalation.',
+            'Iran owns the north shore — Bandar Abbas, Larak, Qeshm. Fast boats, missiles, mines, and plenty of coastline to launch from. ' +
+            'A determined US-led coalition can keep the Strait open. But "open" and "open within five days" are different things. Minefields take weeks to clear. Insurance markets reprice in hours. ' +
+            "And that's the asymmetry. Iran doesn't have to win a war. It just has to make Hormuz look unsafe long enough for underwriters to flinch. Which is exactly what happened in late February 2026.",
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['hormuz-oil-share'],
@@ -535,12 +534,11 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'hormuz-vs-redsea',
           title: 'Hormuz = tankers. Red Sea = containers.',
-          bluf: 'Confusing the two is the most common Hormuz mistake. They are different straits, different ships, different consequences.',
+          bluf: 'Mixing the two up is the most common Hormuz mistake. Different straits, different ships, different consequences.',
           body:
-            'Hormuz is overwhelmingly tanker traffic — crude oil and LNG. A Hormuz incident drives oil prices, war-risk premiums on hulls, and bunker fuel costs. ' +
-            'It does not directly disrupt container shipping in a meaningful way. ' +
-            'The Red Sea / Bab el-Mandeb / Suez axis is the container artery between Asia and Europe. Houthi attacks here force container reroutings around the Cape of Good Hope, adding 10-14 days and ~25% capacity absorption. ' +
-            'For CMA CGM, the Red Sea is the direct hit; Hormuz is the indirect one — through bunker prices, customer-side oil shocks, and war-risk reinsurance pass-through.',
+            'Hormuz is mostly tankers — crude and LNG. So when something goes wrong there, what moves is the oil price, hull-insurance premiums, and bunker fuel. Container ships? Barely affected. ' +
+            'The Red Sea — Bab el-Mandeb at the bottom, Suez at the top — is the container highway from Asia to Europe. When the Houthis fire from Yemen, container ships divert around the Cape of Good Hope. That adds 10-14 days each way and soaks up roughly 25% of global container capacity. ' +
+            "So if you're CMA CGM: the Red Sea is the direct hit. Hormuz is the indirect one — through bunker fuel, through what oil prices do to your customers, through the reinsurance market.",
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['hormuz-oil-share'],
@@ -552,12 +550,11 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'war-risk-repricing',
           title: 'War-risk premiums went 12x in March 2026',
-          bluf: 'From a 0.10-0.25% baseline to 2-3% of hull value — the 3% ceiling applied to US/UK/Israeli-linked vessels.',
+          bluf: 'The cost of insuring a tanker through Hormuz jumped twelvefold in a month — from a sleepy ~0.2% of hull value to a panicked 2-3%. If your flag was American, British, or Israeli, you paid the top of that range.',
           body:
-            'Howden Re documented the repricing: pre-war war-risk premiums on Hormuz transit were ~0.10-0.25% of hull value. Through March 2026 they peaked at 2-3%, with the 3% upper bound specifically applied to vessels with US, UK or Israeli ownership or flag links. ' +
-            'The repricing was volatile within the month — Howden Re shows ~2.5% early March, easing to ~1% late March as ceasefire signals strengthened. ' +
-            'Translation for a 100,000 dwt tanker insured at $80 million: a $0.16-0.20 million pre-war premium became a $1.6-2.4 million premium per transit at peak. ' +
-            'This is the pricing input every CMA CGM-facing risk product has to model.',
+            'Howden Re — the specialty broker everyone in shipping insurance reads — laid it out. Pre-war: roughly 0.10 to 0.25% of hull value per transit. By peak in March 2026: 2-3%. The 3% ceiling was for vessels with US, UK, or Israeli ownership or flag. ' +
+            'And it moved fast within the month. Howden Re shows ~2.5% in early March, easing to ~1% by late March as ceasefire signals strengthened. ' +
+            'Put numbers on it. A 100,000 dwt tanker insured at $80 million? A $160-200k pre-war premium became $1.6-2.4 million per crossing at peak. This is the input every risk product touching a Gulf chokepoint has to model.',
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['iran-leverage'],
@@ -576,12 +573,12 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'twelve-day-war',
           title: "June 2025: the 12-day war exposed Iran's proxies as hollow",
-          bluf: "During the June 2025 Iran-Israel war, the 'Axis of Resistance' did not act in any meaningful military capacity.",
+          bluf: "When Israel and Iran went at it for 12 days in June 2025, the famous 'Axis of Resistance' essentially didn't show up.",
           body:
-            'Belfer Center, Clingendael, Washington Institute, and Long War Journal all document that during the June 2025 12-day Iran-Israel war, the Axis of Resistance — Hezbollah, Iraqi PMFs (Kataib Hezbollah, Harakat al-Nujaba), and largely the Houthis — took no significant military action to defend Iran. ' +
-            "Kataib Hezbollah publicly stated it would not join Iran's attacks. Hezbollah was inactive. Houthi action was confined to a symbolic 15 June Jaffa missile, characterised as serving 'political and symbolic function' rather than meaningful military impact. " +
-            'The strategic implication: future Iranian retaliation against shipping concentrates on Iran-direct action (IRGC, Hormuz) rather than distributed proxy harassment of vessels. ' +
-            'Houthi Red Sea activity is a *separate* track — they have been actively striking commercial container traffic on their own agenda since 2023.',
+            'Four serious shops (Belfer, Clingendael, Washington Institute, Long War Journal) all reached the same conclusion. During the June 2025 war, the network of Iranian proxies — Hezbollah, the Iraqi PMFs (Kataib Hezbollah, Harakat al-Nujaba), and largely the Houthis — took no meaningful action to help Iran. ' +
+            'Kataib Hezbollah went on record: not joining. Hezbollah stayed quiet. The Houthis fired one symbolic missile at Jaffa on 15 June, which analysts read as PR more than war. ' +
+            "What does that mean going forward? If Iran retaliates against shipping, it'll mostly be Iran itself — IRGC boats, drones, mines around Hormuz. Not distributed proxy harassment. " +
+            "One footnote: the Houthi Red Sea campaign is its own thing. They've been hitting container ships since 2023 on their own agenda, not Tehran's.",
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['iran-leverage'],
@@ -593,12 +590,12 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'epic-fury',
           title: '28 February 2026: Operation Epic Fury killed Khamenei',
-          bluf: 'US and Israeli forces launched ~900 strikes in ~12 hours; Supreme Leader Ali Khamenei was killed.',
+          bluf: 'In about twelve hours, the US and Israel ran roughly 900 strikes on Iran. By the end of the day, Supreme Leader Ali Khamenei was dead.',
           body:
-            'Operation Epic Fury was a US-Israeli combined operation: roughly 900 strikes over 12 hours on 28 February 2026. ' +
-            "Supreme Leader Ali Khamenei was killed. Multiple independent sources — Belfer Center, Howden Re's specialty reinsurance report, Wikipedia, Al Jazeera, Axios, NPR, CNN, Britannica, Soufan Center, and a US House Republican Policy Committee memo — independently confirm both the strike date and the outcome. " +
-            "Iran's chain of command was disrupted; the IRGC retained operational continuity but the regime's strategic posture entered a contested-leadership phase. " +
-            'This is the single event that triggers everything else in the 2026 escalation arc.',
+            'Operation Epic Fury was a joint US-Israeli operation on 28 February 2026. Around 900 strikes, twelve hours. ' +
+            "Khamenei was killed. Nine independent sources — Belfer Center, Howden Re's specialty reinsurance report, Wikipedia, Al Jazeera, Axios, NPR, CNN, Britannica, the Soufan Center, and a US House Republican Policy Committee memo — all confirm both the strike date and the outcome. " +
+            "Iran's chain of command shattered. The IRGC kept operating, but the regime's strategic posture entered a contested-leadership phase no one had planned for. " +
+            'Everything else in the 2026 arc — Hormuz closure, the oil spike, the Gulf air-defence crisis — flows from this one day.',
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['twelve-day-war'],
@@ -622,12 +619,12 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'hormuz-closure',
           title: '4 March 2026: Iran declared the Strait closed',
-          bluf: 'Four days after Khamenei was killed, Iran formally declared the Strait of Hormuz "closed".',
+          bluf: 'Four days after Khamenei was killed, Iran said out loud what everyone was waiting for: Hormuz is closed.',
           body:
-            'On 4 March 2026, Iran formally declared the Strait of Hormuz "closed" — a declaration confirmed by Wikipedia, Al Jazeera, and Tufts Now. ' +
-            'A declaration is not a physical closure: tankers continued transiting under steeply higher war-risk premiums, with named seizures and contested mine incidents elevating the perceived risk for every Western-linked hull. ' +
-            "The declaration's real effect was the *pricing shock*: it gave underwriters cover to reprice, and gave traders cover to bid up Brent. " +
-            'A specific tally of 28+ vessels attacked in this window appears in some sources but was *refuted* by adversarial verification — do not quote vessel counts without primary corroboration.',
+            "On 4 March 2026, Iran formally declared the Strait of Hormuz 'closed'. Wikipedia, Al Jazeera, and Tufts Now all confirm. " +
+            "Now — a declaration isn't a physical closure. Tankers kept transiting. They just paid much, much higher insurance, with rising background noise — vessel seizures, contested mine incidents, the sense that any Western-flagged hull was a target. " +
+            'What the declaration actually did was give two groups cover. It gave underwriters cover to reprice. It gave traders cover to bid Brent higher. The market did the rest. ' +
+            "One housekeeping note: some sources quote a specific tally of 28+ vessels attacked in this window. That number didn't survive adversarial verification. Don't repeat it without primary corroboration.",
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['epic-fury'],
@@ -639,11 +636,11 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'oil-spike',
           title: 'Brent peaked at $119 on 19 March 2026 (+46%)',
-          bluf: 'Crude rose from ~$71 pre-war to $119/bbl in three weeks. The IEA released a record 400M-barrel emergency stockpile — covering ~20 days of Hormuz throughput.',
+          bluf: 'Oil went from $71 to $119 in three weeks. The IEA opened the emergency taps — 400 million barrels, the biggest release in its history. That covered about twenty days of Hormuz flow.',
           body:
-            'CNBC confirmed the $119 peak on 19 March 2026 — Brent briefly touching the level on a Netanyahu Hormuz-opening signal. The pre-war ~$72 baseline implies +46% in three weeks. US retail gasoline briefly broke $3.94/gallon by 22 March, the first time above ~$4 since August 2022. ' +
-            'The IEA coordinated the largest emergency oil release in its history: **400 million barrels**, equivalent to roughly **20 days of typical Hormuz throughput** (~20.9 mb/d). The release was directional — it bought time, not resolution. ' +
-            'For container carriers the second-order channel matters more than the absolute price: bunker fuel costs follow Brent, customer demand softens at high oil prices, and reinsurance pass-through tightens hull rates a few weeks behind the spot move.',
+            "CNBC clocked the $119 peak on 19 March 2026. Brent had briefly hit that level on a Netanyahu signal that Hormuz might reopen. From the $72 pre-war baseline, that's +46% in three weeks. US gas station signs flipped to $3.94 a gallon by 22 March — the first time above ~$4 since August 2022. " +
+            'The IEA coordinated its biggest-ever emergency release: 400 million barrels, roughly 20 days of normal Hormuz throughput (~20.9 mb/d). It was directional — buying time, not solving anything. ' +
+            'If you run container ships, the absolute oil price matters less than the second-order channels. Bunker fuel tracks Brent. Customer demand softens when oil is high. And hull-insurance rates tighten across the whole fleet, lagging spot by a few weeks.',
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['hormuz-closure'],
@@ -655,11 +652,11 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'cma-cgm-exposure',
           title: "CMA CGM's exposure is mostly indirect — but it is large",
-          bluf: 'Container carriers do not transit Hormuz heavily. They pay through bunker fuel, war-risk reinsurance pass-through, and customer-side oil shocks.',
+          bluf: "CMA CGM doesn't push many boxes through Hormuz. The hit lands sideways — bunker fuel, reinsurance, customers whose budgets get crushed when oil spikes.",
           body:
-            'CMA CGM operates ~4.14M TEU of container capacity (#3 globally) with the most aggressive orderbook in the top 10 (45.5% of fleet). Direct Hormuz container exposure is comparatively small — Hormuz primarily moves tankers. ' +
-            "The indirect channels are where the hit lands: (a) bunker fuel costs track Brent — a +46% Brent move flows into bunker within weeks; (b) reinsurance pass-through tightens hull rates fleet-wide; (c) the group's customer base — including auto, retail, and food customers — softens demand at high oil prices. " +
-            "CMA CGM's terminal portfolio is also directly geographically exposed at Sokhna (Red Sea), Jeddah (Red Sea), and Mombasa (East Africa). Hormuz is the headline; Red Sea is where containers actually break.",
+            'CMA CGM runs ~4.14 M TEU of container capacity (#3 globally) with the most aggressive orderbook in the top 10 (45.5% of fleet). Direct Hormuz container transit is small — Hormuz is a tanker road, not a container road. ' +
+            "But the indirect hit is real. Bunker fuel tracks Brent — that +46% spike flows into ship fuel within weeks. Reinsurance pass-through tightens hull rates across the whole fleet. And the group's customers — automakers, retailers, food shippers — go cold on volume when fuel is expensive. " +
+            "There's a geographic layer too. CMA Terminals owns big stakes in Sokhna (Red Sea), Jeddah (Red Sea), and Mombasa (East Africa). Hormuz makes the headlines. The Red Sea is where containers actually break.",
           confidence: 'MED',
           lastVerified: '2026-06-04',
           dependsOn: ['oil-spike'],
@@ -678,12 +675,12 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'axis-of-resistance-collapse',
           title: "Iran's proxy network is structurally degraded",
-          bluf: "The 'Axis of Resistance' did not act in the 12-day war or in early 2026. The proxy model is no longer a load-bearing strategic asset for Tehran.",
+          bluf: "The proxy network used to be Iran's whole deterrence story. It sat out both the 12-day war and the 2026 escalation. The story doesn't work anymore.",
           body:
-            'Pre-2023, Iran could credibly threaten distributed retaliation through Hezbollah, Hamas, Kataib Hezbollah, the Houthis, and other Iraqi PMFs. ' +
-            'By mid-2025, that network was substantially degraded by sustained Israeli strikes (Hamas in Gaza, Hezbollah in Lebanon, Houthi infrastructure in Yemen) and by the cost of being seen as Iranian instruments without protection. ' +
-            'During the June 2025 12-day war and through the February 2026 escalation, the network *did not act*. ' +
-            'A specific claim that the Houthis had abandoned regional projection and refocused on Yemen after US Operation Rough Rider 2025 was *refuted* in adversarial verification — Houthi Red Sea activity continues independently. Treat as: Axis collapsed as a coordinated network; individual nodes still operate on their own agenda.',
+            'Before 2023, Iran could threaten distributed retaliation through a real bench: Hezbollah, Hamas, Kataib Hezbollah, the Houthis, other Iraqi PMFs. The threat had teeth. ' +
+            "By mid-2025, the bench was thinned out. Sustained Israeli strikes — Hamas in Gaza, Hezbollah in Lebanon, Houthi infrastructure in Yemen — plus the rising cost of being seen as an Iranian instrument while Tehran couldn't protect you. " +
+            'During the June 2025 12-day war and through the February 2026 escalation, the network simply did not act. ' +
+            "Be careful with one specific claim: some sources say the Houthis 'abandoned regional projection' after US Operation Rough Rider 2025. That was refuted — Houthi Red Sea activity continues independently. The cleaner read: the Axis collapsed as a coordinated network. Individual nodes still operate, but on their own agenda.",
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['twelve-day-war'],
@@ -695,11 +692,12 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'russia-iran',
           title: 'Russia and Iran are formally aligned through 2045',
-          bluf: 'A 20-year Comprehensive Strategic Partnership Treaty signed January 2025 codifies defense, cyber, energy, and security cooperation.',
+          bluf: "Russia and Iran signed a twenty-year partnership treaty in January 2025. Defence, cyber, energy, security — all of it. It's not friendship, it's shared exposure to the same sanctions regime.",
           body:
-            "In December 2023, Russia and Iran concluded a joint declaration on 'counteracting unilateral coercive measures' — explicitly framing sanctions evasion as a shared project. In January 2025 they signed a 20-year Comprehensive Strategic Partnership Treaty covering defense, cyber, energy, and security cooperation. " +
-            'Both governments share an explicit framing of the United States and its allies as their principal security threat (CSIS verbatim). The relationship is anchored not in sentiment but in shared exposure to the same sanctions regime. ' +
-            'Note: the December 2023 instrument is technically a declaration, not a treaty; the treaty came in January 2025.',
+            "First, in December 2023, the two governments put out a joint declaration on 'counteracting unilateral coercive measures'. Translation: sanctions evasion is now a shared project, on paper. " +
+            'Then in January 2025 they signed the actual treaty — a 20-year Comprehensive Strategic Partnership covering defence, cyber, energy, and security. ' +
+            "CSIS puts it bluntly: both governments now frame the United States and its allies as their principal security threat. The alignment isn't about sentiment. It's about both regimes living under the same sanctions architecture. " +
+            'A small but important distinction: the December 2023 instrument is a declaration, not a treaty. The treaty came in January 2025.',
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['axis-of-resistance-collapse'],
@@ -711,11 +709,12 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'instc',
           title: 'INSTC is the sanctions-bypass corridor being built right now',
-          bluf: 'Russia is committing €1.3 bn+ to the Rasht-Astara railway segment of a 7,200 km Russia-Iran-India corridor. Target completion Q3 2027.',
+          bluf: "There's an actual road, rail, and shipping route being built right now to move goods between Russia, Iran, and India without touching the West. Russia is putting €1.3 billion into one rail segment alone.",
           body:
-            'The International North-South Transport Corridor (INSTC) is a 7,200 km road-rail-naval route linking Russia to the Persian Gulf and India via the South Caucasus and Central Asia. It was initiated in 2000 by Russia, Iran, and India. Post-2022 Ukraine invasion, Russia accelerated commitment to it explicitly as sanctions-bypass infrastructure. ' +
-            'Russia is contributing €1.3 bn+ of the €1.6 bn cost of the Rasht-Astara railway segment in Iran, with a Q3 2027 target. Iran and Russia signed a "transit roadmap for 2025" on 18 February 2025. Putin and Pezeshkian have publicly reaffirmed the commitment. ' +
-            "CSIS verbatim: 'a clear Russian and Iranian commitment to creating a trade route that could bypass Western sanctions.' The INSTC is what 'Russia-Iran alignment' looks like in concrete logistics — not a treaty paragraph.",
+            "The INSTC — International North-South Transport Corridor — is a 7,200 km mash-up of roads, railways, and shipping lanes connecting Russia to the Persian Gulf to India, threading through the South Caucasus and Central Asia. The idea isn't new; Russia, Iran, and India started it in 2000. " +
+            'What changed after 2022 is the urgency. Russia treats it openly as sanctions-bypass infrastructure now. The key choke segment is the Rasht-Astara railway inside Iran — Russia is covering €1.3 bn of the €1.6 bn cost, targeting Q3 2027. ' +
+            "Iran and Russia signed a 'transit roadmap for 2025' on 18 February 2025. Putin and Pezeshkian have publicly recommitted. CSIS calls it 'a clear Russian and Iranian commitment to creating a trade route that could bypass Western sanctions.' " +
+            "If you want to know what 'Russia-Iran alignment' looks like in the real world — concrete poured, rails laid — this is it. Not a treaty paragraph. A corridor.",
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['russia-iran'],
@@ -727,11 +726,12 @@ const HORMUZ_BRIEFING: Program = {
         {
           slug: 'china-asymmetric',
           title: 'China is in the alignment but not in a hurry',
-          bluf: 'Strategic but not urgent for Beijing. China kept declared neutrality through March 2026 despite a ~25% drop in Gulf crude imports.',
+          bluf: "China is aligned with Russia and Iran on paper. It's just not in a hurry about it. Beijing watched the March 2026 Gulf crisis with declared neutrality — even as 25% of its Gulf crude imports dried up.",
           body:
-            "CSIS verbatim: the Russia-China-Iran alignment is 'strategic and urgent for Russia and Iran, strategic but not urgent for China.' Beijing has a longer time horizon and pursues diversification despite real exposure. " +
-            'During the March 2026 crisis China maintained declared neutrality; its Gulf crude imports dropped ~25% and the Iranian oil shortfall was 1-1.4 mb/d. Belt and Road maritime stake (Gwadar in Pakistan, Djibouti, Piraeus, Haifa) gives China significant chokepoint exposure, but Hormuz is treated as a logistics/price problem rather than existential. ' +
-            'A claim that Russia and China *reduced* their support to Iran in 2025-2026 was *refuted* in adversarial verification — the opposite direction is better supported.',
+            "CSIS frames it sharply: the Russia-China-Iran alignment is 'strategic and urgent for Russia and Iran, strategic but not urgent for China.' Beijing has a longer horizon and keeps diversifying its bets, even with real exposure to all of it. " +
+            'Through the March 2026 crisis: declared neutrality. Gulf crude imports dropped ~25%. Iranian oil shortfall ran 1-1.4 mb/d. ' +
+            "And there's a lot of Chinese skin in the game — Belt and Road ports at Gwadar (Pakistan), Djibouti, Piraeus, Haifa. Plenty of chokepoint exposure. But Beijing reads Hormuz as a logistics-and-price problem, not an existential one. " +
+            "Worth noting: one claim circulating in some sources — that Russia and China actually reduced support to Iran in 2025-2026 — didn't survive adversarial verification. The directional evidence runs the opposite way.",
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['russia-iran'],
@@ -776,14 +776,14 @@ const SHIPPING_BIG_NINE: Program = {
         {
           slug: 'alliances',
           title: 'There are three alliances now — and MSC is in none of them',
-          bluf: 'After the 2M ended, the board reset to Gemini (Maersk + Hapag-Lloyd), Premier (ONE + HMM + Yang Ming), and Ocean (CMA CGM + COSCO + Evergreen). MSC operates alone.',
+          bluf: 'Carriers group up so they can share ships and split routes. There are three of these alliances right now. MSC — the biggest carrier on Earth — is in none of them.',
           body:
-            'The 2M (Maersk + MSC) alliance ended in early 2025. The board now: ' +
-            '**Gemini** — Maersk + Hapag-Lloyd, headline pitch is hub-and-spoke schedule reliability. ' +
-            '**Premier** — ONE + HMM + Yang Ming, the successor to THE Alliance after MSC left. ' +
-            '**Ocean Alliance** — CMA CGM + COSCO + Evergreen, the largest aggregate capacity, renewed through ~2032. ' +
-            '**MSC** operates on most lanes outside any alliance, using sheer scale (7.136M TEU) as its own network. ' +
-            'For the geopolitics-of-shipping reader, the practical implication: an alliance changes how a single Hormuz/Red Sea disruption translates into capacity decisions — Gemini reshuffles spokes, Premier shares slots, Ocean spreads cost. MSC absorbs solo.',
+            'The old 2M alliance (Maersk + MSC) ended in early 2025. The new board: ' +
+            '**Gemini** — Maersk + Hapag-Lloyd. Their pitch is schedule reliability via hub-and-spoke routing. ' +
+            '**Premier** — ONE + HMM + Yang Ming. The successor to "THE Alliance" after MSC walked out. ' +
+            '**Ocean Alliance** — CMA CGM + COSCO + Evergreen. The biggest by combined capacity. Locked in through ~2032. ' +
+            "And then **MSC**. Operates alone on most lanes, because at 7.1 M TEU it doesn't need anyone. " +
+            'Why does this matter for a geopolitics reader? Because when a single disruption hits — Hormuz, Red Sea, Panama — the alliance decides how the pain spreads. Gemini reshuffles spokes. Premier shares slots. Ocean spreads the cost across three carriers. MSC absorbs it solo.',
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['top-3'],
@@ -795,12 +795,12 @@ const SHIPPING_BIG_NINE: Program = {
         {
           slug: 'orderbook',
           title: 'The orderbook is at a 15-year high',
-          bluf: 'Industry orderbook-to-fleet is ~33.5% — the highest since 2010. CMA CGM is at 45.5%.',
+          bluf: 'Container shipowners have ordered more new ships than at any point since 2010. About one new ship for every three already sailing. CMA CGM alone has ordered nearly half of its existing fleet.',
           body:
-            'Clarksons / Shipping Intelligence Hub data places the global container orderbook at a 15-year high. As a share of existing fleet: industry ~33.5%, COSCO 38.1%, CMA CGM 45.5%. ' +
-            'The newbuild wave will deliver into 2026-2028 against weakening demand growth. The structural setup is **overcapacity unless geopolitics absorbs the slack**. ' +
-            'Red Sea reroutings around the Cape of Good Hope absorbed ~25% of effective capacity in 2024 — a Houthi-driven supply discipline that has nothing to do with operator strategy. ' +
-            'The carrier strategy question through 2027 is: **scrap aggressively, hope geopolitics persists, or absorb the rate pressure.** Each carrier is betting differently.',
+            'Clarksons data: the global container orderbook is at a 15-year high. As a share of fleet: industry sits at ~33.5%, COSCO at 38.1%, CMA CGM at 45.5%. ' +
+            'All those new ships deliver between 2026 and 2028 — into a world where demand growth has slowed. ' +
+            'Unless geopolitics keeps eating capacity, the math is brutal: too many boxes, too few cargoes. Houthi-driven Red Sea reroutings around the Cape absorbed roughly 25% of effective capacity in 2024 — pure supply discipline that has nothing to do with what any carrier wanted. ' +
+            'So the strategic question for every carrier through 2027 is the same. Scrap old ships aggressively, hope geopolitics stays bad, or eat the rate pressure. Each carrier is betting differently.',
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['top-3'],
@@ -819,11 +819,11 @@ const SHIPPING_BIG_NINE: Program = {
         {
           slug: 'cma-cgm-strategy',
           title: 'CMA CGM is the conglomerate hiding inside a container carrier',
-          bluf: 'Shipping + CEVA Logistics + media + AI + air cargo + terminals. The pivot from peak-shipping cycle to industrial diversification is the strategy.',
+          bluf: "Most people see CMA CGM as a French container shipping company. It's actually a conglomerate. Shipping, plus a top-5 global logistics arm, plus a media empire, plus a serious AI bet, plus terminals, plus air cargo.",
           body:
-            'Group revenue: $55.5bn in 2024 (+18% YoY, 24.2% EBITDA margin), normalising to $54.4bn in 2025 (19.4% margin). ' +
-            "Four headline buckets: **Shipping** (4.140M TEU, #3 globally); **Logistics** — CEVA at $18.3bn revenue, top-4 globally, integrated with Bolloré Logistics in Feb 2024; **Media** — Altice Media deal (~€1.55bn, July 2024) gives CMA CGM BFM TV, BFM Business, RMC channels — France's self-described 3rd-largest private media group; **AI/Digital** — €500m total commitment. " +
-            "This is the conglomerate frame Saadé's team is building. Pitch the product into the conglomerate.",
+            'Group revenue tells the story: $55.5 bn in 2024 (+18% YoY, 24.2% EBITDA margin), then $54.4 bn in 2025 as the freight cycle normalised (19.4% margin). ' +
+            "Four headline buckets. **Shipping** — 4.140 M TEU, #3 globally. **Logistics** — CEVA at $18.3 bn revenue, top-4 globally, integrated with Bolloré Logistics in February 2024. **Media** — the Altice Media deal closed July 2024 for ~€1.55 bn, giving CMA CGM BFM TV, BFM Business, RMC. France's self-described third-largest private media group. **AI / Digital** — €500 m committed in total. " +
+            "This is the conglomerate Saadé's team is actually building. If you're pitching into it, pitch into the conglomerate — not just the shipping line.",
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['top-3'],
@@ -835,11 +835,12 @@ const SHIPPING_BIG_NINE: Program = {
         {
           slug: 'cma-cgm-ai',
           title: '€500m AI commitment, anchored by Kyutai and Mistral',
-          bluf: 'Co-founded Kyutai in Nov 2023 (€100m). Signed a 5-year €100m partnership with Mistral in April 2025. MAIA agentic platform rolls out to 80,000 employees from 1 June 2026.',
+          bluf: 'CMA CGM has put €500 million into AI. Co-founded Kyutai. Signed a five-year €100 m partnership with Mistral. As of 1 June 2026, an agentic platform called MAIA started rolling out to 80,000 employees.',
           body:
-            "Saadé's stated frame at Kyutai's launch: 'place France and the rest of Europe at the forefront of artificial intelligence research' and 'I would like the younger generation to benefit from all the opportunities that this technology has to offer.' " +
-            'Stack: Kyutai (co-founder, Nov 2023, Station F, with Iliad/Niel and Schmidt Futures — €100m CMA CGM share); Google Cloud strategic partnership (July 2024, AI across shipping/logistics/media); Mistral AI (5-year, €100m, April 2025 — Mistral AI Factory at Marseille HQ + AI Media Lab at Grand Central, ~20 Mistral engineers embedded); AMI Labs (Yann LeCun, March 2026, $1.03bn round at $3.5bn); Poolside; Dataiku; Perplexity. ' +
-            "MAIA (Powered by Mistral) — the group's agentic AI platform — rolls out 1 June 2026 to ~80,000 employees across CMA CGM, CEVA, and CMA Media. 55+ projects, 200+ use cases as of late May 2026. **MAIA is the docking surface for any new agent — including a Geopolitics Intel agent.**",
+            "Saadé framed the bet himself at Kyutai's launch: 'place France and the rest of Europe at the forefront of artificial intelligence research' and 'I would like the younger generation to benefit from all the opportunities that this technology has to offer.' Worth quoting verbatim, because those two lines map exactly to what any young French builder needs to know before pitching this group. " +
+            'The stack: **Kyutai** — co-founded November 2023 at Station F with Iliad/Niel and Schmidt Futures; CMA CGM put in €100 m. **Google Cloud** strategic partnership, July 2024, AI across shipping, logistics, media. **Mistral AI** — five years, €100 m, April 2025, with a Mistral AI Factory at the Marseille HQ and an AI Media Lab at Grand Central. About 20 Mistral engineers embedded. Plus investments in AMI Labs (Yann LeCun, March 2026 $1.03 bn round at $3.5 bn), Poolside, Dataiku, Perplexity. ' +
+            "And then there's **MAIA**, the group's agentic platform built on Mistral. Rolling out to ~80,000 employees across CMA CGM, CEVA, and CMA Media starting 1 June 2026. 55+ projects, 200+ use cases as of late May 2026. " +
+            'If you want to build something for this group, MAIA is the docking surface. Any new agent — including a Geopolitics Intel agent — slots in here.',
           confidence: 'HIGH',
           lastVerified: '2026-06-04',
           dependsOn: ['cma-cgm-strategy'],
@@ -867,10 +868,11 @@ const WORLD_2050_PROGRAM: Program = {
         {
           slug: 'authoritative-data',
           title: 'A small set of canonical portals carry most of the world',
-          bluf: 'For most of the questions a literate citizen asks about the world, six free portals cover it: Our World in Data, World Bank WDI, FAOSTAT, Copernicus CDS, UN WPP, and SIPRI.',
+          bluf: 'Most questions a curious person asks about the world have answers in six free portals. Our World in Data. World Bank WDI. FAOSTAT. Copernicus CDS. UN WPP. SIPRI.',
           body:
-            'These six together cover economies (World Bank WDI: ~1,400 indicators across 217 economies, pulling UN/OECD/IMF feeds), agriculture and food (FAOSTAT: CC-BY 4.0, free, machine-readable), climate (Copernicus CDS: 140+ datasets, 3.8 PB, free open access — the home of ERA5 reanalysis behind the 1.5 °C-breached headline), demography (UN DESA World Population Prospects 2024), security (SIPRI Military Expenditure since 1949), and a synthesis layer (Our World in Data — the meta-source for newsroom-grade charts). ' +
-            'Treat anything that does not trace back to one of these (or a peer: IEA, FAO, WHO, NOAA, IPCC, IUCN, V-Dem, UCDP, Stanford AI Index, Epoch AI) as a downstream interpretation. ' +
+            'Between them, those six cover almost everything. ' +
+            "World Bank WDI: about 1,400 indicators across 217 economies, pulling UN/OECD/IMF feeds — your economic baseline. FAOSTAT: free, machine-readable, CC-BY licensed — your agriculture and food baseline. Copernicus CDS: 140+ climate datasets, 3.8 petabytes, open access — the home of ERA5 reanalysis, which is what the '2024 was the first year above 1.5 °C' headline actually came from. UN DESA's World Population Prospects: the demography reference. SIPRI: military spending since 1949. Our World in Data: the synthesis layer where these get turned into newsroom-grade charts. " +
+            "There's a peer group around them — IEA, FAO, WHO, NOAA, IPCC, IUCN, V-Dem, UCDP, Stanford AI Index, Epoch AI. Anything that doesn't trace back to one of these is downstream interpretation. " +
             "A 'World in 2050' program built on anything else is a blog.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
@@ -899,11 +901,11 @@ const WORLD_2050_PROGRAM: Program = {
         {
           slug: 'co2-422',
           title: 'CO₂ is at 422 ppm — 52% above pre-industrial',
-          bluf: 'Atmospheric CO₂ hit 422.45 ppm in 2024 (Global Carbon Project), and 2024 became the first calendar year above 1.5 °C global mean surface temperature anomaly.',
+          bluf: 'Atmospheric CO₂ hit 422.45 ppm in 2024 — 52% above what the air looked like before the industrial revolution. And 2024 was the first calendar year on record above 1.5 °C of warming.',
           body:
-            'The Global Carbon Project Global Carbon Budget 2024 reports atmospheric CO₂ at 422.45 ppm — 52% above pre-industrial. Global emissions reached 41.6 GtCO₂ in 2024. ' +
-            'Copernicus C3S, using ERA5 reanalysis against the 1991-2020 baseline, confirmed 2024 was the first calendar year above 1.5 °C anomaly. ' +
-            'This is the headline number. The *budget* — how much more we can emit before crossing 1.5 °C on a multi-decadal average — is contested (see next page).',
+            "The Global Carbon Project's 2024 Global Carbon Budget is where the headline number lives. 422.45 ppm. 52% above pre-industrial. Global emissions for the year: 41.6 GtCO₂. " +
+            'Copernicus C3S, using ERA5 reanalysis against the 1991-2020 baseline, confirmed 2024 was the first full calendar year above the 1.5 °C anomaly threshold. ' +
+            "That's the headline. The argument is about the budget — how much more we can emit before we cross 1.5 °C on a multi-decadal average. That's the next page, and it's genuinely contested.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['authoritative-data'],
@@ -917,10 +919,11 @@ const WORLD_2050_PROGRAM: Program = {
         {
           slug: 'co2-budget-contested',
           title: 'The 1.5 °C carbon budget: 235 GtCO₂ — or 130. Sources disagree.',
-          bluf: 'Global Carbon Project estimates ~235 GtCO₂ remaining for a 50% chance of 1.5 °C. Forster et al. (2024) estimate ~130 GtCO₂. Both are credible. The disagreement matters.',
+          bluf: 'Two credible institutions, two very different answers on how much carbon we can still burn. The Global Carbon Project says ~235 GtCO₂. Forster et al. (2024) says ~130 GtCO₂. Both are serious. The gap is huge.',
           body:
-            'GCP 2024 carries ~235 GtCO₂ — roughly six years at current ~41.6 GtCO₂/yr. Forster et al. (Indicators of Global Climate Change 2024) come in much tighter at ~130 GtCO₂ — about three years. The gap is driven by methodological choices on aerosol forcing, observed warming attribution, and warming-from-non-CO₂ deductions. ' +
-            "Programmes should publish *both* and flag the disagreement. The most-honest single sentence is: 'Somewhere between three and six years of current emissions exhaust the budget at the 50% level.' " +
+            "Global Carbon Project 2024 carries ~235 GtCO₂ for a 50% shot at staying under 1.5 °C — about six years at current emissions of ~41.6 GtCO₂/yr. Forster et al., in *Indicators of Global Climate Change 2024*, come in much tighter at ~130 GtCO₂. That's about three years. " +
+            'The gap is methodological. Different choices on aerosol forcing, how much observed warming you attribute to CO₂ versus other forcings, how much non-CO₂ warming you back out of the budget. ' +
+            'Honest summary in one sentence: somewhere between three and six years of current emissions exhausts the 1.5 °C budget at the 50% level. ' +
             'Anything tighter is overconfident. Anything looser is misleading.',
           confidence: 'MED',
           lastVerified: '2026-06-10',
@@ -935,11 +938,12 @@ const WORLD_2050_PROGRAM: Program = {
         {
           slug: 'amoc-contested',
           title: 'AMOC collapse: mid-century or "very unlikely"? Two credible answers.',
-          bluf: 'Ditlevsen & Ditlevsen (2023, Nature Communications) place an AMOC collapse risk as early as 2025-2095, median 2050. IPCC AR6 rates a 21st-century collapse "very unlikely (medium confidence)". This is the largest live disagreement in tipping-point science.',
+          bluf: "Will the Atlantic ocean current that warms Europe collapse this century? One Nature Communications paper says: yes, possibly mid-century. The IPCC says: very unlikely. That's the biggest live disagreement in tipping-point science.",
           body:
-            "The Atlantic Meridional Overturning Circulation is the world's most consequential single tipping element — its collapse would cool Northwest Europe, dry the Sahel, and disrupt monsoons. " +
-            "Ditlevsen 2023 uses sea-surface-temperature fingerprints on the subpolar gyre and statistical early-warning indicators to flag a real risk of collapse mid-century. IPCC AR6 WG1 uses CMIP6 ensembles and concludes a 21st-century collapse is 'very unlikely' at medium confidence. " +
-            'The right read is not to pick a winner. It is to acknowledge that *we are arguing about whether the most important non-linear climate event of the next 30 years is roughly 0% or roughly 50%*. That alone is a policy-relevant fact.',
+            "AMOC — the Atlantic Meridional Overturning Circulation — is the world's most consequential tipping element. If it collapses, Northwest Europe cools sharply, the Sahel dries, monsoons get unstable. Everything else flows from that. " +
+            'Ditlevsen & Ditlevsen (2023, Nature Communications) read sea-surface-temperature fingerprints on the subpolar gyre and statistical early-warning indicators, and flag a real risk of collapse between 2025 and 2095, with a median around 2050. ' +
+            "IPCC AR6 WG1, using CMIP6 climate-model ensembles, calls a 21st-century collapse 'very unlikely' at medium confidence. " +
+            "The honest read isn't to pick a winner. It's to admit: we're arguing about whether the most important non-linear climate event of the next 30 years is roughly 0% or roughly 50%. That fact alone is policy-relevant.",
           confidence: 'MED',
           lastVerified: '2026-06-10',
           dependsOn: ['co2-budget-contested'],
@@ -953,11 +957,11 @@ const WORLD_2050_PROGRAM: Program = {
         {
           slug: 'forest-and-life',
           title: 'Forests and life: the gauges are accelerating downward',
-          bluf: 'Tropical primary forest loss hit 6.7 Mha in 2024 (~2x 2023) per Global Forest Watch. The 2024 WWF Living Planet Index reports a 73% average decline in monitored vertebrate populations since 1970.',
+          bluf: 'Tropical forests lost in 2024 nearly doubled vs 2023 — 6.7 million hectares gone. Meanwhile the Living Planet Index says monitored vertebrate populations are down 73% on average since 1970.',
           body:
-            'Global Forest Watch 2024 update: tropical primary forest loss reached 6.7 Mha in 2024, nearly doubling 2023, with fires displacing agricultural conversion as the leading direct driver for the first time. ' +
-            'The 2024 Living Planet Report (WWF / ZSL) documents a 73% average decline in monitored vertebrate population sizes since 1970 — a metric some scientists contest as average-of-ratios, but the directional signal is corroborated by IUCN Red List proportions. ' +
-            'These two datasets are the closest we have to a real-time read on the biosphere. Both point the same way, and both got worse in 2024.',
+            "Global Forest Watch's 2024 update: tropical primary forest loss reached 6.7 Mha. Almost double the year before. And — for the first time — fires beat agricultural conversion as the leading direct driver. " +
+            "The 2024 Living Planet Report (WWF / ZSL) documents a 73% average decline in monitored vertebrate populations since 1970. Some scientists pushback on the methodology (it's an average of ratios, which can mislead) — but the IUCN Red List points the same direction. " +
+            'These two are the closest we have to a real-time read on the biosphere. Both point the same way. Both got worse in 2024.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['authoritative-data'],
@@ -978,11 +982,11 @@ const WORLD_2050_PROGRAM: Program = {
         {
           slug: 'peak-oil-demand',
           title: 'Peak oil demand: 2029-2030 in IEA scenarios — but the date moves',
-          bluf: 'IEA WEO 2025 projects oil demand peaks before 2030 in STEPS and is already past peak in APS/NZE. BNEF and Equinor agree on the direction; Rystad and OPEC push the date later.',
+          bluf: "The IEA says global oil demand peaks before 2030. BloombergNEF agrees. Rystad and OPEC push the date out to the mid-2030s. The whole 21st century pivots on who's right.",
           body:
-            "IEA WEO 2025: oil demand plateaus around 2029 in STEPS (Stated Policies), peaks earlier in APS (Announced Pledges) and NZE (Net Zero). BloombergNEF and Equinor's outlooks support this. " +
-            "Rystad Energy and OPEC project peak later (mid-2030s or beyond) — the dispute hinges on EV penetration assumptions, China's saturation curve, and aviation/petrochemical demand. " +
-            'Calibrated bet: oil demand peaks somewhere between 2028 and 2034. The post-peak decline is what funds — or fails to fund — the energy transition in producing countries.',
+            "IEA WEO 2025: oil demand plateaus around 2029 under STEPS (Stated Policies), peaks earlier in their APS (Announced Pledges) and NZE (Net Zero) scenarios. BloombergNEF and Equinor's outlooks broadly agree. " +
+            "Rystad Energy and OPEC see the peak later — mid-2030s or beyond. The disagreement isn't about the trend, it's about three knobs: how fast EVs penetrate, when China's gasoline demand saturates, and how durable aviation + petrochemical demand stays. " +
+            "A calibrated bet: peak oil demand lands somewhere between 2028 and 2034. After that, the decline curve is what funds — or doesn't fund — the energy transition in producing countries.",
           confidence: 'MED',
           lastVerified: '2026-06-10',
           dependsOn: ['authoritative-data'],
@@ -996,11 +1000,11 @@ const WORLD_2050_PROGRAM: Program = {
         {
           slug: 'ai-long-arc',
           title: 'AI in the 2030s: capability up, compute up, returns disputed',
-          bluf: 'Frontier-model training compute has doubled roughly every 5-6 months since 2010 (Epoch AI). Stanford AI Index 2025 documents continued benchmark saturation. Whether this scales to AGI by 2030 is the live argument, not the consensus.',
+          bluf: 'Frontier AI training compute has doubled every 5-6 months since 2010. The capability benchmarks keep falling. Whether any of this scales to human-level general intelligence by 2030 is the actual debate — it is not the consensus.',
           body:
-            'Two strong empirical regularities through 2025: (a) training compute for frontier models continues to scale (Epoch AI); (b) capability benchmarks (MMLU, GPQA, SWE-bench, FrontierMath) keep saturating (Stanford AI Index 2025). ' +
-            'What is *not* consensus: whether scaling continues to deliver, when (or if) general intelligence equivalent to top human performance arrives, and what happens to capital allocation if returns disappoint. Median forecaster estimates for "AGI" range from 2030 to 2060. ' +
-            "For a 'World in 2050' program the honest framing is: AI is the most likely single source of compounding economic and geopolitical disruption between now and 2050, *and* the magnitude is highly uncertain.",
+            'Two empirical patterns are rock-solid through 2025. One: training compute for frontier models keeps scaling (Epoch AI tracks this in detail). Two: capability benchmarks — MMLU, GPQA, SWE-bench, FrontierMath — keep getting saturated (Stanford AI Index 2025). ' +
+            "What is *not* settled: whether scaling continues to deliver, when (or if) we get something equivalent to top-human general intelligence, and what happens to the trillions in capital allocation if returns disappoint. Median forecaster estimates for 'AGI' span from 2030 to 2060. That's a 30-year disagreement, not a small one. " +
+            'Honest framing for a 2050 program: AI is the most likely single source of compounding economic and geopolitical disruption between now and 2050. And the magnitude of that disruption is genuinely uncertain. Both halves of that sentence matter.',
           confidence: 'MED',
           lastVerified: '2026-06-10',
           dependsOn: ['authoritative-data'],
@@ -1014,11 +1018,12 @@ const WORLD_2050_PROGRAM: Program = {
         {
           slug: 'population-peak',
           title: 'Population peaks around 2084 at ~10.3 billion — UN. IHME and IIASA say earlier.',
-          bluf: 'UN World Population Prospects 2024 projects peak ~10.3 B around 2084. IHME GBD and IIASA project earlier, lower peaks (~9.7 B by 2064 / ~9.4 B in some scenarios).',
+          bluf: 'The UN says global population peaks at around 10.3 billion in the mid-2080s. Two other serious institutions (IHME and IIASA) say it peaks earlier and lower — closer to 9.4-9.7 billion in the 2060s. The 20-year difference reshapes almost everything.',
           body:
-            'The most-cited number — peak ~10.3 B around 2084 — comes from UN DESA WPP 2024. Two other credible institutions disagree: IHME (Global Burden of Disease projections) puts the peak earlier and lower; IIASA (Wittgenstein Centre) projects similar low. ' +
-            'The downstream consequence of "peak in 2060 not 2080" is enormous: it changes labour-supply trajectories in East Asia and Europe, the African demographic dividend window, and the global resource demand path. ' +
-            'For a 2050 program: assume the peak is somewhere between 2060 and 2090, lean closer to UN for the median.',
+            "The headline number you see everywhere — peak ~10.3 B around 2084 — comes from UN DESA's World Population Prospects 2024. " +
+            "Two credible institutions disagree downward. IHME, using its Global Burden of Disease projections, sees an earlier, lower peak. IIASA's Wittgenstein Centre projects similar. " +
+            "Why does 'peak in 2060 not 2080' matter? It reshapes labour supply trajectories in East Asia and Europe. It compresses Africa's demographic dividend window. It changes the global resource demand curve. " +
+            "For a 2050 program, assume the peak is somewhere between 2060 and 2090. Lean closer to the UN for the median. Don't pretend the gap doesn't exist.",
           confidence: 'MED',
           lastVerified: '2026-06-10',
           dependsOn: ['authoritative-data'],
@@ -1049,11 +1054,11 @@ const ALLIANCES_RESHUFFLE_PROGRAM: Program = {
         {
           slug: 'schrodinger-nato',
           title: 'Most European leaders now treat the US guarantee as broken',
-          bluf: 'ECFR (Sept 2025) verbatim: "Most European leaders are coming to accept that their defence relationship with the US as they knew it is over." This is a structural break, not a rhetorical one.',
+          bluf: "ECFR put it bluntly in September 2025: most European leaders now accept that the defence relationship with the US, as they knew it, is over. That's a structural break, not a rhetorical one.",
           body:
-            "ECFR's 'Making defence European again' paper coined 'Schrodinger\\'s NATO' to describe a state where the US is formally committed to the alliance and behaviourally absent. The 2026 US National Defense Strategy downgrades Europe to a secondary theatre and conditions support on burden-sharing. " +
-            "The March 2025 Signal-chat leak put the framing in writing: Vice-President Vance — 'I just hate bailing Europe out again'. Defence Secretary Hegseth — 'I fully share your loathing of European free-loading.' " +
-            'The downstream policy assumption is that European NATO members now plan as if the US guarantee may not arrive — even if, in any given crisis, it does.',
+            "The ECFR paper that broke this open — 'Making defence European again' — coined 'Schrodinger's NATO' for the state we're in: the US is formally still committed to the alliance and behaviourally absent at the same time. The 2026 US National Defense Strategy formalised the downgrade: Europe is now a secondary theatre, and support is conditional on burden-sharing. " +
+            "If you want it in writing, the March 2025 Signal leak gave it to us. Vice-President Vance: 'I just hate bailing Europe out again.' Defence Secretary Hegseth: 'I fully share your loathing of European free-loading.' " +
+            'What that produces in policy: every European NATO member now plans as if the US guarantee might not show up. Even if, in any given actual crisis, it does.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: [],
@@ -1067,11 +1072,13 @@ const ALLIANCES_RESHUFFLE_PROGRAM: Program = {
         {
           slug: 'rearm-europe',
           title: 'Europe is putting €281 billion on the table for its own defence',
-          bluf: 'Council of the EU activated the €150 bn SAFE defence-loan mechanism on 29 May 2025. The 2028-2034 EU budget proposes €131 bn for defence and space — a fivefold increase.',
+          bluf: 'Europe woke up. €150 billion in defence loans activated 29 May 2025. €131 billion more locked into the 2028-2034 EU budget for defence and space — a fivefold increase.',
           body:
-            'Two formal commitments anchor the European defence awakening. **SAFE** (Security Action for Europe) — €150 bn in low-interest defence loans for member states, in force from 29 May 2025 per the Council of the EU. **2028-2034 MFF (Multiannual Financial Framework)** — the July 2025 Commission proposal quintuples defence and space spending to €131 bn via the European Competitiveness Fund window. ' +
-            "France's 2025 National Strategic Review labels Russia 'the most direct threat today and for years to come'. The UK 2025 SDR identifies Russia as an immediate threat. " +
-            'These are not declarations of independence from the US. They are insurance against a US guarantee that may not arrive.',
+            'Two concrete commitments anchor the European defence awakening. ' +
+            '**SAFE** — Security Action for Europe. €150 bn in low-interest defence loans for member states. In force from 29 May 2025 per the Council of the EU. ' +
+            "**The 2028-2034 MFF** — the EU's seven-year budget. The July 2025 Commission proposal quintuples defence and space spending to €131 bn through the European Competitiveness Fund window. " +
+            "France's 2025 National Strategic Review labels Russia 'the most direct threat today and for years to come'. The UK's 2025 SDR says the same. " +
+            "These aren't declarations of independence from the US. They're insurance against a US guarantee that may not arrive.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['schrodinger-nato'],
@@ -1085,11 +1092,11 @@ const ALLIANCES_RESHUFFLE_PROGRAM: Program = {
         {
           slug: 'northwood',
           title: 'France and the UK are quietly building a European nuclear pillar',
-          bluf: 'The Northwood Declaration (10 July 2025) formalises Franco-British nuclear-deterrence coordination — the first step of a European nuclear umbrella distinct from the US one.',
+          bluf: "Britain and France — Europe's only nuclear powers — signed the Northwood Declaration on 10 July 2025, agreeing to coordinate their nuclear deterrence. First brick of a European nuclear umbrella that is no longer waiting for Washington.",
           body:
-            "CSIS frames the Northwood Declaration as 'the strategic backdrop' to a Europe that 'will no longer be underwritten by the United States by default'. France and the UK — Europe's only nuclear powers — committed to coordinate nuclear deterrence policy, signalling capacity to substitute for US extended deterrence if needed. " +
-            'Parallel Franco-German conversations on nuclear sharing have moved from taboo to open discussion. Poland and the Baltics are explicit about wanting *some* European nuclear cover. ' +
-            'This will not produce a credible European nuclear umbrella by 2030. It will produce *the political-institutional scaffolding* on which one becomes possible by 2040.',
+            "CSIS calls Northwood the 'strategic backdrop' for a Europe that 'will no longer be underwritten by the United States by default'. France and the UK — the only nuclear powers in Europe — committed to coordinate nuclear deterrence policy. Functionally: the ability to substitute for US extended deterrence if needed. " +
+            'Quietly running in parallel: Franco-German conversations on nuclear sharing have moved from taboo to open discussion. Poland and the Baltics are explicit about wanting some kind of European nuclear cover. ' +
+            "This won't produce a credible European nuclear umbrella by 2030. What it produces is the political-institutional scaffolding on which one becomes possible by 2040. Which, given how slow nuclear politics moves, is fast.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['rearm-europe'],
@@ -1110,11 +1117,12 @@ const ALLIANCES_RESHUFFLE_PROGRAM: Program = {
         {
           slug: 'liberation-day',
           title: '"Liberation Day" tariffs: struck down, then upheld',
-          bluf: 'The April 2025 IEEPA "Liberation Day" tariffs were struck down by the Court of International Trade and the DC District Court in late May 2025. SCOTUS upheld them on appeal in February 2026.',
+          bluf: "The 'Liberation Day' tariffs of April 2025 took a beating — two federal courts struck them down within weeks. Then SCOTUS reversed those rulings in February 2026. The tariff regime is here to stay.",
           body:
-            "On 2 April 2025, Trump invoked the International Emergency Economic Powers Act to impose a universal baseline tariff and country-specific 'reciprocal' tariffs. " +
-            'The Court of International Trade (V.O.S. Selections v. United States) and the DC District Court (Learning Resources v. Trump) both struck down the IEEPA tariffs in late May 2025. The administration pivoted to Section 232 (national security) and Section 301 (trade practice) authorities, keeping most tariffs in place. SCOTUS upheld the IEEPA framework on appeal in February 2026. ' +
-            "The lesson: Trumpism's tariff regime is institutionally durable now — not because Trump won every legal battle, but because the toolkit has multiple authorities and a sympathetic Supreme Court.",
+            "On 2 April 2025, Trump invoked the International Emergency Economic Powers Act to impose a universal baseline tariff plus country-specific 'reciprocal' tariffs. He called it Liberation Day. " +
+            'Two federal courts disagreed. The Court of International Trade (V.O.S. Selections v. United States) and the DC District Court (Learning Resources v. Trump) both struck the IEEPA tariffs down in late May 2025. ' +
+            'The administration pivoted. Section 232 (national security) and Section 301 (trade practice) authorities kept most tariffs in place anyway. Then, in February 2026, SCOTUS reversed the lower courts and upheld the IEEPA framework on appeal. ' +
+            "The lesson: the tariff regime is now institutionally durable. Not because Trump won every legal battle — he didn't — but because the toolkit has multiple authorities and a sympathetic Supreme Court.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: [],
@@ -1135,11 +1143,12 @@ const ALLIANCES_RESHUFFLE_PROGRAM: Program = {
         {
           slug: 'brics-ten',
           title: 'BRICS+ is now ten members — and that is still not a bloc',
-          bluf: 'BRICS+ expanded to ten formal members between 2024 and January 2025: Brazil, Russia, India, China, South Africa + Egypt, Ethiopia, Iran, UAE (Jan 2024) + Indonesia (Jan 2025). Saudi Arabia is hedging.',
+          bluf: 'BRICS doubled in size in 13 months — Egypt, Ethiopia, Iran, UAE joined in January 2024; Indonesia in January 2025. Saudi Arabia is still hedging. But ten members does not mean one bloc.',
           body:
-            'The expansion is real. The bloc-ness is not. Brazil and India actively resist anti-Western alignment. The UAE is in BRICS *and* in the Abraham Accords. Indonesia is explicitly non-aligned. The bloc is held together by shared frustrations, not shared positive vision. ' +
-            "Saudi Arabia has been 'invited' since 2023 but has not formally joined as of mid-2026 — a hedge against US pressure. " +
-            "For a 'World in 2050' program: treat BRICS+ as *a growing trade-and-payments cluster*, not a coherent geopolitical bloc.",
+            'The expansion is real. The bloc-ness is not. ' +
+            "Brazil and India actively resist anti-Western alignment. The UAE is in BRICS *and* in the Abraham Accords with Israel. Indonesia is explicitly non-aligned and says so. What holds these ten together isn't a shared positive vision — it's shared frustrations with the US-led order. " +
+            "Saudi Arabia has been 'invited' since 2023 but has not formally joined as of mid-2026. That's a hedge against US pressure, not a strategic statement. " +
+            "Right way to read this: BRICS+ is a growing trade-and-payments cluster, not a coherent geopolitical bloc. The difference matters when you're forecasting what they can actually coordinate on.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: [],
@@ -1153,11 +1162,12 @@ const ALLIANCES_RESHUFFLE_PROGRAM: Program = {
         {
           slug: 'brics-payments',
           title: 'USD still ~58% of reserves. RMB still ~2%. Read accordingly.',
-          bluf: "The dollar's share of global FX reserves is ~58% in 2025 (IMF COFER), down from ~70% in 2000. The renminbi's share is stuck at ~2%. BRICS payment systems substitute at the margins, not at the core.",
+          bluf: 'Every few years someone says BRICS will replace the dollar. The data says otherwise. The USD still holds ~58% of global FX reserves, the RMB is stuck at ~2%. BRICS payments work — at the margins. Not at the core.',
           body:
-            'IMF COFER data through Q4 2024 puts USD reserve share at ~58%, EUR ~20%, JPY ~6%, GBP ~5%, RMB ~2%. The dollar is *the* dominant reserve currency at multi-decadal lows but still without a serious challenger. ' +
-            'BRICS+ payment innovations — BRICS Pay, mBridge, expanded INSTC, growing CIPS membership — bypass SWIFT and dollar clearing for Russia-Iran-China trade and for some Gulf-Asia flows. They are not building a reserve substitute. They are building a sanctions-resistant transactional layer. ' +
-            'Calibrated bet: USD reserve share at ~50% by 2030, RMB share creeping to ~4-5%. BRICS+ becomes a real payments cluster. It does *not* replace the dollar.',
+            'IMF COFER data through Q4 2024 puts the USD reserve share at ~58%, EUR ~20%, JPY ~6%, GBP ~5%, RMB ~2%. The dollar is at a multi-decade low and still has no serious challenger. ' +
+            "BRICS+ payment innovations — BRICS Pay, mBridge, the expanded INSTC corridor, growing CIPS membership — do bypass SWIFT and dollar clearing for some Russia-Iran-China trade and for some Gulf-Asia flows. That's real. " +
+            "But it isn't a reserve substitute. It's a sanctions-resistant transactional layer. Important distinction. " +
+            'Calibrated bet for 2030: USD share at ~50%, RMB creeping to ~4-5%. BRICS+ becomes a real payments cluster. It does not replace the dollar.',
           confidence: 'MED',
           lastVerified: '2026-06-10',
           dependsOn: ['brics-ten', 'liberation-day'],
@@ -1188,11 +1198,12 @@ const CRITICAL_MATERIALS_PROGRAM: Program = {
         {
           slug: 'usgs-2025',
           title: 'USGS 2025 lists 60 minerals as critical — up from 50 in 2022',
-          bluf: 'The USGS 2025 Critical Minerals List (Open-File Report 2025-1047) names 60 minerals using a probability-weighted GDP-impact model — 17 of them already under MOFCOM controls have a modelled 100% disruption probability.',
+          bluf: 'The US Geological Survey added 10 minerals to its critical list in 2025, bringing the total to 60. Seventeen of them are already under Chinese export control — and the model gives those a 100% disruption probability.',
           body:
-            'USGS uses nonlinear optimisation over input-output tables to estimate the GDP impact of a one-year supply disruption per commodity. Modelled impacts in the 2025 list range from -$4.5 bn to +$33 M; inclusion threshold is annualised probability-weighted GDP loss > $2 M. The 2025 list adds 10 minerals to the 2022 list, including potash, silicon, copper, silver, rhenium, and lead — and notably keeps arsenic and tellurium that the methodology recommended removing. ' +
-            'The top-10 by probability-weighted economic impact: samarium, rhodium, lutetium, terbium, dysprosium, gallium, germanium, gadolinium, tungsten, niobium. ' +
-            'The 17 commodities under MOFCOM export controls or bans to the US are assigned 100% disruption probability in the model. That single calibration choice is the most consequential one in the framework.',
+            'USGS runs a nonlinear optimisation over US input-output tables to estimate how much GDP gets hit if any single commodity is disrupted for a year. Modelled impacts on the 2025 list range from -$4.5 bn to +$33 M. The inclusion bar: an annualised probability-weighted GDP loss above $2 M. ' +
+            'The 2025 list added 10 minerals to the 2022 version — potash, silicon, copper, silver, rhenium, lead among them. And it kept arsenic and tellurium that the methodology said should come off. ' +
+            'Top 10 by economic damage if disrupted: samarium, rhodium, lutetium, terbium, dysprosium, gallium, germanium, gadolinium, tungsten, niobium. ' +
+            'The single most consequential calibration choice in the whole framework: assigning 100% disruption probability to the 17 commodities already under MOFCOM controls or bans to the US. That one decision tells you how worried Washington is.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: [],
@@ -1206,11 +1217,12 @@ const CRITICAL_MATERIALS_PROGRAM: Program = {
         {
           slug: 'eu-crma',
           title: 'EU CRMA: 34 critical materials, 17 strategic, 2030 benchmarks',
-          bluf: 'The EU Critical Raw Materials Act (in force May 2024) lists 34 critical materials, 17 of them "strategic", and binds the EU to 2030 benchmarks: 10% extraction, 40% processing, 25% recycling, ≤65% from any single country.',
+          bluf: "Europe's answer to Chinese refining dominance has a name: the Critical Raw Materials Act. In force May 2024. It binds the EU to 2030 targets — and that 65% single-country cap is a not-very-subtle anti-China clause.",
           body:
-            "The CRMA is the most concrete industrial-policy response to China's refining dominance. The 2030 benchmarks are binding direction not law-quality requirements, but each missed benchmark is auditable. " +
-            "The 65% single-country cap is implicitly an anti-China clause — almost every strategic material's refining is concentrated in China above this threshold. " +
-            'EU strategic partnerships with the DRC and Zambia (2023) and the Lobito Corridor are the upstream half of this strategy; the downstream half (a real European refining and recycling industry) is the harder problem.',
+            "The CRMA is the most concrete industrial-policy response to China's refining dominance. It lists 34 critical materials and tags 17 of them as 'strategic'. The 2030 benchmarks: 10% of consumption from EU extraction, 40% from EU processing, 25% from recycling, and no more than 65% from any single country. " +
+            'Those are binding direction, not strict legal limits. But every missed benchmark is auditable. ' +
+            "The 65% single-country cap is unsubtle. Almost every strategic material's refining is concentrated in China above that line. The clause is a fence around dependence. " +
+            "Upstream, the EU has signed strategic partnerships with the DRC and Zambia (2023) and is funding the Lobito Corridor. That's the easier half. The downstream half — actually building a European refining and recycling industry — is the harder problem.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['usgs-2025'],
@@ -1231,11 +1243,12 @@ const CRITICAL_MATERIALS_PROGRAM: Program = {
         {
           slug: 'china-refining',
           title: 'China refines: ~85% of rare earths, ~60% of lithium, ~70% of cobalt processing',
-          bluf: "China's structural lever over critical materials sits in refining, not mining. >85% of rare-earth refining, ~60% of lithium refining, ~70% of cobalt processing. The 2024-2025 MOFCOM controls operationalised this.",
+          bluf: "China's lever over critical materials isn't in the mines. It's in the refineries. Over 85% of rare-earth refining. Around 60% of lithium. Around 70% of cobalt processing. And starting in late 2024, Beijing started actually pulling that lever.",
           body:
-            'MOFCOM Announcement 2024 No. 46 (3 December 2024) — issued one day after a fresh round of US semiconductor export controls — banned gallium, germanium, antimony, and superhard materials to the US and tightened graphite controls. ' +
-            'Subsequent 2025-2026 rounds expanded controls to dysprosium, gadolinium, lutetium, samarium, terbium, yttrium, indium, molybdenum, tungsten, magnesium, tellurium, bismuth — for a total of 17 commodities under formal export controls or bans to the US. ' +
-            'Western counter-strategy combines the US IRA (critical-mineral provisions), the EU CRMA, US-Australia bilateral financing ($1 bn each within six months under the October 2025 framework), and EU strategic partnerships. None of these undoes refining concentration on a 5-year horizon. They start to undo it on a 10-15 year horizon.',
+            'MOFCOM Announcement 2024 No. 46, dated 3 December 2024 — issued exactly one day after a fresh round of US semiconductor export controls — banned gallium, germanium, antimony, and superhard materials to the US, and tightened graphite controls. ' +
+            "Through 2025 and 2026 the list grew: dysprosium, gadolinium, lutetium, samarium, terbium, yttrium, indium, molybdenum, tungsten, magnesium, tellurium, bismuth. That's 17 commodities under formal Chinese export controls or bans to the US. " +
+            "Western counter-strategy is a stack — the US IRA's critical-mineral provisions, the EU CRMA, US-Australia bilateral financing ($1 bn each within six months under the October 2025 framework), EU strategic partnerships. " +
+            'None of it undoes refining concentration on a 5-year horizon. It starts to undo it on a 10-15 year horizon. The gap matters.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['usgs-2025', 'eu-crma'],
@@ -1256,11 +1269,11 @@ const CRITICAL_MATERIALS_PROGRAM: Program = {
         {
           slug: 'copper-demand',
           title: 'Copper is the single most binding 2030 constraint',
-          bluf: 'Wood Mackenzie base case: copper demand grows 24% to 42.7 Mtpa by 2035, requiring ~880 ktpa of new project capacity annually and US$210 bn in capex — with incentive prices above US$11,000/t.',
+          bluf: 'When people worry about critical minerals they think of rare earths. The real bottleneck is the boring one — copper. Wood Mackenzie projects demand growing 24% to 42.7 Mtpa by 2035, requiring $210 bn in new capex and 880 ktpa of new project capacity every year. We are not building that.',
           body:
-            'Copper is *the* electrification metal: grids, EVs, motors, data-centre power. There is no plausible energy transition without copper supply expansion. ' +
-            'Wood Mackenzie projects demand growth of 24% to 42.7 Mtpa by 2035 in its base case, requiring ~880 ktpa of new project capacity *every year*. Current global new-project pipeline is well below this. Incentive prices to bring marginal projects online are above US$11,000/t — well above 2025 spot. ' +
-            'Top producers: Chile (~24%), DRC + Peru + China (each ~10-11%). Top refiners: China (~40%). Substitution is limited (aluminium for some grid applications). Recycling helps but does not close the gap. ' +
+            "Copper is the electrification metal. Grids. EVs. Motors. Data centres. There's no plausible energy transition without copper supply expansion. " +
+            "Wood Mackenzie's base case: demand grows 24% to 42.7 Mtpa by 2035. To get there, the world needs ~880 ktpa of new project capacity every single year. The current global new-project pipeline is well below that. The incentive price to bring marginal projects online sits above US$11,000/tonne — well above 2025 spot. " +
+            "Where does copper come from? Chile (~24%), DRC + Peru + China (each ~10-11%) on the mining side. China (~40%) on the refining side. Substitution is limited — aluminium for some grid applications, that's about it. Recycling helps but doesn't close the gap. " +
             'Calibrated bet: copper is the materials constraint that bites first and hardest in the 2030s. Not rare earths.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
@@ -1275,11 +1288,11 @@ const CRITICAL_MATERIALS_PROGRAM: Program = {
         {
           slug: 'rare-earths',
           title: 'Rare earths: a refining problem, not a geological one',
-          bluf: 'China refines >85% of rare earths. Mountain Pass (USA) and Lynas (Australia / Malaysia) are growing. Heavy rare earths (dysprosium, terbium) are the tight subset.',
+          bluf: "Rare earths aren't actually rare. The problem is that China refines over 85% of them, and the West didn't spend the last 30 years building competing capacity. The heavy rare earths — dysprosium, terbium, samarium — are the genuinely tight subset.",
           body:
-            'Rare earths are not geologically rare — they are *refining-rare*. China invested 30 years in building separation and refining capacity that the West did not match. The result: even US mines (Mountain Pass / MP Materials) historically shipped concentrate to China for refining. ' +
-            'Western capacity is growing: MP Materials Mountain Pass refines a growing share domestically; Lynas processes in Malaysia and is building Texas. Light rare earths (neodymium, praseodymium) are expandable on a 5-7 year horizon outside China. ' +
-            'Heavy rare earths (dysprosium, terbium, samarium) — needed for permanent magnets in EV motors and wind turbines — are the genuinely tight subset, and the ones China formalised controls on in 2025.',
+            "The 'rare' in rare earths is misleading. The geology is fine. What's rare is the refining capacity outside China. Beijing invested 30 years building separation and processing chains that the West didn't. The result: even US mines (Mountain Pass / MP Materials) historically shipped their concentrate to China to get it actually refined. " +
+            "That's starting to change. MP Materials is refining a growing share domestically at Mountain Pass. Lynas processes in Malaysia and is building a Texas plant. For the light rare earths (neodymium, praseodymium), expanding outside China is doable on a 5-7 year horizon. " +
+            'The genuinely tight subset is the heavy rare earths — dysprosium, terbium, samarium — needed for the permanent magnets inside EV motors and wind turbines. And those are exactly the ones China formalised export controls on in 2025.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['china-refining'],
@@ -1293,11 +1306,12 @@ const CRITICAL_MATERIALS_PROGRAM: Program = {
         {
           slug: 'gallium-controls',
           title: 'Gallium and germanium: the 2024 control that worked',
-          bluf: 'China produces ~98% of global gallium and ~60% of germanium. The MOFCOM December 2024 ban on exports to the US is the single most-cited success of weaponised supply concentration.',
+          bluf: "Want to see an economic weapon actually fire? Gallium. China produces 98% of the world's supply. Germanium, about 60%. On 3 December 2024 China banned both to the US — and direct flow went to zero. This is the worked example everyone now references.",
           body:
-            'Gallium is irreplaceable in compound semiconductors (GaAs, GaN) used in radar, 5G, and high-end power electronics. Germanium goes into fibre optics, infrared optics, and PV. ' +
-            'China produces an estimated 98% of global gallium and 60% of germanium. The MOFCOM 3 December 2024 ban on US exports has reduced direct flow to zero. Workarounds exist (re-export through third countries, recycling of GaAs scrap) but they raise costs and constrain supply scale. ' +
-            'This is the worked example everyone in critical-minerals policy now references. The lesson: refining concentration plus an authoritarian state plus a real geopolitical dispute equals a real economic weapon.',
+            'Gallium is the irreplaceable ingredient in compound semiconductors — GaAs, GaN — that go into radar, 5G base stations, high-end power electronics. Germanium goes into fibre optics, infrared optics, photovoltaics. ' +
+            "China produces an estimated 98% of global gallium and 60% of germanium. MOFCOM's 3 December 2024 ban on US exports reduced direct flow to zero. " +
+            'There are workarounds. Re-export through third countries. Recycling of GaAs scrap. But they raise costs and they constrain scale. ' +
+            'This is the worked example everyone in critical-minerals policy now references. The lesson is uncomfortable but clear: refining concentration plus an authoritarian state plus a real geopolitical dispute equals a real economic weapon.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['china-refining'],
@@ -1346,11 +1360,12 @@ const AFRICA_PROGRAM: Program = {
         {
           slug: 'africa-dividend-window',
           title: 'Only 11 African countries had entered the dividend window by 2025',
-          bluf: 'ISS African Futures: 11 countries already in the demographic-dividend window (working-age:dependants ≥1.7:1). 33 are projected to enter by 2050. Central Africa not until 2062.',
+          bluf: "A 'demographic dividend' window opens when working-age people outnumber dependents by at least 1.7 to 1. Of Africa's 54 countries, only 11 were inside that window in 2025. Central Africa won't get there until 2062.",
           body:
-            'The 11 countries already in the window (2025): Mauritius, Seychelles, Cabo Verde, Libya, South Africa, Tunisia, Morocco, Djibouti, Botswana, Algeria, Egypt. North Africa crossed in 2005; Southern Africa around 2046; East Africa 2048; West Africa 2055; **Central Africa not until 2062**. ' +
-            "Nigeria — projected to become the world's third-largest country around 2044 — does not cross the dividend ratio until ~2058 and peaks at only 2:1 around 2092, far later than China (2010-15) or India captured theirs. " +
-            'The dividend is a *potential* structural window, not a guaranteed economic outcome. Realisation depends on literacy gains, urbanisation, formalisation, and stability policy.',
+            'The 11 already in (as of 2025): Mauritius, Seychelles, Cabo Verde, Libya, South Africa, Tunisia, Morocco, Djibouti, Botswana, Algeria, Egypt. ' +
+            'By region: North Africa crossed back in 2005. Southern Africa around 2046. East Africa 2048. West Africa 2055. Central Africa not until 2062. ' +
+            "Nigeria — projected to become the world's third-largest country around 2044 — doesn't cross the dividend ratio until ~2058, and peaks at only 2:1 around 2092. That's far later than China (which captured its dividend 2010-15) or India captured theirs. " +
+            'Critical to understand: the dividend is a *potential* structural window, not a guaranteed payoff. Realising it depends on literacy gains, urbanisation, formalisation, and stability policy. Plenty of countries have hit the window and squandered it.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['africa-2-5b'],
@@ -1371,11 +1386,11 @@ const AFRICA_PROGRAM: Program = {
         {
           slug: 'lobito-corridor',
           title: 'The Lobito Corridor: an EU-US-Africa bet on critical minerals',
-          bluf: 'On 26 October 2023, the EU signed two CRMA strategic-partnership MoUs (DRC, Zambia) plus a trilateral-plus Lobito Corridor MoU (US, EU, Angola, DRC, Zambia, AfDB, AFC) — a single coordinated Western bet on African critical-mineral routing.',
+          bluf: "Three weeks before COP28, the EU and the US co-signed a single coordinated bet on African critical minerals: two strategic-partnership MoUs with the DRC and Zambia, plus a rail-corridor deal joining the US, EU, Angola, DRC, Zambia, the African Development Bank, and the Africa Finance Corporation. That's the Lobito Corridor.",
           body:
-            "DRC supplies ~70-76% of global cobalt and is the world's #2 copper producer (3.3 Mt in 2024, behind Chile). Zambia is Africa's #2 copper producer (~820 kt, world #7-8). Together they sit at the spine of the energy transition. " +
-            'The October 2023 Global Gateway Forum locked in five cooperation areas: sustainable value chains, infrastructure funding, sustainable production standards, R&I, and capacity building. AFC was appointed lead developer for the Lobito Transport Corridor (Angola-DRC-Zambia rail to Atlantic). ' +
-            "This is the cleanest example of how the EU's Critical Raw Materials Act translates into actual diplomacy. China's BRI mineral footprint remains larger in stock terms — but the Lobito play targets the *new* flow.",
+            "Why these two countries matter: the DRC supplies 70-76% of the world's cobalt and is the second-biggest copper producer on Earth (3.3 Mt in 2024, behind Chile). Zambia is Africa's #2 copper producer (~820 kt, world #7-8). Together they sit at the spine of the energy transition. " +
+            'The October 2023 Global Gateway Forum in Brussels locked it all in. Five cooperation areas: sustainable value chains, infrastructure funding, sustainable production standards, R&I, capacity building. The Africa Finance Corporation got named as lead developer for the rail line itself — running from the DRC and Zambia copper belt across Angola to the Atlantic. ' +
+            "This is the cleanest worked example of the EU's Critical Raw Materials Act turning into actual diplomacy. China's Belt and Road mineral footprint is still larger in stock terms. But the Lobito play targets the new flow.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['africa-2-5b'],
@@ -1389,11 +1404,12 @@ const AFRICA_PROGRAM: Program = {
         {
           slug: 'aes-unified-force',
           title: "AES Unified Force: the Sahel's new security pact, with Russia",
-          bluf: "The Alliance of Sahel States (Mali, Burkina Faso, Niger) launched a 6,000-strong Unified Force in December 2025 in Niamey. Russia's Africa Corps is the preferred partner.",
+          bluf: "Mali, Burkina Faso, and Niger — the Alliance of Sahel States — launched a 6,000-strong joint force in Niamey in December 2025. Their preferred security partner isn't France. It's Russia's Africa Corps.",
           body:
-            'ISS frames the AES Unified Force as the *third* attempt at joint Sahel security after the 2017 Liptako-Gourma JTF and the G5 Sahel Joint Force, which collapsed when Mali (May 2022), Burkina Faso and Niger (late 2023) withdrew. Chad and Mauritania formally dissolved G5 Sahel on 6 December 2023. ' +
-            "**Russia's Africa Corps** (Wagner successor) is the AES's preferred security partner, with combat engagement in Mali but training-only roles in Burkina Faso and Niger. The AES is diversifying procurement across Russia, Turkey, Iran and China — a deliberate reduction of single-power dependence. " +
-            "This is the cleanest example of France's loss of Sahel influence and the multi-aligned posture replacing it.",
+            'This is the third attempt at joint Sahel security. The first (Liptako-Gourma, 2017) was stillborn. The second (G5 Sahel) collapsed when Mali pulled out in May 2022, then Burkina Faso and Niger followed in late 2023. Chad and Mauritania formally dissolved the G5 on 6 December 2023. ' +
+            "The new AES Unified Force is a structurally different bet — and the partner list shows it. Russia's Africa Corps (the Wagner successor) is the preferred security partner, in combat in Mali, training-only in Burkina Faso and Niger. " +
+            'And the AES is deliberately diversifying procurement across Russia, Turkey, Iran, and China. They want exposure to multiple powers, not dependence on one. ' +
+            "This is the cleanest single example of France's collapsed Sahel influence and the multi-aligned posture replacing it.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['africa-dividend-window'],
@@ -1407,11 +1423,13 @@ const AFRICA_PROGRAM: Program = {
         {
           slug: 'focac-2024',
           title: "China's $50bn pledge — and the debt-trap myth",
-          bluf: 'FOCAC 9 (Beijing, 4-6 September 2024) produced a Chinese pledge of $50.7-51.32 bn over three years. Yet Chinese lenders hold only ~12% of African external debt — less than multilateral creditors or private creditors.',
+          bluf: "At FOCAC 9 in Beijing (September 2024), China pledged $50 billion to Africa over three years. The 'China is debt-trapping Africa' framing you hear is, when you check the numbers, not really true. Chinese lenders hold only about 12% of African external debt.",
           body:
-            '**The pledge:** $50.7 bn over three years — broken down as RMB 210 bn (~$29.6 bn) credit lines + RMB 80 bn (~$11.8 bn) development assistance + RMB 70 bn (~$9.87 bn) Chinese-firm investment + $50 m to a China-World Bank fund. China explicitly *declined* broad-based debt relief despite African requests. ' +
-            "**The debt-trap reality check** (Chatham House, BU GDP Center): Chinese lenders hold ~12% of African external debt — versus multilateral creditors at ~35% and private creditors at ~42%. Chinese lending to Africa fell from a $28.8 bn 2016 peak to ~$2.1 bn across six projects in 2024. The pivot is to 1,000 'small and beautiful' projects + zero-tariff access for African LDCs + only 30 connectivity infrastructure projects in the 2025-2027 plan. " +
-            "China remains a major player. The dramatic 'debt-trap' framing does not survive contact with the data.",
+            'The pledge breakdown: $50.7 bn over three years — RMB 210 bn (~$29.6 bn) in credit lines, RMB 80 bn (~$11.8 bn) in development assistance, RMB 70 bn (~$9.87 bn) in Chinese-firm investment, plus $50 m to a China-World Bank fund. ' +
+            'China explicitly declined broad debt relief, despite African governments asking. ' +
+            'Now the reality check. Chatham House and the BU GDP Center, working through the data, find: Chinese lenders hold ~12% of African external debt. Multilateral creditors hold ~35%. Private creditors hold ~42%. Chinese lending to Africa has fallen from a $28.8 bn 2016 peak to ~$2.1 bn across six projects in 2024. ' +
+            "The pivot is concrete. 1,000 'small and beautiful' projects. Zero-tariff access for African LDCs. Only 30 connectivity infrastructure projects in the 2025-2027 plan. " +
+            "China is still a major player. The dramatic debt-trap framing just doesn't survive contact with the data.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['lobito-corridor'],
@@ -1432,11 +1450,13 @@ const AFRICA_PROGRAM: Program = {
         {
           slug: 'country-nigeria',
           title: 'Nigeria — third-largest country by 2044, dividend not until ~2058',
-          bluf: "Africa's largest economy and population (~228 M in 2024, projected ~377 M by 2050). Overtakes the US around 2044 to become world #3 — but does not cross the 1.7:1 dividend ratio until ~2058.",
+          bluf: "Nigeria is Africa's biggest economy and biggest population (~228 M today, ~377 M by 2050). Around 2044 it overtakes the United States to become the world's third-largest country. But the demographic dividend doesn't actually kick in until ~2058.",
           body:
-            'Key resource: hydrocarbons (oil ~85% of exports) plus a fast-growing tech sector (Lagos as the African AI hub). Biggest external dependence: refined-fuel imports and fertiliser supply — Russia / Eastern Europe shock-exposed. Biggest internal challenge: insurgency belt (Boko Haram + ISWAP in the North-East, banditry in the North-West, IPOB in the South-East), federal-state revenue disputes, and a chronically over-leveraged FX regime. ' +
+            'Key resource: hydrocarbons (oil is still ~85% of exports), plus a fast-growing tech sector with Lagos as the African AI hub. ' +
+            'Biggest external dependence: refined-fuel imports (Nigeria exports crude and imports gasoline — a long-standing perversity) and fertiliser, both exposed to Russia / Eastern Europe shocks. ' +
+            'Biggest internal challenge: the insurgency belt. Boko Haram and ISWAP in the North-East. Banditry in the North-West. IPOB in the South-East. On top of federal-state revenue disputes and a chronically over-leveraged FX regime. ' +
             'Climate exposure: Lagos is one of four named African coastal cities in the IPCC AR6 WG2 sea-level-rise list (190-245 M total African coastal exposure by 2060). ' +
-            '2035 trajectory: a probable demographic late-mover. Sub-saturated dividend, rising labour force, fragile institutions. Watch whether power-sector reform actually delivers reliable electricity.',
+            '2035 trajectory: probably a demographic late-mover. Window opening late, rising labour force, fragile institutions trying to catch up. The single thing to watch is whether power-sector reform actually delivers reliable electricity. Without that, the dividend never lands.',
           confidence: 'MED',
           lastVerified: '2026-06-10',
           dependsOn: ['africa-2-5b', 'africa-dividend-window'],
@@ -1450,10 +1470,12 @@ const AFRICA_PROGRAM: Program = {
         {
           slug: 'country-drc',
           title: 'DRC — 70-76% of global cobalt, ~110 M people, fragile',
-          bluf: "Democratic Republic of the Congo: 70-76% of global cobalt, world's #2 copper producer, the structural spine of the energy transition.",
+          bluf: "The DRC supplies 70-76% of the world's cobalt and is the world's second-largest copper producer. If decarbonisation has a single structural spine, it runs through the Democratic Republic of the Congo.",
           body:
-            'Population ~110 M (2025), projected ~217 M by 2050 — the third-largest African population by mid-century behind Nigeria and Ethiopia. Biggest external dependence: Chinese refining-buy-side for cobalt and copper exports (~70%+); diversification via the Lobito Corridor (EU/US/Angola/AfDB) is in flight. Biggest internal challenge: the eastern provinces — M23, Wazalendo, FDLR, ADF — and the 2023-2024 Rwanda-DRC border crisis. Mining-royalty reform in 2018 raised state take but enforcement remains uneven. ' +
-            'Climate exposure: equatorial forest loss and food-security stress; less direct sea-level exposure. ' +
+            'Population: ~110 M today, projected ~217 M by 2050 — the third-largest African population at mid-century, behind Nigeria and Ethiopia. ' +
+            'Biggest external dependence: Chinese buyers on the refining side. Roughly 70%+ of DRC cobalt and copper flows to Chinese refiners. Diversification via the Lobito Corridor (EU, US, Angola, AfDB) is in flight but years from full effect. ' +
+            'Biggest internal challenge: the eastern provinces. M23. Wazalendo. FDLR. ADF. Plus the 2023-2024 Rwanda-DRC border crisis. Mining-royalty reform in 2018 raised state take, but enforcement is uneven. ' +
+            'Climate exposure: equatorial forest loss and food security stress. Less direct sea-level exposure than coastal countries. ' +
             '2035 trajectory: indispensable to global decarbonisation supply chains, internally fragile. The single most consequential African country for the energy transition.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
@@ -1468,11 +1490,13 @@ const AFRICA_PROGRAM: Program = {
         {
           slug: 'country-egypt',
           title: 'Egypt — early-dividend, water-stressed, Suez-dependent',
-          bluf: 'Egypt entered the demographic-dividend window pre-2010 — but the economic gain has been throttled by sovereign-debt distress, IMF programme dependence, and a structurally over-leveraged state economy.',
+          bluf: "Egypt entered the demographic-dividend window before 2010 — which should have meant a boom. It didn't. Sovereign-debt distress, IMF dependence, and a military-owned business sector that crowds out private investment kept the dividend largely unrealised.",
           body:
-            'Population ~115 M (2025). Already in the demographic dividend window. Biggest external dependence: Suez Canal revenue (~$10 bn/yr pre-Houthi disruption, ~50% drop through 2024-2025), wheat imports (Russia + Ukraine), Gulf rescue financing (Saudi, UAE, Qatar). Biggest internal challenge: state economic over-reach and a military-owned business sector that crowds out private investment. ' +
-            'Climate exposure: Alexandria is on the IPCC named-city list. Nile water — the GERD upstream — is the multi-decade strategic challenge. ' +
-            '2035 trajectory: chronically vulnerable to external shock, but a regional pivot via the new bloc (Türkiye-Qatar-Iran restraining-the-West formation). Watch IMF Article IV cycles for reform credibility.',
+            'Population ~115 M (2025). Already inside the demographic window, theoretically. ' +
+            'Biggest external dependence: a three-legged stool. Suez Canal revenue (was about $10 bn/yr pre-Houthi disruption; dropped ~50% through 2024-2025). Wheat imports from Russia + Ukraine. Gulf rescue financing from Saudi, UAE, Qatar. Any one of those legs wobbling triggers a crisis. ' +
+            "Biggest internal weakness: state economic over-reach. The military's own business sector — concrete, food, retail, hospitality — crowds out private investment in nearly every sector that could otherwise grow. " +
+            "Climate exposure: Alexandria is on the IPCC named-city list for sea-level rise. The bigger multi-decade challenge is the Nile — Ethiopia's GERD upstream changes Egypt's water security in ways that haven't fully played out. " +
+            "2035 trajectory: chronically vulnerable to external shock, but pivoting regionally through the new 'circumstance' bloc (Türkiye-Qatar-Iran-restraining-the-West). Watch IMF Article IV cycles for whether reform credibility actually arrives.",
           confidence: 'MED',
           lastVerified: '2026-06-10',
           dependsOn: ['africa-dividend-window'],
@@ -1493,11 +1517,11 @@ const AFRICA_PROGRAM: Program = {
         {
           slug: 'africa-migrants',
           title: 'Up to 86 million internal climate migrants by 2050',
-          bluf: 'IPCC AR6 WG2: 17-40 M internal climate migrants in sub-Saharan Africa by 2050 at 1.7 °C warming, rising to 56-86 M at 2.5 °C. More than 60% concentrated in West Africa.',
+          bluf: 'The IPCC says climate will displace 17-40 million people inside sub-Saharan Africa by 2050 in a 1.7 °C world. In a 2.5 °C world that rises to 56-86 million. More than 60% of them will be in West Africa.',
           body:
-            'IPCC AR6 WG2 Chapter 9 (Africa) Executive Summary gives the figures verbatim. The drivers are water stress, reduced crop productivity, and sea-level rise. ' +
-            'Sea-level exposure: 108-116 M Africans by 2030, rising to **190-245 M by 2060** — up from 54 M in 2000. Lagos, Cotonou, Dakar and Alexandria are the headline coastal exposures. ' +
-            'These are *lower-bound* figures: AR6 explicitly excludes rapid-onset hazards like floods and cyclones, which add to the trajectory. AR7 will likely revise upward.',
+            'Those numbers come straight from the IPCC AR6 WG2 Chapter 9 Executive Summary. The drivers are familiar: water stress, falling crop productivity, sea-level rise. ' +
+            'Sea-level exposure alone goes from 108-116 M Africans by 2030 to 190-245 M by 2060 — up from 54 M in 2000. Lagos, Cotonou, Dakar, and Alexandria are the headline coastal exposures. ' +
+            'And these are *lower-bound* numbers. AR6 explicitly excludes rapid-onset hazards — floods, cyclones — which add to the trajectory. AR7, when it lands, will almost certainly revise these upward.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['africa-2-5b'],
@@ -1511,11 +1535,12 @@ const AFRICA_PROGRAM: Program = {
         {
           slug: 'africa-adaptation-gap',
           title: 'Africa needs $53bn/year for adaptation. It receives $13bn.',
-          bluf: 'Africa needs ~$53 bn/year for climate adaptation (2020-2035 NDCs). It receives ~$13 bn — about a quarter of stated need and only 20% of global adaptation flows, versus ~45% to East Asia and Pacific.',
+          bluf: 'Africa says it needs $53 billion a year to adapt to a warming climate. It gets $13 billion. About a quarter. And only 20% of global adaptation finance flows to Africa, versus 45% to East Asia and Pacific.',
           body:
-            "Global Center on Adaptation / CPI 'State and Trends in Climate Adaptation Finance 2023' is the canonical source. African NDCs themselves may understate the need by up to 100% — so the true gap could be $1.6 trillion cumulatively, more than 8× the $195 bn projected at current trajectories. " +
-            "Globally, UNEP Adaptation Gap Report 2025 ('Running on Empty') puts developing-country adaptation need at >$310 bn/year by 2035; the COP29 Baku-to-Belem Roadmap targets $1.3 trillion/year in total climate finance from public and private sources by 2035, with UN authors urging grants over loans to avoid deepening debt. " +
-            'Three structural facts the 2050 reader needs to know: the funding gap is huge, the trajectory has been *worsening* not closing, and most adaptation finance arrives as debt — not grants.',
+            "The canonical source here is the Global Center on Adaptation / CPI 'State and Trends in Climate Adaptation Finance 2023' report. " +
+            "But there's a bigger problem hiding inside: African NDCs themselves may understate the actual need by up to 100%. If true, the cumulative gap is closer to $1.6 trillion — more than 8× the $195 bn projected at current trajectories. " +
+            "Globally, the UNEP Adaptation Gap Report 2025 ('Running on Empty') puts developing-country adaptation need at >$310 bn/year by 2035. The COP29 Baku-to-Belem Roadmap targets $1.3 trillion/year in total climate finance from public and private sources by 2035. UN authors keep urging grants over loans, to avoid deepening debt. " +
+            'Three structural facts a 2050 reader needs. The funding gap is huge. The trajectory has been worsening, not closing. And most adaptation finance arrives as debt, not grants.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['africa-migrants'],
@@ -1546,11 +1571,11 @@ const MIDDLE_EAST_PROGRAM: Program = {
         {
           slug: 'assad-falls',
           title: '8 December 2024: Assad falls. The arc breaks.',
-          bluf: 'HTS removed Bashar al-Assad on 8 December 2024 — collapsing the Tehran-Baghdad-Damascus-Beirut "arc of resistance" overnight, and rewiring every Middle Eastern alliance calculation.',
+          bluf: "On 8 December 2024, HTS rebels removed Bashar al-Assad from power in Syria. The Tehran-Baghdad-Damascus-Beirut 'arc of resistance' that Iran had spent decades building collapsed overnight. Every alliance calculation in the Middle East rewired around that single day.",
           body:
-            "The Assad regime's collapse was the single most consequential event of the 2024-2026 Middle East period. It eliminated Iran's land bridge to Hezbollah, removed the Russian strategic anchor in Latakia/Tartus, opened Syria to Turkish and Gulf influence, and produced a transitional HTS-led government under Ahmad al-Sharaa. " +
-            'By May 2025, ~$15 bn of US sanctions on Syria had been lifted. The US de-proscribed HTS in July 2025; the UK followed in October 2025. On 6 November 2025, the UNSC delisted al-Sharaa and Khattab by 14-0 (China abstaining). ' +
-            "The post-Assad transition is a fragile success. The 'arc of resistance' framing is functionally dead.",
+            "It's hard to overstate how much that one event broke. Iran lost its land bridge to Hezbollah. Russia lost its strategic anchor in Latakia and Tartus. Syria was suddenly open to Turkish and Gulf influence. And a transitional HTS-led government took over under Ahmad al-Sharaa. " +
+            'What followed was extraordinary fast. By May 2025, ~$15 bn of US sanctions on Syria had been lifted. In July 2025 the US de-proscribed HTS — formally taking them off the foreign-terrorist-organisation list. The UK followed in October. On 6 November 2025, the UN Security Council delisted al-Sharaa and Khattab themselves by a 14-0 vote (China abstaining). ' +
+            "The post-Assad transition is fragile, but it's a real success. And the 'arc of resistance' framing — load-bearing for Iranian strategy for 40 years — is functionally dead.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: [],
@@ -1564,11 +1589,11 @@ const MIDDLE_EAST_PROGRAM: Program = {
         {
           slug: 'midnight-hammer',
           title: '22 June 2025: Operation Midnight Hammer',
-          bluf: "The US struck Iran's nuclear sites on 22 June 2025 — 14 GBU-57 MOPs from B-2s on Fordow, Natanz, Isfahan, plus submarine-launched Tomahawks. Iran's nuclear programme was set back, not eliminated.",
+          bluf: "On 22 June 2025, the US hit Iran's nuclear sites with fourteen GBU-57 Massive Ordnance Penetrators from B-2 bombers, plus submarine-launched Tomahawks. Targets: Fordow, Natanz, Isfahan. Iran's nuclear programme was set back. Not eliminated.",
           body:
-            'Operation Midnight Hammer was the largest US combat use of the GBU-57 Massive Ordnance Penetrator. Targets: Fordow, Natanz, Isfahan. The strikes coincided with Israeli operations against Iranian air-defence and missile sites. ' +
-            "Damage assessments (CFR, Cambridge AJIL, CRS IN12571) converged on a 1-2 year setback for centrifuge enrichment but stopped short of declaring the programme destroyed. Iran's retained nuclear infrastructure was substantial. " +
-            'Midnight Hammer set the stage for Operation Epic Fury in February 2026 — and for the Iranian retaliation that swept seven Gulf states.',
+            "Operation Midnight Hammer was the largest US combat use of the GBU-57 — the 'bunker buster' big enough to reach buried facilities like Fordow. Three sites hit. Israeli operations on Iranian air-defence and missile infrastructure ran in parallel. " +
+            'Damage assessments from CFR, Cambridge AJIL, and the Congressional Research Service memo IN12571 all reached roughly the same conclusion: a 1-2 year setback to centrifuge enrichment. None of them declared the programme destroyed. Iran retained substantial nuclear infrastructure. ' +
+            'Midnight Hammer set up everything that came next. Operation Epic Fury eight months later. And the Iranian retaliation that swept seven Gulf states in 48 hours.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['assad-falls'],
@@ -1582,11 +1607,13 @@ const MIDDLE_EAST_PROGRAM: Program = {
         {
           slug: 'epic-fury-2026',
           title: 'The 48 hours that exposed the Gulf air-defence cost trap',
-          bluf: "Iran's February 2026 retaliation against seven Gulf states fired >400 ballistic missiles and ~1,000 drones in 48 hours. GCC interception was ~90% — but the cost ratio is unsustainable.",
+          bluf: 'After the 28 February 2026 US-Israeli strike on Iran, Iran fired more than 400 ballistic missiles and about 1,000 drones at seven Gulf states in 48 hours. Interception worked — about 90% — but the cost arithmetic is what changed everything. Patriots cost a hundred times what Shaheds cost.',
           body:
-            'The 28 February 2026 US-Israeli strike (Operation Epic Fury) — already covered in the Hormuz Crisis briefing — triggered an Iranian retaliation across Bahrain, Jordan, Kuwait, Qatar, Saudi Arabia, UAE and Iraq. The UAE alone engaged 537 ballistic missiles, 26 cruise missiles and 2,256 drones; 35 drones penetrated defences. ' +
-            'Interception worked — ~90% on ballistic missiles, ~85% on drones — but the **cost asymmetry** is the strategic lesson: Patriot interceptors run $4-5 M each (typically two per incoming) versus Shahed drones at $20-50 K. The cost ratio is 100-200×. ' +
-            "Carnegie verbatim: 'By targeting multiple locations in the Gulf, Iran signaled that it was willing to bring the confrontation closer to the region's core economic and political centers.' This is why Saudi Arabia, UAE, Kuwait and Qatar are reassessing the US defence framework.",
+            'The Operation Epic Fury strike — covered in detail in the Hormuz Crisis briefing — triggered a retaliation across Bahrain, Jordan, Kuwait, Qatar, Saudi Arabia, the UAE, and Iraq. The UAE alone engaged 537 ballistic missiles, 26 cruise missiles, and 2,256 drones. Thirty-five drones penetrated defences. ' +
+            'Interception rates were impressive on paper: ~90% on ballistic missiles, ~85% on drones. But the cost asymmetry tells the real story. Patriot interceptors run $4-5 M each, with typically two fired per incoming target. Shahed drones cost Iran $20-50 K each. ' +
+            'Do the math. The cost ratio runs 100-200× against the defender. ' +
+            "Carnegie summarised it cleanly: 'By targeting multiple locations in the Gulf, Iran signaled that it was willing to bring the confrontation closer to the region's core economic and political centers.' " +
+            'That is why Saudi Arabia, UAE, Kuwait, and Qatar are now reassessing the entire US defence framework.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['midnight-hammer'],
@@ -1607,11 +1634,11 @@ const MIDDLE_EAST_PROGRAM: Program = {
         {
           slug: 'allies-of-circumstance',
           title: 'Türkiye, Egypt, Qatar, Iran, Pakistan: allies of circumstance',
-          bluf: 'Carnegie (2 Feb 2026): a pragmatic bloc of Türkiye, Egypt, Qatar, Iran and (loosely) Pakistan emerged in 2025-2026 to restrain a US-supported Israel. Not a formal alliance. A shared restraining function.',
+          bluf: "A new bloc took shape through 2025-2026. Not formal. Not anti-Western. Türkiye, Egypt, Qatar, Iran, and loosely Pakistan — coordinating to restrain a US-supported Israel. Carnegie called them 'allies of circumstance' in early February 2026.",
           body:
-            "Carnegie's Michael Young documents the bloc taking shape through 2025-2026: 'Türkiye and Qatar, with the collaboration of Russia and Egypt, had managed to delay a U.S. attack against Iran' via a framework covering nuclear, missile, regional and hydrocarbon issues — through a Trump-Pezeshkian / Witkoff-Araghchi negotiating track that collapsed on 28 February 2026. " +
-            "IISS describes an overlapping 'quadrilateral' of Türkiye-Pakistan-Saudi Arabia-Egypt with Qatar 'in the fold'. The Saudi presence is notable — Riyadh hedges. " +
-            'The bloc is not anti-Western. It is restraining-Western. It is what a multipolar Middle East looks like when no single external power can deliver a unilateral outcome.',
+            "Carnegie's Michael Young watched the bloc take shape through 2025-2026 and put it bluntly: 'Türkiye and Qatar, with the collaboration of Russia and Egypt, had managed to delay a U.S. attack against Iran' via a framework covering nuclear, missile, regional, and hydrocarbon issues — through a Trump-Pezeshkian / Witkoff-Araghchi negotiating track. That track collapsed on 28 February 2026 when Epic Fury hit. " +
+            "IISS describes an overlapping 'quadrilateral' of Türkiye, Pakistan, Saudi Arabia, and Egypt — with Qatar 'in the fold'. The Saudi presence is notable. Riyadh is hedging, not committing. " +
+            "What's important to understand: this bloc isn't anti-Western. It's restraining-Western. It's what a multipolar Middle East looks like when no single external power — not the US, not Russia, not China — can deliver a unilateral outcome anymore.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['epic-fury-2026'],
@@ -1632,11 +1659,14 @@ const MIDDLE_EAST_PROGRAM: Program = {
         {
           slug: 'country-saudi-arabia',
           title: 'Saudi Arabia — MBS, Vision 2030, the oil-vs-renewables hedge',
-          bluf: "The Gulf hegemon, world's top oil exporter, $700 bn+ Public Investment Fund. Vision 2030 is the bet that NEOM + sport + AI + tourism outrun the oil decline.",
+          bluf: 'The Gulf hegemon. Top oil exporter on Earth. A $700 bn+ sovereign wealth fund. And one big bet — Vision 2030 — that NEOM, football, AI, and tourism will outrun the inevitable decline of oil demand.',
           body:
-            'Ruler: Crown Prince and Prime Minister Mohammed bin Salman, de facto since 2017. Population ~33 M. Top exports: crude (~70%+), refined products, petrochemicals. Top imports: machinery, vehicles, food. Key alliance: residual US framework + China-mediated 2023 restoration with Iran + selective normalisation hedging with Israel. ' +
-            'Biggest external dependence: oil price > $80/bbl for the budget breakeven; declining as Vision 2030 diversifies, but still binding through 2030. Biggest internal weakness: succession fragility (single decision-maker) and the gap between Vision 2030 announcements and verified delivery (NEOM, The Line). ' +
-            '2035 trajectory: declining single-source dependence on oil, growing diplomatic optionality, structural Gulf-wide air-defence cost trap (see Epic Fury page).',
+            'Ruler: Crown Prince and Prime Minister Mohammed bin Salman, de facto since 2017. Population ~33 M. ' +
+            'Top exports: crude oil (still 70%+), refined products, petrochemicals. Top imports: machinery, vehicles, food. ' +
+            'Key alliance picture: a residual US security framework, plus the China-mediated 2023 restoration of ties with Iran, plus selective normalisation hedging with Israel. Riyadh is keeping every door open. ' +
+            "Biggest external dependence: an oil price above ~$80/bbl for the budget to balance. That's declining as Vision 2030 diversifies, but it's still binding through 2030. " +
+            "Biggest internal weakness: succession fragility — when one person makes every decision, his health is the country's health. Plus the growing gap between what Vision 2030 announces and what actually gets built (NEOM, The Line). " +
+            '2035 trajectory: declining single-source dependence on oil. Growing diplomatic optionality. And a structural Gulf-wide air-defence cost problem they share with every neighbour.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['allies-of-circumstance'],
@@ -1650,11 +1680,14 @@ const MIDDLE_EAST_PROGRAM: Program = {
         {
           slug: 'country-iran',
           title: 'Iran — post-Khamenei, sanctioned, retaliatory capacity proven',
-          bluf: 'Operation Epic Fury (28 Feb 2026) killed Supreme Leader Ali Khamenei. The regime endured. Iran demonstrated retaliatory capacity across seven Gulf states in 48 hours.',
+          bluf: 'Operation Epic Fury on 28 February 2026 killed Supreme Leader Ali Khamenei. The regime did not collapse. Within 48 hours, Iran proved it could fire on seven Gulf states simultaneously.',
           body:
-            'Governance: contested transition post-Khamenei; the IRGC is the dominant institution. Population ~89 M. Top exports: crude (~3 mb/d in the "shadow" trade to China), petrochemicals, condensates. Top imports: refined fuels, machinery, food. Key alliances: Russia (20-year Comprehensive Strategic Partnership Treaty Jan 2025), China (asymmetric — strategic but not urgent for Beijing), restraining-the-West bloc with Türkiye-Qatar-Egypt. ' +
-            'Biggest external dependence: Chinese crude offtake (single-buyer concentration). Biggest internal weakness: currency collapse, generational distrust of the regime, succession fragility. ' +
-            '2035 trajectory: degraded proxy network, intact retaliatory capacity against Gulf, increasingly dependent on China. Watch nuclear-restart signals.',
+            'Governance: contested transition post-Khamenei. The IRGC is now the dominant institution. Population ~89 M. ' +
+            "Top exports: crude oil (~3 mb/d running through 'shadow' trade to China), petrochemicals, condensates. Top imports: refined fuels (Iran is a major refiner-shy economy), machinery, food. " +
+            'Key alliances: Russia (the 20-year Comprehensive Strategic Partnership Treaty signed January 2025), China (strategic but not urgent for Beijing), the new restraining-the-West bloc with Türkiye-Qatar-Egypt. ' +
+            "Biggest external dependence: Chinese crude offtake. If Beijing decides Iran is more trouble than it's worth, the regime has nowhere else to sell the oil. " +
+            'Biggest internal weakness: currency collapse, generational distrust of the regime, and the same succession fragility every authoritarian system carries. ' +
+            '2035 trajectory: degraded proxy network, intact direct retaliatory capacity against Gulf neighbours, increasingly dependent on a single Chinese customer. The signal to watch is whether Tehran restarts visible nuclear-weapons work after the post-Khamenei dust settles.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['epic-fury-2026'],
@@ -1668,11 +1701,14 @@ const MIDDLE_EAST_PROGRAM: Program = {
         {
           slug: 'country-uae',
           title: 'UAE — port empire, tech hedge, Iran-exposed',
-          bluf: "The Gulf's most globalised state. Trade re-export hub, Masdar 100 GW by 2030, soft-power via DP World and Edge Group. Iranian retaliation in Feb 2026 exposed how close the threat sits.",
+          bluf: 'The most globalised state in the Gulf. A trade re-export hub, a 100 GW renewables target via Masdar, soft power through DP World and the Edge defence group. The Iranian retaliation in February 2026 exposed how close the threat sits.',
           body:
-            'Ruler: President Mohamed bin Zayed (MBZ). Population ~10 M (90% expatriate). Top exports: re-exports, crude, aluminium, gold. Top imports: machinery, food, textiles. Key alliances: US framework + Abraham Accords with Israel + new "circumstance" bloc proximity + China-tech hedging. ' +
-            "Biggest external dependence: trade-flow stability — Dubai's re-export model collapses if Hormuz / Bab el-Mandeb fall. Biggest internal weakness: 90% expatriate population is structurally non-citizen; ruler-dependent succession; Iranian missile/drone range covers all infrastructure. " +
-            '2035 trajectory: hedged, diversified, exposed. Watch Masdar global expansion + ADNOC IPO follow-through + the speed of Saudi competitive convergence.',
+            'Ruler: President Mohamed bin Zayed (MBZ). Population ~10 M — about 90% expatriate. ' +
+            'Top exports: re-exports, crude oil, aluminium, gold. Top imports: machinery, food, textiles. Dubai is the trade-hub city; Abu Dhabi is the oil-and-sovereign-wealth city. They run on different logics. ' +
+            "Key alliances: US security framework + Abraham Accords with Israel + new 'circumstance' bloc proximity + a China-tech hedge that nobody wants to talk about too loudly. " +
+            "Biggest external dependence: trade-flow stability. Dubai's re-export model collapses if Hormuz or Bab el-Mandeb fall. Both are within Iranian reach. " +
+            'Biggest internal weakness: a 90% expatriate population that is structurally non-citizen — the model only works as long as people want to come and work there. Ruler-dependent succession. And the fact that Iranian missiles and drones can hit any inch of UAE infrastructure. ' +
+            "2035 trajectory: hedged, diversified, exposed. Things to watch: Masdar's global expansion, ADNOC IPO follow-through, and the speed of Saudi competitive convergence — Riyadh wants to be Dubai.",
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['epic-fury-2026'],
@@ -1686,11 +1722,14 @@ const MIDDLE_EAST_PROGRAM: Program = {
         {
           slug: 'country-turkiye',
           title: 'Türkiye — drone diplomacy, NATO-tense, "circumstance" pivot',
-          bluf: 'NATO member, but increasingly transactional with the US. Drone export power. Central to the new "allies of circumstance" bloc restraining a US-supported Israel.',
+          bluf: "Still in NATO, but increasingly transactional with Washington. A drone-export power that has reshaped wars from Ukraine to Libya. And central to the new 'allies of circumstance' bloc restraining a US-supported Israel.",
           body:
-            'Ruler: Recep Tayyip Erdoğan, in his last constitutional term (succession 2028). Population ~85 M. Top exports: vehicles, machinery, textiles, defence (drones). Top imports: energy, machinery, gold. Key alliances: NATO formally; "circumstance" bloc with Qatar-Egypt-Iran-Pakistan; transactional with Russia (S-400, gas); BRICS application pending. ' +
-            'Biggest external dependence: energy imports (Russia + Iran + Azerbaijan), refugee load (~3.5 M Syrians, gradually returning post-Assad), currency stability. Biggest internal weakness: lira credibility, succession transition, Kurdish question. ' +
-            '2035 trajectory: more independent from the US, more central to Middle Eastern diplomacy, more present in Africa (drones). Watch the 2028 succession.',
+            'Ruler: Recep Tayyip Erdoğan, in his last constitutional term (succession 2028 looms). Population ~85 M. ' +
+            'Top exports: vehicles, machinery, textiles, and defence — especially the drones, which have become a real diplomatic instrument. Top imports: energy, machinery, gold. ' +
+            "Key alliances: formally still NATO. Operationally inside the 'circumstance' bloc with Qatar, Egypt, Iran, and Pakistan. Transactional with Russia (S-400 system, gas pipelines). And there's a BRICS application pending. " +
+            'Biggest external dependence: energy imports from Russia + Iran + Azerbaijan; refugee load (~3.5 M Syrians, gradually returning after Assad fell); currency stability. ' +
+            "Biggest internal weakness: lira credibility, the upcoming succession transition, and the unresolved Kurdish question that has been the country's organising domestic problem for a century. " +
+            '2035 trajectory: more independent from the US, more central to Middle Eastern diplomacy, more present in Africa (mostly via drones). The single thing to watch is the 2028 succession.',
           confidence: 'HIGH',
           lastVerified: '2026-06-10',
           dependsOn: ['allies-of-circumstance'],
@@ -1711,11 +1750,12 @@ const MIDDLE_EAST_PROGRAM: Program = {
         {
           slug: 'gulf-lng-glut',
           title: 'The 2028-2030 LNG glut and the Gulf budget squeeze',
-          bluf: 'A ~360 bcm/year LNG capacity wave hits 2028-2030 — about 50% growth on 2024 trade. Qatar is adding 88 bcm/year, largely uncontracted. Gulf budgets are structurally exposed.',
+          bluf: "Between 2028 and 2030, the world's LNG capacity is set to grow by about 360 billion cubic metres a year — roughly 50% on top of 2024 trade. Qatar alone is adding 88 bcm/year, much of it without long-term buyers locked in. Gulf budgets are about to feel that.",
           body:
-            "QatarEnergy's North Field expansion is the headline addition. US Gulf-Coast LNG (Plaquemines, Corpus Christi, Rio Grande) plus Mozambique restarts plus Russian sanction-evading flows add the rest. The 2028-2030 window is when supply outpaces demand growth even in IEA STEPS. " +
-            "Spot LNG prices are likely to compress. Long-term contract prices follow with a 1-2 year lag. Gulf state budgets — especially Qatar's — depend on these prices being above breakeven. " +
-            'Pair this with the renewables hedge: NEOM Green Hydrogen targets 600 t/day by end-2026; Masdar (UAE) targets 100 GW renewable capacity by 2030. These are real bets, not just press releases. But they do not close the budget gap if oil and LNG prices drop.',
+            "The headline addition is QatarEnergy's North Field expansion. Stack on top of that: US Gulf Coast LNG (Plaquemines, Corpus Christi, Rio Grande), Mozambique LNG restarts, Russian sanction-evading flows. The 2028-2030 window is when global supply outpaces demand growth even in the IEA's middle-of-the-road STEPS scenario. " +
+            "Spot LNG prices are likely to compress hard. Long-term contract prices follow with a 1-2 year lag. Gulf state budgets — Qatar's especially — depend on those prices staying above breakeven. " +
+            'Now pair that with the renewables hedge. NEOM Green Hydrogen targets 600 tonnes/day by end-2026. Masdar (UAE) targets 100 GW of renewable capacity by 2030. These are real bets, not press releases. ' +
+            "But they don't close the budget gap if oil and LNG prices both drop at the same time. Which is the scenario the 2028-2030 window puts on the table.",
           confidence: 'MED',
           lastVerified: '2026-06-10',
           dependsOn: ['epic-fury-2026'],
