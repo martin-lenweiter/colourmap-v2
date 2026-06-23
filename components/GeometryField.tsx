@@ -20094,6 +20094,7 @@ export default function GeometryField() {
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
                 {pill('Music Visuals', tab === 'music', () => setTab('music'), true)}
+                {pill('Journeys', tab === 'journey', () => setTab('journey'), true)}
                 {pill(
                   'Projection',
                   isProjectionMode,
@@ -21416,7 +21417,7 @@ export default function GeometryField() {
             {tab === 'journey' && (
               <>
                 {/* Journey selection */}
-                <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {JOURNEYS.map((j) =>
                     pill(`${j.icon} ${j.name}`, journeyId === j.id, () => {
                       setJourneyId(j.id);
