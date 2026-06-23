@@ -20102,9 +20102,7 @@ export default function GeometryField() {
                     window.open('/geometry-field?projection=1', '_blank', 'noopener,noreferrer'),
                   true,
                 )}
-                {pill('Arena', false, () => window.location.assign('/dot-walker-arena'), true)}
                 {pill('Figures', false, () => window.location.assign('/figures'), true)}
-                {pill('Figure Stars', false, () => window.location.assign('/figure-stars'), true)}
               </div>
               <button
                 type="button"
