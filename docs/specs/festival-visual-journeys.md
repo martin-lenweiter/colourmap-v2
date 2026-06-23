@@ -55,9 +55,16 @@ designed to stand alone without audio.
 ## Running the show
 
 - Venue projector: open `/geometry-field?projection=1` fullscreen.
-- Operator laptop: open `/geometry-field?control=1` → **Journey** tab → pick a
+- Operator laptop: open `/geometry-field?control=1` → **Journeys** tab → pick a
   program → **Play**. The picker shows "20m0s total" and a clickable phase list.
 - For Desert Temple, enable the mic/Voice input so the DJ set pushes the visuals.
+
+### Navigation
+
+The **Journeys** tab is selected via the "Journeys" pill in the builder's tab
+row (alongside Builder / Music Visuals / Projection). The journey picker
+wraps onto multiple rows so every program is visible — including the three
+festival programs at the end of the list.
 
 ## Testing
 
