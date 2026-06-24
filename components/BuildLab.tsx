@@ -1988,6 +1988,7 @@ export default function BuildLab() {
       ? {
           ...current,
           ...updated,
+          id: current.id,
           title: patch.title ? updated.title : current.title,
           prompt: patch.prompt ? updated.prompt : current.prompt,
           order: updated.order ?? current.order,
