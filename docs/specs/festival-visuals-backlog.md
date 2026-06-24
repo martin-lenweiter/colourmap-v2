@@ -108,3 +108,11 @@ readable:
   (1↔3 = solo/trio): each walker enters solo, blends to three, then morphs to
   the next shape; ~7.5-minute seamless loop. (Walker shape = `cfg.symmetry`,
   count = `cfg.stars`, so the existing journey engine drives it directly.)
+- **Trip Number 1** (journey id 17) — the golden trip developed into a smooth
+  ~9.5-minute loop: `tripnumber1` spine with new elements between (swirl-dot
+  tunnel, Fibonacci drift, golden mandala, alchemical sun, orbital calm), long
+  stages for gentle transitions, looping back to the opening trip.
+- **Trip Number 3** (journey id 18) — the triangle trip with more
+  transformations: `tripnumber3` gates evolving through yantra-3D, hypercube,
+  prism core, chaos triangles, a line temple and kaleido-yantra; ~7.5-minute
+  seamless loop.

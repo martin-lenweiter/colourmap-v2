@@ -85,4 +85,19 @@ describe('GeometryField journeys', () => {
     expect(t5.stages.some((s) => s.stars === 1)).toBe(true);
     expect(t5.stages.some((s) => s.stars === 3)).toBe(true);
   });
+
+  it('Trip Number 1 and 3 are valid, seamlessly-looping trips', () => {
+    for (const name of ['Trip Number 1', 'Trip Number 3']) {
+      const trip = JOURNEYS.find((j) => j.name === name);
+      expect(trip, name).toBeDefined();
+      if (!trip) continue;
+      expect(trip.stages.length).toBeGreaterThanOrEqual(8);
+      for (const stage of trip.stages) {
+        expect(PAL[stage.preset], `${name} -> ${stage.name}`).toBeDefined();
+      }
+      // Seamless loop: final act eases back into the first (same palette + mode).
+      expect(trip.stages.at(-1)?.preset).toBe(trip.stages[0].preset);
+      expect(trip.stages.at(-1)?.mode).toBe(trip.stages[0].mode);
+    }
+  });
 });
