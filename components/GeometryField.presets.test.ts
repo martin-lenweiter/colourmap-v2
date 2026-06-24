@@ -13,16 +13,18 @@ describe('GeometryField featured presets', () => {
     expect(names).not.toContain('Volcano');
     expect(names.indexOf('Embrace')).toBeGreaterThan(names.indexOf('Entropy 3D'));
     expect(names.indexOf('Dot Tunnel')).toBeGreaterThan(names.indexOf('Entropy 3D'));
-    expect(names.indexOf('Line Tunnel 3D')).toBeGreaterThan(names.indexOf('Entropy 3D'));
   });
 
-  it('keeps Swirl Dot Tunnel and Atomic Explosion bright enough for the good list', () => {
+  it('keeps Swirl Dot Tunnel bright enough for the good list', () => {
     expect(PRESETS['Swirl Dot Tunnel'].preset).toBe('Golden Source');
     expect(PRESETS['Swirl Dot Tunnel'].glow).toBeGreaterThanOrEqual(8);
     expect(PRESETS['Swirl Dot Tunnel'].luminous).toBeGreaterThanOrEqual(4);
+  });
 
+  it('keeps Atomic Explosion calm — fine points, not big blown-out dots', () => {
     expect(PRESETS['Atomic Explosion'].preset).toBe('Golden Source');
-    expect(PRESETS['Atomic Explosion'].glow).toBeGreaterThanOrEqual(8);
-    expect(PRESETS['Atomic Explosion'].luminous).toBeGreaterThanOrEqual(4);
+    // Toned down to match the other presets' light (was glow 8.2 / luminous 4.2).
+    expect(PRESETS['Atomic Explosion'].glow).toBeLessThanOrEqual(6);
+    expect(PRESETS['Atomic Explosion'].luminous).toBeLessThanOrEqual(3.2);
   });
 });

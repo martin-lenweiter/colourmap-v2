@@ -90,16 +90,19 @@ readable:
 - **Removed from the builder tab row:** Arena and Figure Stars pills.
 - **Removed from FEATURED_PRESETS:** Mode Sun (registry kept — used by
   ArchetypeBridge / BuildLab), Deep Gaze (fully removed), Line Tunnel 3D,
-  Walking Figure (#40).
+  Walking Figure (#40), and presets 4–8 (Buddha Boy Currents, Scriptures,
+  Vertical Scriptures, Eclipse, Yin Yang).
+- **Atomic Explosion toned down** — glow 8.2→5, luminous 4.2→2.8, intensity
+  9.4→7, so it reads as fine points rather than big blown-out dots, matching
+  the other presets' light. Kept in the featured list.
+- **Trip Number 4** (journey id 15) — a ~8-minute looping trip combining
+  Prism Bloom, Prism3D Core, Ocean Drift, Cyclone Tiles and Dot Heart, enriched
+  with kaleidoscope blends, a storm-attractor surge and a crazy burst, looping
+  seamlessly back to the opening prism.
 
-### Pending curation (awaiting decision)
-- **Presets 4–9** flagged "not so good": Buddha Boy Currents, Scriptures,
-  Vertical Scriptures, Eclipse, Yin Yang, Atomic Explosion. (Atomic Explosion
-  was previously a curated "good one" — confirm before removing.)
+### Pending curation
 - **No lines below the dot walkers** — suppress the ground/line under the
   dotwalker/dotroad figures.
-- **Trip Number 4** — combine presets Prism Bloom, Prism3D Core, Ocean Drift,
-  Cyclone Tiles, Dot Heart (was #13/12/15/18/23) — as a looping journey.
 - **Trip Number 5 (dot-walker loop)** — start with one walker, blend to three,
   morph to the next walker shape, blend back to one, to three, morph again —
   cycle through all dot-walker figures in a long loop.

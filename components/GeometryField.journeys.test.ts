@@ -57,4 +57,16 @@ describe('GeometryField journeys', () => {
       expect(journeyById(id).stages.length).toBeGreaterThanOrEqual(8);
     }
   });
+
+  it('Trip Number 4 is a valid, seamlessly-looping trip', () => {
+    const t4 = JOURNEYS.find((j) => j.name === 'Trip Number 4');
+    expect(t4).toBeDefined();
+    if (!t4) return;
+    for (const stage of t4.stages) {
+      expect(PAL[stage.preset], `Trip Number 4 -> ${stage.name}`).toBeDefined();
+    }
+    // Seamless loop: the final act eases back into the first (same palette + mode).
+    expect(t4.stages.at(-1)?.preset).toBe(t4.stages[0].preset);
+    expect(t4.stages.at(-1)?.mode).toBe(t4.stages[0].mode);
+  });
 });
