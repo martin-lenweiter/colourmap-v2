@@ -4510,6 +4510,144 @@ export const JOURNEYS: Journey[] = [
       },
     ],
   },
+  {
+    id: 16,
+    name: 'Trip Number 5',
+    icon: 'WALK',
+    desc: 'The dot-walkers. Each figure enters alone, blends into three, then morphs into the next shape — cycling through all five walkers in a long ~7.5-minute loop.',
+    stages: [
+      {
+        name: 'Walker I · solo',
+        preset: 'Golden Source',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 1,
+        stars: 1,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.7,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker I · trio',
+        preset: 'Golden Source',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 1,
+        stars: 3,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.7,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker II · solo',
+        preset: 'Amber Dust',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 2,
+        stars: 1,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.72,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker II · trio',
+        preset: 'Amber Dust',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 2,
+        stars: 3,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.72,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker III · solo',
+        preset: 'Cosmic Indigo',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 3,
+        stars: 1,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.74,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker III · trio',
+        preset: 'Cosmic Indigo',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 3,
+        stars: 3,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.74,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker IV · solo',
+        preset: 'Forest Ceremony',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 4,
+        stars: 1,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.72,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker IV · trio',
+        preset: 'Forest Ceremony',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 4,
+        stars: 3,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.72,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker V · solo',
+        preset: 'Violet Portal',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 5,
+        stars: 1,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.74,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker V · trio',
+        preset: 'Violet Portal',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 5,
+        stars: 3,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.74,
+        intensity: 8,
+        luminous: 3,
+      },
+    ],
+  },
 ];
 
 /* ── Particle helpers ───────────────────────────────────────── */
@@ -12795,17 +12933,7 @@ function buildDotWalker(cfg: Cfg, R: number): THREE.Group {
   dots.userData.tag = 'dotWalkerDots';
   group.add(dots);
 
-  for (let walker = 0; walker < 4; walker++) {
-    const trailGeo = new THREE.BufferGeometry();
-    trailGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(220 * 3), 3));
-    const trail = new THREE.Line(
-      trailGeo,
-      lineMat(hdrColor(pal.rgb, cfg.intensity / 10, 1.8), 0.2),
-    );
-    trail.userData.tag = 'dotWalkerTrail';
-    trail.userData.walkerIndex = walker;
-    group.add(trail);
-  }
+  // Walker trails intentionally omitted — no lines below the figures.
 
   return group;
 }

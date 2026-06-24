@@ -100,9 +100,11 @@ readable:
   with kaleidoscope blends, a storm-attractor surge and a crazy burst, looping
   seamlessly back to the opening prism.
 
-### Pending curation
-- **No lines below the dot walkers** — suppress the ground/line under the
-  dotwalker/dotroad figures.
-- **Trip Number 5 (dot-walker loop)** — start with one walker, blend to three,
-  morph to the next walker shape, blend back to one, to three, morph again —
-  cycle through all dot-walker figures in a long loop.
+- **No lines below the dot walkers** — removed the walker trail lines from
+  `buildDotWalker` (for the base walker they rendered as a ground line under
+  the feet).
+- **Trip Number 5** (journey id 16) — the dot-walker loop. All `dotwalker`,
+  sweeping `symmetry` (1–5 = the five walker shapes) and toggling `stars`
+  (1↔3 = solo/trio): each walker enters solo, blends to three, then morphs to
+  the next shape; ~7.5-minute seamless loop. (Walker shape = `cfg.symmetry`,
+  count = `cfg.stars`, so the existing journey engine drives it directly.)

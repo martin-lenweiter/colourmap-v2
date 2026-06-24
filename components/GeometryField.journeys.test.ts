@@ -69,4 +69,20 @@ describe('GeometryField journeys', () => {
     expect(t4.stages.at(-1)?.preset).toBe(t4.stages[0].preset);
     expect(t4.stages.at(-1)?.mode).toBe(t4.stages[0].mode);
   });
+
+  it('Trip Number 5 cycles the dot-walkers with valid palettes', () => {
+    const t5 = JOURNEYS.find((j) => j.name === 'Trip Number 5');
+    expect(t5).toBeDefined();
+    if (!t5) return;
+    for (const stage of t5.stages) {
+      expect(stage.mode).toBe('dotwalker');
+      expect(PAL[stage.preset], `Trip Number 5 -> ${stage.name}`).toBeDefined();
+    }
+    // Walker shape is driven by symmetry (1-5); it should visit every design.
+    const designs = new Set(t5.stages.map((s) => s.symmetry));
+    for (const d of [1, 2, 3, 4, 5]) expect(designs.has(d)).toBe(true);
+    // Count is driven by stars; it alternates solo (1) and trio (3).
+    expect(t5.stages.some((s) => s.stars === 1)).toBe(true);
+    expect(t5.stages.some((s) => s.stars === 3)).toBe(true);
+  });
 });
