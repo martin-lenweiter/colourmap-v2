@@ -77,3 +77,29 @@ two-machine control→projection journey sync entirely — that change is on hol
 3. Decide §2 colour approach → implement.
 4. §3 STATIC Series presets/journeys on top of §1+§2.
 5. §4 soldier dance.
+
+---
+
+## Builder curation log
+
+Festival prep trimmed the builder's preset/mode surface and made it more
+readable:
+
+- **Enlarged index numbers** across the builder — preset (9→13px), mode
+  (8→11px), and journey-phase (9→12px) numbers, at higher opacity.
+- **Removed from the builder tab row:** Arena and Figure Stars pills.
+- **Removed from FEATURED_PRESETS:** Mode Sun (registry kept — used by
+  ArchetypeBridge / BuildLab), Deep Gaze (fully removed), Line Tunnel 3D,
+  Walking Figure (#40).
+
+### Pending curation (awaiting decision)
+- **Presets 4–9** flagged "not so good": Buddha Boy Currents, Scriptures,
+  Vertical Scriptures, Eclipse, Yin Yang, Atomic Explosion. (Atomic Explosion
+  was previously a curated "good one" — confirm before removing.)
+- **No lines below the dot walkers** — suppress the ground/line under the
+  dotwalker/dotroad figures.
+- **Trip Number 4** — combine presets Prism Bloom, Prism3D Core, Ocean Drift,
+  Cyclone Tiles, Dot Heart (was #13/12/15/18/23) — as a looping journey.
+- **Trip Number 5 (dot-walker loop)** — start with one walker, blend to three,
+  morph to the next walker shape, blend back to one, to three, morph again —
+  cycle through all dot-walker figures in a long loop.

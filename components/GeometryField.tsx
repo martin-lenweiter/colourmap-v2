@@ -12053,7 +12053,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Chaos Triangles', tag: '3D' },
   { name: 'Chaos Tri Sphere', tag: '3D' },
   { name: 'Brain Topography', tag: 'SELF' },
-  { name: 'Walking Figure', tag: 'CHAR' },
   { name: 'Dot Walker', tag: 'CHAR' },
   { name: 'Alchemical Dot Sun', tag: 'DOT' },
   { name: 'Sin Morph', tag: 'TOP' },
@@ -12108,7 +12107,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Entropy 3D', tag: 'CORE' },
   { name: 'Embrace', tag: 'DOT' },
   { name: 'Dot Tunnel', tag: 'DEPTH' },
-  { name: 'Line Tunnel 3D', tag: 'DEPTH' },
   { header: 'In Progress / To Develop', dim: true },
   { name: 'Chrysalis', tag: 'MORPH' },
   { name: 'Metamorph', tag: 'MORPH' },
@@ -20257,10 +20255,10 @@ export default function GeometryField() {
                             >
                               <span
                                 style={{
-                                  minWidth: 13,
-                                  fontSize: 9,
+                                  minWidth: 18,
+                                  fontSize: 13,
                                   fontWeight: 700,
-                                  opacity: 0.48,
+                                  opacity: 0.72,
                                   color: accent,
                                   textAlign: 'right',
                                 }}
@@ -20336,7 +20334,7 @@ export default function GeometryField() {
                               gap: 2,
                             }}
                           >
-                            <span style={{ fontSize: 8, opacity: 0.45, letterSpacing: '0.08em' }}>
+                            <span style={{ fontSize: 11, opacity: 0.6, letterSpacing: '0.08em' }}>
                               {String(idx + 1).padStart(2, '0')}
                             </span>
                             <span
@@ -21478,9 +21476,9 @@ export default function GeometryField() {
                         <span
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: 9,
+                            fontSize: 12,
                             color: accent,
-                            opacity: 0.5,
+                            opacity: 0.7,
                             flexShrink: 0,
                           }}
                         >
