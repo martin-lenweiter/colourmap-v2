@@ -90,8 +90,8 @@ readable:
 - **Removed from the builder tab row:** Arena and Figure Stars pills.
 - **Removed from FEATURED_PRESETS:** Mode Sun (registry kept — used by
   ArchetypeBridge / BuildLab), Deep Gaze (fully removed), Line Tunnel 3D,
-  Walking Figure (#40), and presets 4–8 (Buddha Boy Currents, Scriptures,
-  Vertical Scriptures, Eclipse, Yin Yang).
+  Walking Figure (#40), presets 4–8 (Buddha Boy Currents, Scriptures,
+  Vertical Scriptures, Eclipse, Yin Yang), and Brain Topography.
 - **Atomic Explosion toned down** — glow 8.2→5, luminous 4.2→2.8, intensity
   9.4→7, so it reads as fine points rather than big blown-out dots, matching
   the other presets' light. Kept in the featured list.
@@ -116,3 +116,7 @@ readable:
   transformations: `tripnumber3` gates evolving through yantra-3D, hypercube,
   prism core, chaos triangles, a line temple and kaleido-yantra; ~7.5-minute
   seamless loop.
+- **Long Trip** (journey id 19) — the whole set woven into one ~15-minute loop:
+  golden trip → swirl → Fibonacci → prism → ocean → triangle/yantra/hypercube/
+  line-temple → dot-walkers (solo + trio) → dot heart → crazy burst → desert
+  drop → dust vortex → home. Kept *in addition* to the individual trips.

@@ -100,4 +100,19 @@ describe('GeometryField journeys', () => {
       expect(trip.stages.at(-1)?.mode).toBe(trip.stages[0].mode);
     }
   });
+
+  it('Long Trip combines many modes into one valid, looping set', () => {
+    const long = JOURNEYS.find((j) => j.name === 'Long Trip');
+    expect(long).toBeDefined();
+    if (!long) return;
+    // It's a long, varied journey.
+    expect(long.stages.length).toBeGreaterThanOrEqual(12);
+    expect(new Set(long.stages.map((s) => s.mode)).size).toBeGreaterThanOrEqual(8);
+    for (const stage of long.stages) {
+      expect(PAL[stage.preset], `Long Trip -> ${stage.name}`).toBeDefined();
+    }
+    // Seamless loop.
+    expect(long.stages.at(-1)?.preset).toBe(long.stages[0].preset);
+    expect(long.stages.at(-1)?.mode).toBe(long.stages[0].mode);
+  });
 });
