@@ -3204,18 +3204,6 @@ export const PRESETS: Record<string, Cfg> = {
     stars: 2,
     mode: 'eyemorph',
   },
-  'Deep Gaze': {
-    preset: 'Blue Astral',
-    symmetry: 5,
-    complexity: 7,
-    glow: 7,
-    breathSpeed: 0.4,
-    intensity: 8,
-    particles: 2,
-    luminous: 2,
-    stars: 3,
-    mode: 'eyemorph',
-  },
   'Sin Morph': {
     preset: 'Forest Ceremony',
     symmetry: 6,
@@ -12064,7 +12052,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Quantum Chaos', tag: 'CHAOS' },
   { name: 'Chaos Triangles', tag: '3D' },
   { name: 'Chaos Tri Sphere', tag: '3D' },
-  { name: 'Mode Sun', tag: 'SELF' },
   { name: 'Brain Topography', tag: 'SELF' },
   { name: 'Walking Figure', tag: 'CHAR' },
   { name: 'Dot Walker', tag: 'CHAR' },
@@ -12116,7 +12103,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Orbital Dance', tag: 'ORBIT' },
   { name: 'Ripple Morph', tag: 'MORPH' },
   { name: 'EMBF Live', tag: 'EMBF' },
-  { name: 'Deep Gaze', tag: 'EYE' },
   { name: 'Cathedral Glass', tag: 'GLASS' },
   { name: 'Prism Seed', tag: 'PRISM' },
   { name: 'Entropy 3D', tag: 'CORE' },
@@ -20094,6 +20080,7 @@ export default function GeometryField() {
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
                 {pill('Music Visuals', tab === 'music', () => setTab('music'), true)}
+                {pill('Journeys', tab === 'journey', () => setTab('journey'), true)}
                 {pill(
                   'Projection',
                   isProjectionMode,
@@ -20101,9 +20088,7 @@ export default function GeometryField() {
                     window.open('/geometry-field?projection=1', '_blank', 'noopener,noreferrer'),
                   true,
                 )}
-                {pill('Arena', false, () => window.location.assign('/dot-walker-arena'), true)}
                 {pill('Figures', false, () => window.location.assign('/figures'), true)}
-                {pill('Figure Stars', false, () => window.location.assign('/figure-stars'), true)}
               </div>
               <button
                 type="button"
@@ -21416,7 +21401,7 @@ export default function GeometryField() {
             {tab === 'journey' && (
               <>
                 {/* Journey selection */}
-                <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {JOURNEYS.map((j) =>
                     pill(`${j.icon} ${j.name}`, journeyId === j.id, () => {
                       setJourneyId(j.id);
