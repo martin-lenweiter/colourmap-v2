@@ -273,11 +273,54 @@ readable:
   (flowsacred) woven through the golden arc — now an 11-act, fully continuous
   ~12-minute loop (no kaleidoscope slice anywhere).
 
-### Still open (need your eyes on localhost / next batch)
-- **Flow Walkers full rebuild** — the crisp-hold tune helps, but to truly match
-  the **classic Dot Walker** (`buildDotWalker`, mode `dotwalker`, preset "Dot
-  Walker") it wants the **`dotWalkerTrail` thick-lines-from-dots** rendering,
-  not plain points sprung to a silhouette. Best done after a look on localhost.
-- **Deepen the remaining trips** (3, 4, 6, 7, Mega, festival 12–14) the same way
-  Trip 1 was — weaving flow continuity acts — keeping the festival trips inside
-  the 19–21 min test window.
+### Batch 4 — deepen the trips + Liquid slider — DONE
+- **Deepened Trips 3, 4, 6, 7 and Mega** — each gets three woven flow continuity
+  acts before its return, themed to the trip's own palettes (so seams stay
+  valid): Trip 3 → Yantra Flow / Triangle Lines / Triangle Sands; Trip 4 →
+  Prism Sands / Prism Lines / Prism Butterfly; Trip 6 → Crystal Lines / Crystal
+  Sands / Crystal Sacred; Trip 7 → Sand Knot / Rose Sand Lines / Sacred Orbit;
+  Mega → Pearl Sands / Heart Butterfly / Sacred Lines.
+- **Liquid slider** — the flow modes' `complexity` slider is now labelled
+  **"Liquid"** on Flow Walkers / Dance Walkers / Butterfly, and complexity now
+  drives the velocity damping (`liquidDamp` 0.82 → 0.93): higher = more momentum,
+  so particles trail and stream like liquid. Reads well from ~4 up, matching the
+  classic Dot Walker "Liquid" control (which maps to `complexity` too).
+
+### Still open
+- **Flow Walkers full rebuild** — the crisp-hold tune + Liquid damping help, but
+  to truly match the **classic Dot Walker** (`buildDotWalker`, mode `dotwalker`)
+  it wants the **`dotWalkerTrail` thick-lines-from-dots** rendering, not plain
+  points sprung to a silhouette. Best done after a look on localhost.
+- **Deepen festival trips 12–14** (Cathedral / Cosmos / Desert) — weave flow
+  acts while keeping each inside the 19–21 min duration test (trim other acts to
+  compensate).
+
+### Spec — "Diaporama" all-presets mode (requested, not yet built)
+A playback mode that runs **every featured preset in order, one after another,
+all the way to #76, then loops infinitely** — a slideshow of the whole library.
+- Build on the journey engine: generate a synthetic `Journey` whose stages are
+  the `FEATURED_PRESETS` (name + tag entries, skipping headers) in list order,
+  each stage = `{ preset: PRESETS[name].preset, mode: PRESETS[name].mode, ...the
+  preset's numeric fields }`, with a per-slide `duration` (e.g. 12–20 s) and a
+  short `journeyLerpCfg` crossfade between slides so it never hard-cuts.
+- Loop seamlessly (last → first). Add a "Diaporama / Play All" control near the
+  Journeys tab; optional dwell-time slider.
+- Open question: some presets reset velocities on rebuild (mode swap) — the
+  crossfade hides most of it, but a few mode pairs may flash; can be tuned per
+  pair or given a 1 s fade-to-dark bridge.
+
+### Spec — BPM-listening reactive mode (requested, feasibility = yes)
+A mode where the visuals lock to the **live BPM heard through the mic**, with no
+DJ cable — the laptop just listens to the room.
+- **Feasible today.** The audio path already exists: the mic analyser feeds
+  `_musicBpm` / `_musicPulse` / `_musicBass` globals that the trip/tunnel modes
+  read. BPM-from-mic is standard: run the analyser's energy/flux through onset
+  detection, autocorrelate the onset envelope over a few seconds to estimate
+  tempo, and phase-lock a beat clock. Latency ~2–4 s to lock, then it tracks.
+- **Mode behaviour:** drive the flow `breathSpeed` / movement clock and pulse
+  scaling from the locked beat clock instead of wall-time, so formations breathe
+  and revolve *on the beat*; accent transitions on downbeats.
+- **Caveats:** room noise, reverb and crowd sound reduce accuracy vs a line
+  feed; works best with a clear 4/4 kick. Add a manual tap-tempo + BPM lock
+  fallback for when the estimate drifts. A line-in/cable remains the most
+  reliable, but mic-only is good enough for an ambient, beat-aware set.
