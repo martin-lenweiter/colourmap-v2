@@ -258,14 +258,26 @@ readable:
 - **Featured order**: **Magnetic Sand → #1**, **Dot Walker → #2** (the two
   reference presets pinned to the top); **Butterfly** added to the FLOW group.
 
+### Batch 3 — star-sand lines, walker crispness, Trip 1 deepening — DONE
+- **Star Sand Lines** (`flowlines` mode + preset + journey id 26): shifting
+  star-sand that **draws the great line-works out of dots** — torus knot, rose,
+  orbital rings, helix — morphing one into the next, threaded with golden sand
+  and sacred flow. Five parallel strands give the lines body; high spring
+  (~0.14) holds them crisp; slow revolution.
+- **Flow Walkers crispness**: walker movement table retuned — **spring 0.1 → 0.2,
+  flow ~0.45 → ~0.2, swirl down** — so the silhouette holds and reads as a
+  figure instead of blurring away. (Interim; the full trail rebuild below is
+  still the real fix.)
+- **Trip Number 1 deepened three acts further**: added **Golden Lines**
+  (flowlines), **Golden Butterfly** (flowbutterfly) and **Sacred Gold**
+  (flowsacred) woven through the golden arc — now an 11-act, fully continuous
+  ~12-minute loop (no kaleidoscope slice anywhere).
+
 ### Still open (need your eyes on localhost / next batch)
-- **Flow Walkers / Dance Walkers quality** — the silhouette-as-spring approach
-  still doesn't match the **classic Dot Walker** (`buildDotWalker`, mode
-  `dotwalker`, preset "Dot Walker", used by Trip Number 5). What makes the
-  classic great is the **`dotWalkerTrail` thick-lines-from-dots** rendering; the
-  flow modes render plain points and the flow/spring forces blur the figure.
-  Next: rebuild Flow Walkers on the dot-walker trail/line technique rather than
-  springing points to a silhouette.
-- **Sacred star-sand line-art trip** — shifting sands that *draw* the
-  Orbital 3D / Helix 3D / Torus Knot / Rose 3D line-works out of star-sand, as
-  one continuous trip.
+- **Flow Walkers full rebuild** — the crisp-hold tune helps, but to truly match
+  the **classic Dot Walker** (`buildDotWalker`, mode `dotwalker`, preset "Dot
+  Walker") it wants the **`dotWalkerTrail` thick-lines-from-dots** rendering,
+  not plain points sprung to a silhouette. Best done after a look on localhost.
+- **Deepen the remaining trips** (3, 4, 6, 7, Mega, festival 12–14) the same way
+  Trip 1 was — weaving flow continuity acts — keeping the festival trips inside
+  the 19–21 min test window.
