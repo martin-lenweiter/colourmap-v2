@@ -189,6 +189,95 @@ readable:
   resets velocities).
 - Trails / motion-blur feedback for an optional streak look.
 
-### Pending clarification
-- **Random Pulse → bottom** — no "Random Pulse" featured entry exists; confirm
-  whether this means "Random Burst" or "Chaos Pulse".
+### Resolved / flow-field tuning
+- **Random Burst** moved to the bottom of the good preset list.
+- **Flow Speed slider** range extended to **0.05–8** (fast-forward to preview
+  the transformation quickly); dedicated panels added for Flow Walkers/Sacred.
+- **Speed is now continuous** — the phase + movement clock accumulate per-frame
+  (`dt × speed`), so changing Flow Speed only changes the rate going forward.
+  It no longer restarts/jumps the program; the continuum is kept.
+
+### Requested next (deep, particle-evolution engine)
+- **Develop Flow Walkers + Flow Sacred much further** — animate the walkers
+  (walk cycle), more sacred formations.
+- **Magnetic Sands 2** — a mega-deep, long-evolving variant for ambient
+  surprise over a long set.
+- **Dot Brain Loop** mega-develop — the two-figures-merge-and-move relation.
+- **Dance Walkers — DONE** (`flowdance`, preset "Dance Walkers"): a flow mode
+  where the particles split into two walker figures that drift apart → converge
+  → merge → dance/bloom → divide → and resolve into a **heart**, looping
+  continuously on the flow engine. Heart is a parametric curve fill; the two
+  figures are the left/right halves of the particles with a per-movement
+  separation. (Also covers the Dot Brain Loop "two figures merge and move".)
+- **Trip Number 1** — remove the hard mode-cut so it evolves flowy like
+  Magnetic Sands (journeys snap at mode swaps; true flow wants the flow-field
+  approach).
+
+### Flow-engine deepening — DONE (this batch)
+- **Magnetic Sands 2** (`flowsands`, preset "Magnetic Sands 2", Amber Dust): a
+  long **12-act (~15 min)** sandy game of chaos↔order — dots melt from waves →
+  ripple rings → vortex → **figure-8 dunes (double loop)** → dust and re-form.
+  High `wob` gives the grainy banding; two lemniscate acts give the double loop.
+- **Flow field — longer + double loops**: base movement table grown to **10
+  acts (~12.5 min)**, keeping every original formation and folding in two new
+  ones — a **Gerono-lemniscate figure-8** (nested ribbons) and a **double
+  spiral** (two counter-rotating arms), so the Magnetic-Sands double-loop motif
+  now lives in the base field too.
+- **Walk cycle animated**: the time phase is threaded into the walker
+  formations, so Flow Walkers / Dance Walkers now **step and sway** instead of
+  holding a frozen pose (`walkPh = ph × 20–22` drives the limbs).
+- **Walker context halo**: ~1-in-5 (walkers) / 1-in-6 (dance) particles ring the
+  figure with a slow 6-fold sacred halo, so the walker reads against a circle of
+  context (closer to the dot-walker framing).
+- **Flow Sacred — more forms**: added **hexagram, spiral galaxy, yantra
+  (nested triangles), focus arc** (mono) and lissajous; movement table grown to
+  9 acts opening on the calm focus arc.
+- **Trip Number 1 — slice fixed**: the sliced kaleidoscope "Golden Mandala" act
+  is replaced by a flowy **"Golden Sands"** (`flowsands`) act, so the trip
+  evolves continuously like Magnetic Sands instead of cutting to wedges.
+- **Preset list cleanup**: removed Golden Clock / Atom Light / Orbital Dance
+  (weak); moved **Starflow Galaxy** to the bottom of the good list; added
+  **Magnetic Sands 2** + **Golden Flow** to the FLOW group.
+
+### Batch 2 — trips + butterfly — DONE
+- **Butterfly** (`flowbutterfly` mode + preset, Rose Quartz): the Brain-Loop
+  two-figures idea grown into a butterfly — dots fill Fay's butterfly curve,
+  the **wings flap** (time phase), open wide, **spin/dance**, **split into two
+  wings** that orbit apart, then reunite. Slow revolution (revRate 0.06) + a
+  sacred context halo. 6-act continuous cycle.
+- **Prism Mega Trip** (journey id 24): featured presets 10–13 — Prism Core
+  (prism3d) → Prism Bloom → Stained Seed → Cathedral Light (prism) → Sacred
+  Weave (flowsacred) → Rose Prism → Golden Sands (flowsands) → Prism Return.
+  Colourful sacred-glass, seamless loop.
+- **Butterfly Trip** (journey id 25): Butterfly → Two Dancers (flowdance) →
+  Wing Spin → Sacred Halo (flowsacred) → Butterfly Return. Seamless loop.
+- **Magnetic Sands 2 — circles inside chaos**: ~1-in-4 particles now hold a
+  persistent concentric-ring order, so circle patterns keep emerging inside the
+  chaos whichever sand act is playing (user: "love chaos but with the circle
+  patterns remaining inside").
+- **Featured order**: **Magnetic Sand → #1**, **Dot Walker → #2** (the two
+  reference presets pinned to the top); **Butterfly** added to the FLOW group.
+
+### Batch 3 — star-sand lines, walker crispness, Trip 1 deepening — DONE
+- **Star Sand Lines** (`flowlines` mode + preset + journey id 26): shifting
+  star-sand that **draws the great line-works out of dots** — torus knot, rose,
+  orbital rings, helix — morphing one into the next, threaded with golden sand
+  and sacred flow. Five parallel strands give the lines body; high spring
+  (~0.14) holds them crisp; slow revolution.
+- **Flow Walkers crispness**: walker movement table retuned — **spring 0.1 → 0.2,
+  flow ~0.45 → ~0.2, swirl down** — so the silhouette holds and reads as a
+  figure instead of blurring away. (Interim; the full trail rebuild below is
+  still the real fix.)
+- **Trip Number 1 deepened three acts further**: added **Golden Lines**
+  (flowlines), **Golden Butterfly** (flowbutterfly) and **Sacred Gold**
+  (flowsacred) woven through the golden arc — now an 11-act, fully continuous
+  ~12-minute loop (no kaleidoscope slice anywhere).
+
+### Still open (need your eyes on localhost / next batch)
+- **Flow Walkers full rebuild** — the crisp-hold tune helps, but to truly match
+  the **classic Dot Walker** (`buildDotWalker`, mode `dotwalker`, preset "Dot
+  Walker") it wants the **`dotWalkerTrail` thick-lines-from-dots** rendering,
+  not plain points sprung to a silhouette. Best done after a look on localhost.
+- **Deepen the remaining trips** (3, 4, 6, 7, Mega, festival 12–14) the same way
+  Trip 1 was — weaving flow continuity acts — keeping the festival trips inside
+  the 19–21 min test window.

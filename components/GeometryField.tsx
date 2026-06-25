@@ -57,6 +57,10 @@ type Mode =
   | 'flowfield'
   | 'flowwalkers'
   | 'flowsacred'
+  | 'flowdance'
+  | 'flowsands'
+  | 'flowbutterfly'
+  | 'flowlines'
   | 'eclipse'
   | 'yinyang'
   | 'volcano'
@@ -1685,6 +1689,66 @@ export const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 3,
     mode: 'flowsacred',
+  },
+  'Dance Walkers': {
+    preset: 'Rose Quartz',
+    symmetry: 12,
+    complexity: 5,
+    glow: 5,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 9,
+    luminous: 3,
+    stars: 2,
+    mode: 'flowdance',
+  },
+  'Magnetic Sands 2': {
+    preset: 'Amber Dust',
+    symmetry: 14,
+    complexity: 6,
+    glow: 5,
+    breathSpeed: 0.45,
+    intensity: 8,
+    particles: 9,
+    luminous: 2.6,
+    stars: 3,
+    mode: 'flowsands',
+  },
+  'Golden Flow': {
+    preset: 'Golden Source',
+    symmetry: 12,
+    complexity: 5,
+    glow: 5,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 8,
+    luminous: 3,
+    stars: 3,
+    mode: 'flowfield',
+  },
+  Butterfly: {
+    preset: 'Rose Quartz',
+    symmetry: 12,
+    complexity: 5,
+    glow: 5,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 9,
+    luminous: 2.8,
+    stars: 3,
+    mode: 'flowbutterfly',
+  },
+  'Star Sand Lines': {
+    preset: 'Cosmic Indigo',
+    symmetry: 12,
+    complexity: 4,
+    glow: 5,
+    breathSpeed: 0.4,
+    intensity: 8,
+    particles: 9,
+    luminous: 2.4,
+    stars: 4,
+    mode: 'flowlines',
   },
   Eclipse: {
     preset: 'Golden Source',
@@ -4679,7 +4743,7 @@ export const JOURNEYS: Journey[] = [
     id: 17,
     name: 'Trip Number 1',
     icon: 'TRIP1',
-    desc: 'The golden trip — slow, warm and long. Trip-1 geometry breathing through swirl tunnels, Fibonacci drift, a golden mandala and an alchemical sun, then home. Smooth ~9.5-minute loop.',
+    desc: 'The golden trip — slow, warm and long. Trip-1 geometry breathing through swirl tunnels, Fibonacci drift, golden shifting sands, an alchemical sun, golden line-works, a golden butterfly and sacred gold, then home. Smooth, fully continuous ~12-minute loop.',
     stages: [
       {
         name: 'Golden Trip',
@@ -4722,16 +4786,18 @@ export const JOURNEYS: Journey[] = [
         stars: 2,
       },
       {
-        name: 'Golden Mandala',
+        name: 'Golden Sands',
         preset: 'Golden Source',
-        mode: 'kaleidoscope',
-        duration: 70,
-        symmetry: 16,
+        mode: 'flowsands',
+        duration: 85,
+        symmetry: 14,
+        complexity: 6,
         glow: 6,
-        breathSpeed: 0.3,
+        breathSpeed: 0.4,
         intensity: 8,
-        luminous: 3,
-        stars: 2,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
       },
       {
         name: 'Alchemical Sun',
@@ -4745,6 +4811,20 @@ export const JOURNEYS: Journey[] = [
         intensity: 8,
         particles: 8,
         luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Golden Lines',
+        preset: 'Golden Source',
+        mode: 'flowlines',
+        duration: 80,
+        symmetry: 12,
+        complexity: 4,
+        glow: 6,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.6,
         stars: 3,
       },
       {
@@ -4762,6 +4842,20 @@ export const JOURNEYS: Journey[] = [
         stars: 3,
       },
       {
+        name: 'Golden Butterfly',
+        preset: 'Golden Source',
+        mode: 'flowbutterfly',
+        duration: 75,
+        symmetry: 12,
+        complexity: 5,
+        glow: 6,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+      {
         name: 'Orbital Calm',
         preset: 'Calm Field',
         mode: 'orbital',
@@ -4772,6 +4866,20 @@ export const JOURNEYS: Journey[] = [
         intensity: 7,
         luminous: 2,
         stars: 4,
+      },
+      {
+        name: 'Sacred Gold',
+        preset: 'Golden Source',
+        mode: 'flowsacred',
+        duration: 75,
+        symmetry: 12,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.38,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
       },
       {
         name: 'Return Trip',
@@ -5584,6 +5692,292 @@ export const JOURNEYS: Journey[] = [
       },
     ],
   },
+  {
+    id: 24,
+    name: 'Prism Mega Trip',
+    icon: 'PRISM',
+    desc: 'The colourful sacred-glass journey — prism cores blooming through stained-glass seeds and cathedral light, woven with sacred flow and golden sand. Psychedelic, luminous, continuously transforming. ~9-minute loop.',
+    stages: [
+      {
+        name: 'Prism Core',
+        preset: 'Prism Void',
+        mode: 'prism3d',
+        duration: 75,
+        symmetry: 8,
+        complexity: 7,
+        glow: 6,
+        breathSpeed: 0.3,
+        intensity: 8,
+        particles: 8,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Prism Bloom',
+        preset: 'Prism Rose',
+        mode: 'prism',
+        duration: 70,
+        symmetry: 9,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.28,
+        intensity: 8,
+        luminous: 3,
+        stars: 2,
+      },
+      {
+        name: 'Stained Seed',
+        preset: 'Prism Warm',
+        mode: 'prism',
+        duration: 70,
+        symmetry: 7,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.26,
+        intensity: 8,
+        luminous: 3,
+        stars: 2,
+      },
+      {
+        name: 'Cathedral Light',
+        preset: 'Prism Warm',
+        mode: 'prism',
+        duration: 70,
+        symmetry: 11,
+        complexity: 7,
+        glow: 6.5,
+        breathSpeed: 0.3,
+        intensity: 8.4,
+        luminous: 3,
+        stars: 2,
+      },
+      {
+        name: 'Sacred Weave',
+        preset: 'Violet Portal',
+        mode: 'flowsacred',
+        duration: 75,
+        symmetry: 12,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+      {
+        name: 'Rose Prism',
+        preset: 'Prism Rose',
+        mode: 'prism',
+        duration: 70,
+        symmetry: 9,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.28,
+        intensity: 8,
+        luminous: 3,
+        stars: 2,
+      },
+      {
+        name: 'Golden Sands',
+        preset: 'Amber Dust',
+        mode: 'flowsands',
+        duration: 75,
+        symmetry: 14,
+        complexity: 6,
+        glow: 5.5,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+      {
+        name: 'Prism Return',
+        preset: 'Prism Void',
+        mode: 'prism3d',
+        duration: 70,
+        symmetry: 8,
+        complexity: 7,
+        glow: 6,
+        breathSpeed: 0.3,
+        intensity: 8,
+        particles: 8,
+        luminous: 3,
+        stars: 3,
+      },
+    ],
+  },
+  {
+    id: 25,
+    name: 'Butterfly Trip',
+    icon: 'FLY',
+    desc: 'The butterfly journey — dots gather into a flapping butterfly, two dancers bloom and merge, the wings spin and divide, then reunite. A soft sacred halo holds it all. Continuous, tender, looping. ~7-minute loop.',
+    stages: [
+      {
+        name: 'Butterfly',
+        preset: 'Rose Quartz',
+        mode: 'flowbutterfly',
+        duration: 75,
+        symmetry: 12,
+        complexity: 5,
+        glow: 5,
+        breathSpeed: 0.45,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+      {
+        name: 'Two Dancers',
+        preset: 'Rose Quartz',
+        mode: 'flowdance',
+        duration: 75,
+        symmetry: 12,
+        complexity: 5,
+        glow: 5,
+        breathSpeed: 0.45,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.8,
+        stars: 2,
+      },
+      {
+        name: 'Wing Spin',
+        preset: 'Cosmic Indigo',
+        mode: 'flowbutterfly',
+        duration: 70,
+        symmetry: 12,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.6,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+      {
+        name: 'Sacred Halo',
+        preset: 'Violet Portal',
+        mode: 'flowsacred',
+        duration: 70,
+        symmetry: 12,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+      {
+        name: 'Butterfly Return',
+        preset: 'Rose Quartz',
+        mode: 'flowbutterfly',
+        duration: 70,
+        symmetry: 12,
+        complexity: 5,
+        glow: 5,
+        breathSpeed: 0.45,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+    ],
+  },
+  {
+    id: 26,
+    name: 'Star Sand Lines',
+    icon: 'LINES',
+    desc: 'The line-art trip — shifting star-sand draws the great line-works out of dots: torus knot, rose, orbital rings and helix, melting from one into the next, threaded with golden sand. Crisp, sacred, continuously transforming. ~8-minute loop.',
+    stages: [
+      {
+        name: 'Torus Knot',
+        preset: 'Cosmic Indigo',
+        mode: 'flowlines',
+        duration: 75,
+        symmetry: 12,
+        complexity: 4,
+        glow: 5,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.4,
+        stars: 4,
+      },
+      {
+        name: 'Rose Line',
+        preset: 'Violet Portal',
+        mode: 'flowlines',
+        duration: 70,
+        symmetry: 12,
+        complexity: 4,
+        glow: 5.5,
+        breathSpeed: 0.42,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.4,
+        stars: 4,
+      },
+      {
+        name: 'Sand Weave',
+        preset: 'Amber Dust',
+        mode: 'flowsands',
+        duration: 75,
+        symmetry: 14,
+        complexity: 6,
+        glow: 5.5,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+      {
+        name: 'Orbital Rings',
+        preset: 'Cosmic Indigo',
+        mode: 'flowlines',
+        duration: 70,
+        symmetry: 12,
+        complexity: 4,
+        glow: 5,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.4,
+        stars: 4,
+      },
+      {
+        name: 'Sacred Lines',
+        preset: 'Violet Portal',
+        mode: 'flowsacred',
+        duration: 70,
+        symmetry: 12,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.6,
+        stars: 3,
+      },
+      {
+        name: 'Knot Return',
+        preset: 'Cosmic Indigo',
+        mode: 'flowlines',
+        duration: 70,
+        symmetry: 12,
+        complexity: 4,
+        glow: 5,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 9,
+        luminous: 2.4,
+        stars: 4,
+      },
+    ],
+  },
 ];
 
 /* ── Particle helpers ───────────────────────────────────────── */
@@ -5952,6 +6346,10 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'flowfield':
     case 'flowwalkers':
     case 'flowsacred':
+    case 'flowdance':
+    case 'flowsands':
+    case 'flowbutterfly':
+    case 'flowlines':
       return buildFlowField(cfg, R);
     case 'plasma':
       return buildPlasma(cfg, R);
@@ -6195,6 +6593,10 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'flowfield':
     case 'flowwalkers':
     case 'flowsacred':
+    case 'flowdance':
+    case 'flowsands':
+    case 'flowbutterfly':
+    case 'flowlines':
       updateFlowField(group, cfg, t, R);
       break;
     case 'plasma':
@@ -12501,7 +12903,67 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
     { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
     { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  flowwalkers: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Walkers', min: 1, max: 4, step: 1 },
+  ],
+  flowsacred: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  flowdance: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  flowsands: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  flowbutterfly: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  flowlines: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
     { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
     { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
     { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
@@ -13000,6 +13462,10 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   flowfield: 'Flow Field',
   flowwalkers: 'Flow Walkers',
   flowsacred: 'Flow Sacred',
+  flowdance: 'Dance Walkers',
+  flowsands: 'Magnetic Sands 2',
+  flowbutterfly: 'Butterfly',
+  flowlines: 'Star Sand Lines',
   burst: 'DMT Vision',
   kaleidoscope: 'Cosmic Indigo',
   tunnel: 'Warp Tunnel',
@@ -13176,6 +13642,10 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'flowfield', label: 'Flow Field' },
   { mode: 'flowwalkers', label: 'Flow Walkers' },
   { mode: 'flowsacred', label: 'Flow Sacred' },
+  { mode: 'flowdance', label: 'Dance Walkers' },
+  { mode: 'flowsands', label: 'Magnetic Sands 2' },
+  { mode: 'flowbutterfly', label: 'Butterfly' },
+  { mode: 'flowlines', label: 'Star Sand Lines' },
   { mode: 'eclipse', label: 'Eclipse' },
   { mode: 'yinyang', label: 'Yin Yang' },
   { mode: 'volcano', label: 'Volcano' },
@@ -13237,12 +13707,19 @@ type FeaturedItem = { name: string; tag: string } | { header: string; dim?: bool
 
 export const FEATURED_PRESETS: FeaturedItem[] = [
   { header: 'Good Ones' },
+  { name: 'Magnetic Sand', tag: 'CURRENT' },
+  { name: 'Dot Walker', tag: 'CHAR' },
   { name: 'Trip Number 1', tag: 'TRIP' },
   { name: 'Trip Number 2', tag: 'DROP' },
   { name: 'Trip Number 3', tag: 'TRI' },
   { name: 'Flow Field', tag: 'FLOW' },
   { name: 'Flow Walkers', tag: 'FLOW' },
   { name: 'Flow Sacred', tag: 'FLOW' },
+  { name: 'Dance Walkers', tag: 'FLOW' },
+  { name: 'Magnetic Sands 2', tag: 'FLOW' },
+  { name: 'Butterfly', tag: 'FLOW' },
+  { name: 'Star Sand Lines', tag: 'FLOW' },
+  { name: 'Golden Flow', tag: 'FLOW' },
   { name: 'Gravity', tag: 'TOP' },
   { name: 'Fire', tag: 'TOP' },
   { name: 'Prism3D Core', tag: 'PRISM' },
@@ -13255,7 +13732,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Current Scales', tag: 'CURRENT' },
   { name: 'Cyclone Tiles', tag: 'CURRENT' },
   { name: 'Eddy Lace', tag: 'CURRENT' },
-  { name: 'Magnetic Sand', tag: 'CURRENT' },
   { name: 'Mission Sun', tag: 'VOICE' },
   { name: 'Fire Dot Sun', tag: 'DOT' },
   { name: 'Dot Heart', tag: 'DOT' },
@@ -13276,13 +13752,11 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Quantum Chaos', tag: 'CHAOS' },
   { name: 'Chaos Triangles', tag: '3D' },
   { name: 'Chaos Tri Sphere', tag: '3D' },
-  { name: 'Dot Walker', tag: 'CHAR' },
   { name: 'Alchemical Dot Sun', tag: 'DOT' },
   { name: 'Sin Morph', tag: 'TOP' },
   { name: 'Sacred Sin Morph', tag: 'MUSIC' },
   { name: 'Chaos Sin Morph', tag: 'MUSIC' },
   { name: 'Drift Field', tag: 'MUSIC' },
-  { name: 'Starflow Galaxy', tag: 'MUSIC' },
   { name: 'Sacred Pyramid', tag: 'MUSIC' },
   { name: 'Focus Arc', tag: 'MUSIC' },
   { name: 'Yantra 3D', tag: 'YANTRA' },
@@ -13290,7 +13764,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Yantra Colour', tag: 'YANTRA' },
   { name: 'Yantra Mono', tag: 'YANTRA' },
   { name: 'Chaos Pulse', tag: 'CHAOS' },
-  { name: 'Random Burst', tag: 'CHAOS' },
   { name: 'Chaos Tri Gold', tag: '3D' },
   { name: 'Chaos Storm 3D', tag: '3D' },
   { name: 'Drift Gold', tag: 'FLOW' },
@@ -13311,15 +13784,14 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Rose 3D', tag: '3D' },
   { name: 'Helix 3D', tag: '3D' },
   { name: 'Orbital 3D', tag: '3D' },
-  { name: 'Golden Clock', tag: 'CLOCK' },
   { name: 'Armillary Gold', tag: 'CLOCK' },
-  { name: 'Atom Light', tag: 'ATOM' },
-  { name: 'Orbital Dance', tag: 'ORBIT' },
   { name: 'Ripple Morph', tag: 'MORPH' },
   { name: 'EMBF Live', tag: 'EMBF' },
   { name: 'Entropy 3D', tag: 'CORE' },
   { name: 'Embrace', tag: 'DOT' },
   { name: 'Dot Tunnel', tag: 'DEPTH' },
+  { name: 'Random Burst', tag: 'CHAOS' },
+  { name: 'Starflow Galaxy', tag: 'MUSIC' },
   { header: 'In Progress / To Develop', dim: true },
   { name: 'Chrysalis', tag: 'MORPH' },
   { name: 'Metamorph', tag: 'MORPH' },
@@ -14221,26 +14693,53 @@ function flowFormation(f: number, i: number, hx: number, hy: number, R: number):
     const gy = (Math.floor(i / cols) / (cols - 1) - 0.5) * R * 1.7;
     return [gx, gy];
   }
-  // f === 4: spiral
-  const r = u * R * 0.92;
-  const a = ga * 0.5 + (r / R) * 7;
-  return [Math.cos(a) * r, Math.sin(a) * r];
+  if (f === 4) {
+    // Spiral
+    const r = u * R * 0.92;
+    const a = ga * 0.5 + (r / R) * 7;
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  }
+  if (f === 5) {
+    // Gerono lemniscate — nested figure-8 ribbons (the Magnetic-Sands double loop)
+    const ring = 0.4 + 0.6 * ((i * 0.61803398875) % 1);
+    const t = u * Math.PI * 2;
+    return [Math.cos(t) * R * 0.95 * ring, Math.sin(2 * t) * 0.5 * R * 0.95 * ring];
+  }
+  // f === 6: double spiral (two counter-rotating arms)
+  const arm = i % 2 === 0 ? 1 : -1;
+  const r6 = u * R * 0.92;
+  const a6 = arm * (ga * 0.5 + (r6 / R) * 7);
+  return [Math.cos(a6) * r6, Math.sin(a6) * r6];
 }
 
 // Movements: each owns a target formation + force mix; the field crossfades
-// between them continuously (~75s each) so it is always transforming.
+// between them continuously (~75s each) so it is always transforming. A long
+// 10-act cycle (~12.5 min) that now folds in two figure-8 "double loop" acts.
 const FLOW_MOVEMENTS = [
   { form: 0, spring: 0.08, swirl: 0.3, flow: 0.5, breath: 0.2, wob: 0.1 },
   { form: 1, spring: 0.07, swirl: 0.45, flow: 0.6, breath: 0.35, wob: 0.25 },
+  { form: 5, spring: 0.06, swirl: 0.7, flow: 0.7, breath: 0.3, wob: 0.2 }, // figure-8 double loop
   { form: 0, spring: 0.05, swirl: 1.0, flow: 0.7, breath: 0.3, wob: 0.15 },
   { form: 2, spring: 0.09, swirl: 0.3, flow: 0.4, breath: 0.2, wob: 0.9 },
+  { form: 6, spring: 0.07, swirl: 0.55, flow: 0.65, breath: 0.4, wob: 0.2 }, // double spiral
   { form: 3, spring: 0.11, swirl: 0.2, flow: 0.3, breath: 0.15, wob: 0.1 },
+  { form: 5, spring: 0.06, swirl: 0.8, flow: 0.75, breath: 0.35, wob: 0.2 }, // figure-8 again, faster
   { form: 4, spring: 0.06, swirl: 0.6, flow: 0.7, breath: 0.5, wob: 0.2 },
+  { form: 1, spring: 0.07, swirl: 0.4, flow: 0.55, breath: 0.3, wob: 0.2 },
 ];
 
 // Flow Walkers — formations are walker silhouettes (designs 1–5); the field
 // morphs from one walking figure into the next through the flow.
-function flowWalkerFormation(design: number, i: number, R: number): [number, number] {
+function flowWalkerFormation(design: number, i: number, R: number, ph: number): [number, number] {
+  // ~1 in 5 particles ring the figure with a slow 6-fold sacred halo, so the
+  // walker reads against a circle of context (like the dot-walker mode).
+  if (i % 5 === 0) {
+    const cu = (i * 0.61803398875) % 1;
+    const ca = cu * Math.PI * 2 + ph * 0.15;
+    const petal = 0.92 + 0.1 * Math.cos(ca * 6);
+    const rr = R * (1.2 + 0.25 * cu) * petal;
+    return [Math.cos(ca) * rr, Math.sin(ca) * rr];
+  }
   const q = (i + 0.5) / FLOW_FIELD_COUNT;
   const zone = q < 0.2 ? 0 : q < 0.44 ? 1 : q < 0.66 ? 2 : q < 0.83 ? 3 : 4;
   const local = (q * FLOW_FIELD_COUNT * 1.61803398875) % 1;
@@ -14249,17 +14748,20 @@ function flowWalkerFormation(design: number, i: number, R: number): [number, num
   const sx = Math.cos(a) * spread;
   const sy = Math.sin(a) * spread;
   const FR = R * 1.5;
-  const base = walkerLimbPoint(zone, sx, sy, 0, FR);
-  const p = dotWalkerDesignPoint(Math.max(1, Math.min(5, design)), zone, sx, sy, 0, FR, base);
+  const walkPh = ph * 22; // animate the limbs — the figure walks
+  const base = walkerLimbPoint(zone, sx, sy, walkPh, FR);
+  const p = dotWalkerDesignPoint(Math.max(1, Math.min(5, design)), zone, sx, sy, walkPh, FR, base);
   return [p.x + sx * p.scale * 0.4, p.y + sy * p.scale * 0.4];
 }
 
+// Higher spring + lower flow/swirl so the walker silhouette holds crisp (reads
+// as a figure, closer to the classic Dot Walker) instead of being blurred away.
 const FLOW_MOVEMENTS_WALK = [
-  { form: 1, spring: 0.1, swirl: 0.2, flow: 0.4, breath: 0.15, wob: 0.1 },
-  { form: 2, spring: 0.1, swirl: 0.25, flow: 0.45, breath: 0.2, wob: 0.1 },
-  { form: 3, spring: 0.1, swirl: 0.3, flow: 0.5, breath: 0.2, wob: 0.1 },
-  { form: 4, spring: 0.1, swirl: 0.25, flow: 0.45, breath: 0.2, wob: 0.1 },
-  { form: 5, spring: 0.1, swirl: 0.2, flow: 0.4, breath: 0.15, wob: 0.1 },
+  { form: 1, spring: 0.2, swirl: 0.1, flow: 0.18, breath: 0.12, wob: 0.06 },
+  { form: 2, spring: 0.2, swirl: 0.12, flow: 0.2, breath: 0.14, wob: 0.06 },
+  { form: 3, spring: 0.19, swirl: 0.14, flow: 0.22, breath: 0.14, wob: 0.06 },
+  { form: 4, spring: 0.2, swirl: 0.12, flow: 0.2, breath: 0.14, wob: 0.06 },
+  { form: 5, spring: 0.2, swirl: 0.1, flow: 0.18, breath: 0.12, wob: 0.06 },
 ];
 
 // Flow Sacred — sacred-geometry formations (rose, star, flower-of-life,
@@ -14304,17 +14806,284 @@ function flowSacredFormation(
     const sub = R * 0.3;
     return [c[0] * sub * 1.6 + Math.cos(ca) * sub, c[1] * sub * 1.6 + Math.sin(ca) * sub];
   }
-  // f === 4: lissajous
-  const a = u * Math.PI * 2;
-  return [Math.sin(a * 3) * R * 0.85, Math.sin(a * 2) * R * 0.85];
+  if (f === 4) {
+    // Lissajous
+    const a = u * Math.PI * 2;
+    return [Math.sin(a * 3) * R * 0.85, Math.sin(a * 2) * R * 0.85];
+  }
+  if (f === 5) {
+    // Hexagram — two interlocking triangles
+    const a = u * Math.PI * 2 + (i % 2 ? Math.PI : 0);
+    const r = (0.55 + 0.45 * Math.abs(Math.cos(1.5 * a))) * R * 0.85;
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  }
+  if (f === 6) {
+    // Spiral galaxy
+    const arms = 3;
+    const r = u * R * 0.92;
+    const ga = (i % arms) * ((Math.PI * 2) / arms) + (r / R) * 6;
+    return [Math.cos(ga) * r, Math.sin(ga) * r];
+  }
+  if (f === 7) {
+    // Yantra — nested up/down triangles inside a bindu
+    const tier = Math.floor(u * 4); // 0..3 concentric triangles
+    const up = tier % 2 === 0 ? 1 : -1;
+    const scale = (1 - tier * 0.22) * R * 0.92;
+    const edge = (u * 4 - tier) * 3; // 0..3 around the triangle perimeter
+    const corner = Math.floor(edge);
+    const tt = edge - corner;
+    const ang = (k: number) => (k / 3) * Math.PI * 2 + Math.PI / 2;
+    const a0 = ang(corner);
+    const a1 = ang(corner + 1);
+    const x = lerp(Math.cos(a0), Math.cos(a1), tt) * scale;
+    const y = up * lerp(Math.sin(a0), Math.sin(a1), tt) * scale;
+    return [x, y];
+  }
+  // f === 8: focus arc — a single sweeping mono arc (calm point of focus)
+  const span = Math.PI * 1.25;
+  const a8 = -span / 2 + u * span;
+  const r8 = R * (0.55 + 0.4 * (1 - Math.abs(u - 0.5) * 2));
+  return [Math.cos(a8) * r8, Math.sin(a8) * r8];
 }
 
 const FLOW_MOVEMENTS_SACRED = [
+  { form: 8, spring: 0.09, swirl: 0.2, flow: 0.4, breath: 0.3, wob: 0.15 }, // focus arc
   { form: 1, spring: 0.08, swirl: 0.3, flow: 0.5, breath: 0.3, wob: 0.2 },
+  { form: 7, spring: 0.1, swirl: 0.25, flow: 0.4, breath: 0.2, wob: 0.2 }, // yantra
   { form: 2, spring: 0.09, swirl: 0.3, flow: 0.5, breath: 0.25, wob: 0.3 },
+  { form: 5, spring: 0.09, swirl: 0.3, flow: 0.45, breath: 0.25, wob: 0.25 },
   { form: 3, spring: 0.09, swirl: 0.25, flow: 0.4, breath: 0.2, wob: 0.4 },
-  { form: 4, spring: 0.08, swirl: 0.4, flow: 0.6, breath: 0.3, wob: 0.2 },
+  { form: 6, spring: 0.08, swirl: 0.45, flow: 0.6, breath: 0.3, wob: 0.2 },
+  { form: 4, spring: 0.08, swirl: 0.4, flow: 0.6, breath: 0.3, wob: 0.2 }, // lissajous
   { form: 0, spring: 0.07, swirl: 0.5, flow: 0.6, breath: 0.4, wob: 0.2 },
+];
+
+// Dance Walkers — two walker figures that drift together, merge, bloom, dance,
+// divide and resolve into a heart, in one continuous evolution.
+function flowDanceFormation(f: number, i: number, R: number, ph: number): [number, number] {
+  const N = FLOW_FIELD_COUNT;
+  // ~1 in 6 particles ring the pair with a slow sacred halo of context.
+  if (i % 6 === 0) {
+    const cu = (i * 0.61803398875) % 1;
+    const ca = cu * Math.PI * 2 + ph * 0.12;
+    const petal = 0.92 + 0.1 * Math.cos(ca * 6);
+    const rr = R * (1.25 + 0.22 * cu) * petal;
+    return [Math.cos(ca) * rr, Math.sin(ca) * rr];
+  }
+  if (f === 4) {
+    // Heart — particles fill a heart curve.
+    const u = (i + 0.5) / N;
+    const th = u * Math.PI * 2;
+    const hx = 16 * Math.sin(th) ** 3;
+    const hy = 13 * Math.cos(th) - 5 * Math.cos(2 * th) - 2 * Math.cos(3 * th) - Math.cos(4 * th);
+    const s = R * 0.05;
+    const fill = ((i * 0.61803398875) % 1) ** 0.5;
+    return [lerp(0, hx * s, fill), lerp(-2 * s, hy * s, fill)];
+  }
+  // Two walker silhouettes (left/right halves of the particles).
+  const half = N >> 1;
+  const isLeft = i < half;
+  const j = isLeft ? i : i - half;
+  const side = isLeft ? -1 : 1;
+  const wq = (j + 0.5) / half;
+  const zone = wq < 0.2 ? 0 : wq < 0.44 ? 1 : wq < 0.66 ? 2 : wq < 0.83 ? 3 : 4;
+  const local = (wq * half * 1.61803398875) % 1;
+  const a = j * 2.399963229728653;
+  const spread = Math.sqrt(local);
+  const sx = Math.cos(a) * spread;
+  const sy = Math.sin(a) * spread;
+  const FR = R * 0.95;
+  const design = f === 3 ? 5 : 1; // posed "dance" design vs upright
+  const walkPh = ph * 20; // animate the limbs — the figures step and sway
+  const base = walkerLimbPoint(zone, sx, sy, walkPh, FR);
+  const p = dotWalkerDesignPoint(design, zone, sx, sy, walkPh, FR, base);
+  const wx = p.x + sx * p.scale * 0.4;
+  const wy = p.y + sy * p.scale * 0.4;
+  const sep = f === 0 ? R * 0.62 : f === 1 ? R * 0.34 : f === 2 ? 0 : R * 0.42;
+  return [wx + side * sep, wy];
+}
+
+const FLOW_MOVEMENTS_DANCE = [
+  { form: 0, spring: 0.1, swirl: 0.2, flow: 0.4, breath: 0.15, wob: 0.1 }, // apart
+  { form: 1, spring: 0.1, swirl: 0.3, flow: 0.5, breath: 0.2, wob: 0.1 }, // converge
+  { form: 2, spring: 0.09, swirl: 0.5, flow: 0.5, breath: 0.3, wob: 0.1 }, // merge
+  { form: 3, spring: 0.08, swirl: 0.7, flow: 0.6, breath: 0.4, wob: 0.15 }, // dance / bloom
+  { form: 1, spring: 0.1, swirl: 0.3, flow: 0.5, breath: 0.2, wob: 0.1 }, // divide
+  { form: 0, spring: 0.1, swirl: 0.2, flow: 0.4, breath: 0.15, wob: 0.1 }, // apart
+  { form: 4, spring: 0.11, swirl: 0.2, flow: 0.3, breath: 0.2, wob: 0.1 }, // heart
+];
+
+// Magnetic Sands 2 — a long, sandy game of chaos and order: dense dots melt
+// from waves to ripples to a vortex, fold through figure-8 dunes, and re-form.
+// High wob gives the grainy banding; two lemniscate acts give the double loop.
+function flowSandsFormation(
+  f: number,
+  i: number,
+  hx: number,
+  hy: number,
+  R: number,
+): [number, number] {
+  if (f === 0) return [hx, hy];
+  const u = (i + 0.5) / FLOW_FIELD_COUNT;
+  const ga = i * 2.399963229728653;
+  // ~1 in 4 particles hold a persistent concentric-ring order, so circle
+  // patterns keep emerging inside the chaos whichever sand act is playing.
+  if (i % 4 === 0) {
+    const nR = 7;
+    const u2 = (i * 0.7548776662) % 1;
+    const ring = Math.floor(u2 * nR);
+    const rr = ((ring + 0.55) / nR) * R * 0.82;
+    const a = (u2 * nR - ring) * Math.PI * 2 + ga * 0.15;
+    return [Math.cos(a) * rr, Math.sin(a) * rr];
+  }
+  if (f === 1) {
+    // Sand waves — horizontal flowing bands
+    const rows = 9;
+    const row = Math.floor(u * rows);
+    const fx = (((i * 0.61803398875) % 1) - 0.5) * R * 1.9;
+    const fy = ((row + 0.5) / rows - 0.5) * R * 1.7 + Math.sin((fx / R) * 3) * R * 0.12;
+    return [fx, fy];
+  }
+  if (f === 2) {
+    // Ripple rings — dense concentric bands
+    const nR = 11;
+    const ring = Math.floor(u * nR);
+    const rr = ((ring + 0.5) / nR) * R * 0.95;
+    const a = (u * nR - ring) * Math.PI * 2;
+    return [Math.cos(a) * rr, Math.sin(a) * rr];
+  }
+  if (f === 3) {
+    // Vortex — tight log spiral
+    const r = Math.sqrt(u) * R * 0.95;
+    const a = ga * 0.5 + (r / R) * 10;
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  }
+  if (f === 4) {
+    // Dune lemniscate — figure-8 (the double loop)
+    const ring = 0.35 + 0.65 * ((i * 0.61803398875) % 1);
+    const t = u * Math.PI * 2;
+    return [Math.cos(t) * R * 0.98 * ring, Math.sin(2 * t) * 0.55 * R * 0.98 * ring];
+  }
+  // f === 5: dust disk
+  const r = Math.sqrt(u) * R * 0.92;
+  return [Math.cos(ga) * r, Math.sin(ga) * r];
+}
+
+// 12 acts (~15 min) — long enough to keep surprising guests.
+const FLOW_MOVEMENTS_SANDS = [
+  { form: 5, spring: 0.05, swirl: 0.4, flow: 0.6, breath: 0.3, wob: 0.5 },
+  { form: 1, spring: 0.06, swirl: 0.25, flow: 0.5, breath: 0.25, wob: 0.7 },
+  { form: 2, spring: 0.07, swirl: 0.3, flow: 0.45, breath: 0.2, wob: 0.9 },
+  { form: 4, spring: 0.05, swirl: 0.7, flow: 0.7, breath: 0.35, wob: 0.4 }, // double loop
+  { form: 3, spring: 0.05, swirl: 0.9, flow: 0.75, breath: 0.3, wob: 0.3 },
+  { form: 1, spring: 0.06, swirl: 0.3, flow: 0.55, breath: 0.3, wob: 0.8 },
+  { form: 5, spring: 0.05, swirl: 0.5, flow: 0.6, breath: 0.4, wob: 0.5 },
+  { form: 4, spring: 0.05, swirl: 0.8, flow: 0.72, breath: 0.35, wob: 0.4 }, // double loop
+  { form: 2, spring: 0.07, swirl: 0.35, flow: 0.5, breath: 0.25, wob: 0.95 },
+  { form: 3, spring: 0.05, swirl: 1.0, flow: 0.8, breath: 0.3, wob: 0.3 },
+  { form: 1, spring: 0.06, swirl: 0.28, flow: 0.5, breath: 0.25, wob: 0.7 },
+  { form: 5, spring: 0.05, swirl: 0.45, flow: 0.6, breath: 0.35, wob: 0.5 },
+];
+
+// Butterfly — the Brain-Loop two-figures idea grown into a butterfly: dots fill
+// Fay's butterfly curve, the wings flap (time phase), open wide, spin/dance,
+// split into two wings that orbit apart, then reunite. Continuous evolution.
+function flowButterflyFormation(f: number, i: number, R: number, ph: number): [number, number] {
+  const N = FLOW_FIELD_COUNT;
+  // ~1 in 7 particles ring the butterfly with a slow sacred halo of context.
+  if (i % 7 === 0) {
+    const cu = (i * 0.61803398875) % 1;
+    const ca = cu * Math.PI * 2 + ph * 0.12;
+    const petal = 0.92 + 0.1 * Math.cos(ca * 6);
+    const rr = R * (1.25 + 0.2 * cu) * petal;
+    return [Math.cos(ca) * rr, Math.sin(ca) * rr];
+  }
+  if (f === 0) {
+    // Rest — a soft disk
+    const r0 = Math.sqrt((i + 0.5) / N) * R * 0.6;
+    const a0 = i * 2.399963229728653;
+    return [Math.cos(a0) * r0, Math.sin(a0) * r0];
+  }
+  const u = (i + 0.5) / N;
+  const t = u * 24 * Math.PI; // sweep the whole butterfly curve
+  const r = Math.exp(Math.sin(t)) - 2 * Math.cos(4 * t) + Math.sin((2 * t - Math.PI) / 24) ** 5;
+  const s = R * 0.16;
+  let bx = Math.sin(t) * r * s;
+  let by = Math.cos(t) * r * s;
+  const flap = 0.45 + 0.55 * Math.abs(Math.cos(ph * 1.6)); // wings beat
+  if (f === 1) bx *= flap; // flapping butterfly
+  if (f === 2) {
+    bx *= 1.18; // wings wide open
+    by *= 1.06;
+  }
+  if (f === 3) {
+    const side = bx < 0 ? -1 : 1; // split the two wings apart
+    bx = bx * flap + side * R * 0.55;
+  }
+  return [bx, by];
+}
+
+const FLOW_MOVEMENTS_BUTTERFLY = [
+  { form: 0, spring: 0.09, swirl: 0.2, flow: 0.4, breath: 0.2, wob: 0.1 }, // gather
+  { form: 1, spring: 0.09, swirl: 0.25, flow: 0.45, breath: 0.3, wob: 0.12 }, // flap
+  { form: 2, spring: 0.08, swirl: 0.35, flow: 0.5, breath: 0.4, wob: 0.15 }, // open wide
+  { form: 1, spring: 0.07, swirl: 0.9, flow: 0.65, breath: 0.4, wob: 0.15 }, // spin / dance
+  { form: 3, spring: 0.08, swirl: 0.45, flow: 0.55, breath: 0.3, wob: 0.12 }, // wings divide
+  { form: 1, spring: 0.09, swirl: 0.25, flow: 0.45, breath: 0.3, wob: 0.12 }, // reunite & flap
+];
+
+// Star-Sand Lines — shifting star-sand that DRAWS the great line-works
+// (torus knot, rose, helix, orbital rings) out of dots. High spring holds the
+// curves crisp; multiple parallel strands give the lines body, like sand poured
+// along a path. Morphs continuously from one line-form to the next.
+function flowLinesFormation(f: number, i: number, R: number, ph: number): [number, number] {
+  const N = FLOW_FIELD_COUNT;
+  if (f === 0) {
+    const r0 = Math.sqrt((i + 0.5) / N) * R * 0.7;
+    const a0 = i * 2.399963229728653;
+    return [Math.cos(a0) * r0, Math.sin(a0) * r0];
+  }
+  // Each particle sits on one of several parallel strands so the "line" reads
+  // thick; the strand offset is a tiny perpendicular nudge.
+  const strands = 5;
+  const strand = i % strands;
+  const off = (strand / (strands - 1) - 0.5) * R * 0.06;
+  const u = (Math.floor(i / strands) + 0.5) / (N / strands);
+  if (f === 1) {
+    // Torus knot (p=2, q=3) — top-down projection
+    const th = u * Math.PI * 2;
+    const rr = 2 + Math.cos(3 * th);
+    const s = (R * 0.92) / 3;
+    return [Math.cos(2 * th) * rr * s + off, Math.sin(2 * th) * rr * s + off];
+  }
+  if (f === 2) {
+    // Rose / rhodonea (k=4)
+    const th = u * Math.PI * 2;
+    const rr = Math.cos(4 * th) * R * 0.92;
+    return [Math.cos(th) * rr + off, Math.sin(th) * rr + off];
+  }
+  if (f === 3) {
+    // Helix — an elliptical spiral seen at a tilt
+    const a = u * Math.PI * 2 * 5;
+    const rr = (0.2 + 0.78 * u) * R * 0.92;
+    return [Math.cos(a) * rr + off, Math.sin(a) * rr * 0.42 + (u - 0.5) * R * 0.9 + off];
+  }
+  // f === 4: orbital — nested tilted rings
+  const rings = 5;
+  const ring = Math.floor(u * rings);
+  const rr = ((ring + 1) / rings) * R * 0.9;
+  const tilt = 0.25 + ring * 0.32;
+  const a = (u * rings - ring) * Math.PI * 2 + ring * 0.7;
+  return [Math.cos(a) * rr + off, Math.sin(a) * rr * Math.cos(tilt) + off];
+}
+
+const FLOW_MOVEMENTS_LINES = [
+  { form: 1, spring: 0.14, swirl: 0.15, flow: 0.3, breath: 0.25, wob: 0.08 }, // torus knot
+  { form: 2, spring: 0.14, swirl: 0.18, flow: 0.32, breath: 0.3, wob: 0.08 }, // rose
+  { form: 4, spring: 0.13, swirl: 0.2, flow: 0.34, breath: 0.25, wob: 0.08 }, // orbital
+  { form: 3, spring: 0.13, swirl: 0.16, flow: 0.32, breath: 0.3, wob: 0.08 }, // helix
+  { form: 2, spring: 0.14, swirl: 0.4, flow: 0.45, breath: 0.35, wob: 0.1 }, // rose, swirling
+  { form: 1, spring: 0.14, swirl: 0.15, flow: 0.3, breath: 0.25, wob: 0.08 }, // knot
 ];
 
 function flowFormationFor(
@@ -14324,15 +15093,24 @@ function flowFormationFor(
   hx: number,
   hy: number,
   R: number,
+  ph: number,
 ): [number, number] {
-  if (mode === 'flowwalkers') return flowWalkerFormation(f, i, R);
+  if (mode === 'flowwalkers') return flowWalkerFormation(f, i, R, ph);
   if (mode === 'flowsacred') return flowSacredFormation(f, i, hx, hy, R);
+  if (mode === 'flowdance') return flowDanceFormation(f, i, R, ph);
+  if (mode === 'flowsands') return flowSandsFormation(f, i, hx, hy, R);
+  if (mode === 'flowbutterfly') return flowButterflyFormation(f, i, R, ph);
+  if (mode === 'flowlines') return flowLinesFormation(f, i, R, ph);
   return flowFormation(f, i, hx, hy, R);
 }
 
 function flowMovementsFor(mode: Mode) {
   if (mode === 'flowwalkers') return FLOW_MOVEMENTS_WALK;
   if (mode === 'flowsacred') return FLOW_MOVEMENTS_SACRED;
+  if (mode === 'flowdance') return FLOW_MOVEMENTS_DANCE;
+  if (mode === 'flowsands') return FLOW_MOVEMENTS_SANDS;
+  if (mode === 'flowbutterfly') return FLOW_MOVEMENTS_BUTTERFLY;
+  if (mode === 'flowlines') return FLOW_MOVEMENTS_LINES;
   return FLOW_MOVEMENTS;
 }
 
@@ -14376,6 +15154,9 @@ function buildFlowField(cfg: Cfg, R: number): THREE.Group {
   pts.userData.vel = vel;
   pts.userData.seed = seed;
   pts.userData.home = home;
+  pts.userData.lastT = -1;
+  pts.userData.flowPh = 0;
+  pts.userData.flowMClock = 0;
   group.add(pts);
   return group;
 }
@@ -14384,27 +15165,16 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
   const pal = PAL[cfg.preset] ?? PAL['Cosmic Indigo'];
   const iF = cfg.intensity / 10;
   const speed = Math.max(0.05, cfg.breathSpeed);
-  const ph = t * 0.00018 * speed;
-  // Movement state machine: crossfade between formations + force mixes, ~75s
-  // each, continuously — the field is always transforming with no snap.
+  // Movement state machine + phase clock are accumulated per-frame inside the
+  // particle group (below) so changing Flow Speed never restarts the program.
   const MOVES = flowMovementsFor(cfg.mode);
-  const mClock = ((t / 1000) * speed) / 75;
-  const mLen = MOVES.length;
-  const mi = ((Math.floor(mClock) % mLen) + mLen) % mLen;
-  const mn = (mi + 1) % mLen;
-  let mf = mClock - Math.floor(mClock);
-  mf = mf * mf * (3 - 2 * mf);
-  const MA = MOVES[mi];
-  const MB = MOVES[mn];
-  const springK = lerp(MA.spring, MB.spring, mf);
-  const swirlW = lerp(MA.swirl, MB.swirl, mf);
-  const flowW = lerp(MA.flow, MB.flow, mf);
-  const breathW = lerp(MA.breath, MB.breath, mf);
-  const wobW = lerp(MA.wob, MB.wob, mf);
-  const formA = MA.form;
-  const formB = MB.form;
-  const revRate = cfg.mode === 'flowwalkers' ? 0.06 : 0.4;
-  const hueCycle = (mClock * 0.1) % 1;
+  const revRate =
+    cfg.mode === 'flowwalkers' ||
+    cfg.mode === 'flowdance' ||
+    cfg.mode === 'flowbutterfly' ||
+    cfg.mode === 'flowlines'
+      ? 0.06
+      : 0.4;
   const sound = Math.min(1, _voiceEnergy * 1.4 + _musicPulse * 0.5);
   const wells = Math.max(2, Math.min(4, Math.round(cfg.symmetry / 4) + 1));
   const turb = 0.4 + cfg.complexity / 10;
@@ -14428,6 +15198,31 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
     const home = pts.userData.home as Float32Array;
     const drawCount = Math.round(lerp(2200, FLOW_FIELD_COUNT, cfg.particles / 10));
 
+    // Accumulate the phase + movement clock per-frame (dt × speed) so changing
+    // Flow Speed only changes the rate going forward — the continuum is kept.
+    const last = pts.userData.lastT as number;
+    const dt = last < 0 ? 16 : Math.max(0, Math.min(100, t - last));
+    pts.userData.lastT = t;
+    const ph = (pts.userData.flowPh as number) + dt * 0.00018 * speed;
+    pts.userData.flowPh = ph;
+    const mClock = (pts.userData.flowMClock as number) + ((dt / 1000) * speed) / 75;
+    pts.userData.flowMClock = mClock;
+    const mLen = MOVES.length;
+    const mi = ((Math.floor(mClock) % mLen) + mLen) % mLen;
+    const mn = (mi + 1) % mLen;
+    let mf = mClock - Math.floor(mClock);
+    mf = mf * mf * (3 - 2 * mf);
+    const MA = MOVES[mi];
+    const MB = MOVES[mn];
+    const springK = lerp(MA.spring, MB.spring, mf);
+    const swirlW = lerp(MA.swirl, MB.swirl, mf);
+    const flowW = lerp(MA.flow, MB.flow, mf);
+    const breathW = lerp(MA.breath, MB.breath, mf);
+    const wobW = lerp(MA.wob, MB.wob, mf);
+    const formA = MA.form;
+    const formB = MB.form;
+    const hueCycle = (mClock * 0.1) % 1;
+
     for (let i = 0; i < FLOW_FIELD_COUNT; i++) {
       let px = arr[i * 3];
       let py = arr[i * 3 + 1];
@@ -14437,8 +15232,8 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
 
       // Formation morph: crossfade this particle between the two movements'
       // target formations, then revolve the whole field slowly.
-      const fa = flowFormationFor(cfg.mode, formA, i, hx, hy, R);
-      const fb = flowFormationFor(cfg.mode, formB, i, hx, hy, R);
+      const fa = flowFormationFor(cfg.mode, formA, i, hx, hy, R, ph);
+      const fb = flowFormationFor(cfg.mode, formB, i, hx, hy, R, ph);
       const bx = lerp(fa[0], fb[0], mf);
       const by = lerp(fa[1], fb[1], mf);
       const ang = ph * revRate;
