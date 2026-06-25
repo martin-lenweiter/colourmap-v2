@@ -239,6 +239,25 @@ readable:
   (weak); moved **Starflow Galaxy** to the bottom of the good list; added
   **Magnetic Sands 2** + **Golden Flow** to the FLOW group.
 
+### Batch 2 — trips + butterfly — DONE
+- **Butterfly** (`flowbutterfly` mode + preset, Rose Quartz): the Brain-Loop
+  two-figures idea grown into a butterfly — dots fill Fay's butterfly curve,
+  the **wings flap** (time phase), open wide, **spin/dance**, **split into two
+  wings** that orbit apart, then reunite. Slow revolution (revRate 0.06) + a
+  sacred context halo. 6-act continuous cycle.
+- **Prism Mega Trip** (journey id 24): featured presets 10–13 — Prism Core
+  (prism3d) → Prism Bloom → Stained Seed → Cathedral Light (prism) → Sacred
+  Weave (flowsacred) → Rose Prism → Golden Sands (flowsands) → Prism Return.
+  Colourful sacred-glass, seamless loop.
+- **Butterfly Trip** (journey id 25): Butterfly → Two Dancers (flowdance) →
+  Wing Spin → Sacred Halo (flowsacred) → Butterfly Return. Seamless loop.
+- **Magnetic Sands 2 — circles inside chaos**: ~1-in-4 particles now hold a
+  persistent concentric-ring order, so circle patterns keep emerging inside the
+  chaos whichever sand act is playing (user: "love chaos but with the circle
+  patterns remaining inside").
+- **Featured order**: **Magnetic Sand → #1**, **Dot Walker → #2** (the two
+  reference presets pinned to the top); **Butterfly** added to the FLOW group.
+
 ### Still open (need your eyes on localhost / next batch)
 - **Flow Walkers / Dance Walkers quality** — the silhouette-as-spring approach
   still doesn't match the **classic Dot Walker** (`buildDotWalker`, mode
@@ -247,10 +266,6 @@ readable:
   flow modes render plain points and the flow/spring forces blur the figure.
   Next: rebuild Flow Walkers on the dot-walker trail/line technique rather than
   springing points to a silhouette.
-- **Mega Trip (presets 10–13)** — Prism3D Core / Prism Bloom / Prism Seed /
-  Cathedral Glass, colourful sacred psychedelic.
-- **Butterfly mega trip** — evolution of Dot Brain Loop as a two-winged
-  butterfly with rotations + dance.
 - **Sacred star-sand line-art trip** — shifting sands that *draw* the
   Orbital 3D / Helix 3D / Torus Knot / Rose 3D line-works out of star-sand, as
   one continuous trip.
