@@ -170,11 +170,24 @@ readable:
 - **Atomic Explosion** removed from the featured list (still not landing for the
   show, per request); mode + registry kept.
 
-### Flowfield — possible next depth
-- Per-particle hue drift / palette gradients across the radius.
-- Wire it into a journey (keep symmetry/complexity fixed per stage so the
-  particle field isn't rebuilt mid-stage — rebuild resets velocities).
-- A dedicated MODE_SLIDERS entry with movement-flavoured labels.
+### Flowfield — deep development (DONE)
+- **Per-particle hue drift** across the radius + over the cycle (vertex colours).
+- **Formation morphing + movement state machine** — `flowFormation` library
+  (disk, sunflower, rings, lattice, spiral) + `FLOW_MOVEMENTS`; six movements
+  crossfade ~75s each, particles spring to the morphing formation so density is
+  preserved through every shape.
+- **Two more flow fields** sharing the engine via `flowFormationFor` /
+  `flowMovementsFor`:
+  - **Flow Walkers** (`flowwalkers`) — formations are walker silhouettes
+    (designs 1–5); the field morphs from one walking figure into the next.
+  - **Flow Sacred** (`flowsacred`) — rose, star polygon, flower-of-life,
+    lissajous formations; psychedelic-sacred.
+
+### Flowfield — further depth (future)
+- GPU/GPGPU rewrite for 50k–200k particles + curl-noise.
+- Wire into a journey (keep symmetry/complexity fixed per stage — rebuild
+  resets velocities).
+- Trails / motion-blur feedback for an optional streak look.
 
 ### Pending clarification
 - **Random Pulse → bottom** — no "Random Pulse" featured entry exists; confirm

@@ -55,6 +55,8 @@ type Mode =
   | 'eddylace'
   | 'magneticsand'
   | 'flowfield'
+  | 'flowwalkers'
+  | 'flowsacred'
   | 'eclipse'
   | 'yinyang'
   | 'volcano'
@@ -1659,6 +1661,30 @@ export const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 3,
     mode: 'flowfield',
+  },
+  'Flow Walkers': {
+    preset: 'Cosmic Indigo',
+    symmetry: 12,
+    complexity: 5,
+    glow: 4,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 8,
+    luminous: 3,
+    stars: 2,
+    mode: 'flowwalkers',
+  },
+  'Flow Sacred': {
+    preset: 'Violet Portal',
+    symmetry: 12,
+    complexity: 6,
+    glow: 6,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 8,
+    luminous: 3,
+    stars: 3,
+    mode: 'flowsacred',
   },
   Eclipse: {
     preset: 'Golden Source',
@@ -5924,6 +5950,8 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'fire':
       return buildCurrentTexture(cfg, R);
     case 'flowfield':
+    case 'flowwalkers':
+    case 'flowsacred':
       return buildFlowField(cfg, R);
     case 'plasma':
       return buildPlasma(cfg, R);
@@ -6165,6 +6193,8 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
       updateCurrentTexture(group, cfg, t, R);
       break;
     case 'flowfield':
+    case 'flowwalkers':
+    case 'flowsacred':
       updateFlowField(group, cfg, t, R);
       break;
     case 'plasma':
@@ -12968,6 +12998,8 @@ function slidersFor(mode: Mode): SliderDef[] {
 
 const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   flowfield: 'Flow Field',
+  flowwalkers: 'Flow Walkers',
+  flowsacred: 'Flow Sacred',
   burst: 'DMT Vision',
   kaleidoscope: 'Cosmic Indigo',
   tunnel: 'Warp Tunnel',
@@ -13142,6 +13174,8 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'eddylace', label: 'Eddy Lace' },
   { mode: 'magneticsand', label: 'Magnetic Sand' },
   { mode: 'flowfield', label: 'Flow Field' },
+  { mode: 'flowwalkers', label: 'Flow Walkers' },
+  { mode: 'flowsacred', label: 'Flow Sacred' },
   { mode: 'eclipse', label: 'Eclipse' },
   { mode: 'yinyang', label: 'Yin Yang' },
   { mode: 'volcano', label: 'Volcano' },
@@ -13207,6 +13241,8 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Trip Number 2', tag: 'DROP' },
   { name: 'Trip Number 3', tag: 'TRI' },
   { name: 'Flow Field', tag: 'FLOW' },
+  { name: 'Flow Walkers', tag: 'FLOW' },
+  { name: 'Flow Sacred', tag: 'FLOW' },
   { name: 'Gravity', tag: 'TOP' },
   { name: 'Fire', tag: 'TOP' },
   { name: 'Prism3D Core', tag: 'PRISM' },
@@ -14202,6 +14238,104 @@ const FLOW_MOVEMENTS = [
   { form: 4, spring: 0.06, swirl: 0.6, flow: 0.7, breath: 0.5, wob: 0.2 },
 ];
 
+// Flow Walkers — formations are walker silhouettes (designs 1–5); the field
+// morphs from one walking figure into the next through the flow.
+function flowWalkerFormation(design: number, i: number, R: number): [number, number] {
+  const q = (i + 0.5) / FLOW_FIELD_COUNT;
+  const zone = q < 0.2 ? 0 : q < 0.44 ? 1 : q < 0.66 ? 2 : q < 0.83 ? 3 : 4;
+  const local = (q * FLOW_FIELD_COUNT * 1.61803398875) % 1;
+  const a = i * 2.399963229728653;
+  const spread = Math.sqrt(local);
+  const sx = Math.cos(a) * spread;
+  const sy = Math.sin(a) * spread;
+  const FR = R * 1.5;
+  const base = walkerLimbPoint(zone, sx, sy, 0, FR);
+  const p = dotWalkerDesignPoint(Math.max(1, Math.min(5, design)), zone, sx, sy, 0, FR, base);
+  return [p.x + sx * p.scale * 0.4, p.y + sy * p.scale * 0.4];
+}
+
+const FLOW_MOVEMENTS_WALK = [
+  { form: 1, spring: 0.1, swirl: 0.2, flow: 0.4, breath: 0.15, wob: 0.1 },
+  { form: 2, spring: 0.1, swirl: 0.25, flow: 0.45, breath: 0.2, wob: 0.1 },
+  { form: 3, spring: 0.1, swirl: 0.3, flow: 0.5, breath: 0.2, wob: 0.1 },
+  { form: 4, spring: 0.1, swirl: 0.25, flow: 0.45, breath: 0.2, wob: 0.1 },
+  { form: 5, spring: 0.1, swirl: 0.2, flow: 0.4, breath: 0.15, wob: 0.1 },
+];
+
+// Flow Sacred — sacred-geometry formations (rose, star, flower-of-life,
+// lissajous) morphing through one colourful psychedelic field.
+function flowSacredFormation(
+  f: number,
+  i: number,
+  hx: number,
+  hy: number,
+  R: number,
+): [number, number] {
+  if (f === 0) return [hx, hy];
+  const u = (i + 0.5) / FLOW_FIELD_COUNT;
+  if (f === 1) {
+    // Rose curve (rhodonea)
+    const k = 5;
+    const a = u * Math.PI * 2;
+    const r = Math.cos(k * a) * R * 0.9;
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  }
+  if (f === 2) {
+    // Star polygon ring
+    const points = 6;
+    const a = u * Math.PI * 2;
+    const star = 0.7 + 0.3 * Math.cos(a * points);
+    return [Math.cos(a) * R * 0.9 * star, Math.sin(a) * R * 0.9 * star];
+  }
+  if (f === 3) {
+    // Flower-of-life: seven sub-circles
+    const centers = [
+      [0, 0],
+      [1, 0],
+      [0.5, 0.866],
+      [-0.5, 0.866],
+      [-1, 0],
+      [-0.5, -0.866],
+      [0.5, -0.866],
+    ];
+    const cell = Math.floor(u * 7) % 7;
+    const ca = (u * 7 - Math.floor(u * 7)) * Math.PI * 2;
+    const c = centers[cell];
+    const sub = R * 0.3;
+    return [c[0] * sub * 1.6 + Math.cos(ca) * sub, c[1] * sub * 1.6 + Math.sin(ca) * sub];
+  }
+  // f === 4: lissajous
+  const a = u * Math.PI * 2;
+  return [Math.sin(a * 3) * R * 0.85, Math.sin(a * 2) * R * 0.85];
+}
+
+const FLOW_MOVEMENTS_SACRED = [
+  { form: 1, spring: 0.08, swirl: 0.3, flow: 0.5, breath: 0.3, wob: 0.2 },
+  { form: 2, spring: 0.09, swirl: 0.3, flow: 0.5, breath: 0.25, wob: 0.3 },
+  { form: 3, spring: 0.09, swirl: 0.25, flow: 0.4, breath: 0.2, wob: 0.4 },
+  { form: 4, spring: 0.08, swirl: 0.4, flow: 0.6, breath: 0.3, wob: 0.2 },
+  { form: 0, spring: 0.07, swirl: 0.5, flow: 0.6, breath: 0.4, wob: 0.2 },
+];
+
+function flowFormationFor(
+  mode: Mode,
+  f: number,
+  i: number,
+  hx: number,
+  hy: number,
+  R: number,
+): [number, number] {
+  if (mode === 'flowwalkers') return flowWalkerFormation(f, i, R);
+  if (mode === 'flowsacred') return flowSacredFormation(f, i, hx, hy, R);
+  return flowFormation(f, i, hx, hy, R);
+}
+
+function flowMovementsFor(mode: Mode) {
+  if (mode === 'flowwalkers') return FLOW_MOVEMENTS_WALK;
+  if (mode === 'flowsacred') return FLOW_MOVEMENTS_SACRED;
+  return FLOW_MOVEMENTS;
+}
+
 function buildFlowField(cfg: Cfg, R: number): THREE.Group {
   const group = new THREE.Group();
   const pos = new Float32Array(FLOW_FIELD_COUNT * 3);
@@ -14253,14 +14387,15 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
   const ph = t * 0.00018 * speed;
   // Movement state machine: crossfade between formations + force mixes, ~75s
   // each, continuously — the field is always transforming with no snap.
+  const MOVES = flowMovementsFor(cfg.mode);
   const mClock = ((t / 1000) * speed) / 75;
-  const mLen = FLOW_MOVEMENTS.length;
+  const mLen = MOVES.length;
   const mi = ((Math.floor(mClock) % mLen) + mLen) % mLen;
   const mn = (mi + 1) % mLen;
   let mf = mClock - Math.floor(mClock);
   mf = mf * mf * (3 - 2 * mf);
-  const MA = FLOW_MOVEMENTS[mi];
-  const MB = FLOW_MOVEMENTS[mn];
+  const MA = MOVES[mi];
+  const MB = MOVES[mn];
   const springK = lerp(MA.spring, MB.spring, mf);
   const swirlW = lerp(MA.swirl, MB.swirl, mf);
   const flowW = lerp(MA.flow, MB.flow, mf);
@@ -14268,6 +14403,7 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
   const wobW = lerp(MA.wob, MB.wob, mf);
   const formA = MA.form;
   const formB = MB.form;
+  const revRate = cfg.mode === 'flowwalkers' ? 0.06 : 0.4;
   const hueCycle = (mClock * 0.1) % 1;
   const sound = Math.min(1, _voiceEnergy * 1.4 + _musicPulse * 0.5);
   const wells = Math.max(2, Math.min(4, Math.round(cfg.symmetry / 4) + 1));
@@ -14301,11 +14437,11 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
 
       // Formation morph: crossfade this particle between the two movements'
       // target formations, then revolve the whole field slowly.
-      const fa = flowFormation(formA, i, hx, hy, R);
-      const fb = flowFormation(formB, i, hx, hy, R);
+      const fa = flowFormationFor(cfg.mode, formA, i, hx, hy, R);
+      const fb = flowFormationFor(cfg.mode, formB, i, hx, hy, R);
       const bx = lerp(fa[0], fb[0], mf);
       const by = lerp(fa[1], fb[1], mf);
-      const ang = ph * 0.4;
+      const ang = ph * revRate;
       const ca = Math.cos(ang);
       const sa = Math.sin(ang);
       let tx = bx * ca - by * sa;
