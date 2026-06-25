@@ -131,3 +131,25 @@ readable:
   (the default 0.05–1.5 ran far too fast).
 - **Finger distortion now affects the pulse rings** (`updatePulse`) for both
   `pulse` and `tripnumber2`.
+
+### Curation + new trips (session 2)
+- **Removed from FEATURED_PRESETS:** Chrysalis Rings, and featured #57–63
+  (Music Entropy, Music Nebula, Groove Lattice, Nebula Veil, Nebula Bloom,
+  Dot Galaxy, Emotion Field).
+- **Cathedral Glass + Prism Seed** moved up next to the Prism family.
+- **Yantra Colour** toned down (glow 7→4, intensity 9→6) — too bright on open.
+- **Swirl Dot Tunnel** vanish point pushed planet-size: "Vanish Point" slider
+  max 10→20, preset glow→20, forward speed default 0.68→0.13.
+- **New journeys:** Trip Number 6 (id 20, 4D-crystal evolution), Trip Number 7
+  (id 21, orbital/torus/rose/helix line weave), Mega Trip (id 22, sacred
+  psychedelia: dots→orbits→cells→prism→glass→mandala), Magnetic Sands (id 23,
+  continuous current-texture trip — scales, cyclones, eddies, gravity,
+  revolutions). All slow, continuous, seamlessly looping.
+
+### Deferred (bigger engineering — see mega plan)
+- **Atomic Explosion dot quality** — the dots render worse than other presets;
+  needs the point-material path matched to the current-texture modes.
+- **Swirl Dot Tunnel "super-develop"** — magnetic-sand-inspired gravity ellipses
+  + sound patterns in the starry circle (a real mode rewrite).
+- **Random Pulse → bottom** — no "Random Pulse" featured entry exists; confirm
+  whether this means "Random Burst" or "Chaos Pulse".

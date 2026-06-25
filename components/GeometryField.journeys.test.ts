@@ -101,6 +101,20 @@ describe('GeometryField journeys', () => {
     }
   });
 
+  it('Trip 6, Trip 7, Mega Trip and Magnetic Sands are valid, looping trips', () => {
+    for (const name of ['Trip Number 6', 'Trip Number 7', 'Mega Trip', 'Magnetic Sands']) {
+      const trip = JOURNEYS.find((j) => j.name === name);
+      expect(trip, name).toBeDefined();
+      if (!trip) continue;
+      expect(trip.stages.length).toBeGreaterThanOrEqual(6);
+      for (const stage of trip.stages) {
+        expect(PAL[stage.preset], `${name} -> ${stage.name}`).toBeDefined();
+      }
+      expect(trip.stages.at(-1)?.preset).toBe(trip.stages[0].preset);
+      expect(trip.stages.at(-1)?.mode).toBe(trip.stages[0].mode);
+    }
+  });
+
   it('Long Trip combines many modes into one valid, looping set', () => {
     const long = JOURNEYS.find((j) => j.name === 'Long Trip');
     expect(long).toBeDefined();
