@@ -19024,6 +19024,9 @@ export default function GeometryField() {
   const l3dDragRef = useRef<{ lastX: number; lastY: number } | null>(null);
   const activePointerIdRef = useRef<number | null>(null);
   const fingerDistortRef = useRef(false);
+  // Finger touch is a click-toggle: one click latches it on (and it follows the
+  // pointer), another click turns it off — simpler than press-and-hold.
+  const fingerLatchedRef = useRef(false);
   const motionModeRef = useRef<MotionMode>('animate');
   const voiceStreamRef = useRef<MediaStream | null>(null);
   const voiceAudioContextRef = useRef<AudioContext | null>(null);
@@ -19090,14 +19093,10 @@ export default function GeometryField() {
   useLayoutEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
-      const mode: LiveMode =
-        params.get('projection') === '1'
-          ? 'projection'
-          : params.get('control') === '1'
-            ? 'control'
-            : 'studio';
+      // Projection mode removed — closing the controls gives a clean full-screen
+      // display instead. Only studio / control remain.
+      const mode: LiveMode = params.get('control') === '1' ? 'control' : 'studio';
       setLiveMode(mode);
-      if (mode === 'projection') setOpen(false);
       if (mode === 'control') setOpen(true);
 
       const urlPreset = params.get('preset');
@@ -19402,7 +19401,9 @@ export default function GeometryField() {
           disposeGroup(starsGroupRef.current);
         }
         starsGroupRef.current = buildStars(
-          currentCfg.stars,
+          // Every preset shows a background starfield by default — floor the
+          // count so even stars=0 presets keep a gentle field; the slider adds more.
+          Math.max(3, currentCfg.stars),
           W,
           H,
           currentCfg.preset,
@@ -22025,6 +22026,19 @@ export default function GeometryField() {
   }
 
   function handleCanvasClick(e: React.MouseEvent<HTMLCanvasElement>) {
+    // Finger touch — click to toggle the distortion on/off at the click point.
+    if (fingerDistortRef.current) {
+      fingerLatchedRef.current = !fingerLatchedRef.current;
+      if (fingerLatchedRef.current) {
+        const r = canvasRef.current!.getBoundingClientRect();
+        const { W, H } = sizeRef.current;
+        _distortWorldX = e.clientX - r.left - W / 2;
+        _distortWorldY = -(e.clientY - r.top - H / 2);
+        _distortActive = true;
+      } else {
+        _distortActive = false;
+      }
+    }
     if (!_rippleRingsVisible || isCurrentTextureMode(cfgRef.current.mode)) return;
     const rect = canvasRef.current!.getBoundingClientRect();
     ripplesRef.current.push({
@@ -22056,7 +22070,8 @@ export default function GeometryField() {
     const { W, H } = sizeRef.current;
     _distortWorldX = e.clientX - rect.left - W / 2;
     _distortWorldY = -(e.clientY - rect.top - H / 2);
-    _distortActive = true;
+    // Touch-preset places live; finger distortion follows the click-toggle latch.
+    _distortActive = isTouchPreset ? true : fingerLatchedRef.current;
     if (
       _rippleRingsVisible &&
       _distortMode === 'ripple' &&
@@ -22072,14 +22087,18 @@ export default function GeometryField() {
   }
 
   function handleCanvasPointerLeave() {
-    if (activePointerIdRef.current === null) _distortActive = false;
+    // Keep a latched finger active even when the pointer leaves the canvas.
+    if (activePointerIdRef.current === null) _distortActive = fingerLatchedRef.current;
   }
 
   function setTouchMode(mode: FingerMode) {
     _distortMode = mode;
     fingerDistortRef.current = mode !== 'off';
     setFingerMode(mode);
-    if (mode === 'off') _distortActive = false;
+    if (mode === 'off') {
+      fingerLatchedRef.current = false;
+      _distortActive = false;
+    }
   }
 
   function stopVoiceAgitation() {
@@ -22443,7 +22462,8 @@ export default function GeometryField() {
           onPointerUp={(e) => {
             if (activePointerIdRef.current === e.pointerId) {
               activePointerIdRef.current = null;
-              _distortActive = false;
+              // Keep it on if the finger is click-latched.
+              _distortActive = fingerLatchedRef.current;
             }
             e.currentTarget.releasePointerCapture(e.pointerId);
             l3dDragRef.current = null;
@@ -22451,7 +22471,7 @@ export default function GeometryField() {
           onPointerCancel={(e) => {
             if (activePointerIdRef.current === e.pointerId) {
               activePointerIdRef.current = null;
-              _distortActive = false;
+              _distortActive = fingerLatchedRef.current;
             }
             l3dDragRef.current = null;
           }}

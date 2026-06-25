@@ -353,3 +353,14 @@ DJ cable — the laptop just listens to the room.
 - **Figures page full view**: same treatment as the geometry display — strip all
   chrome to just the model, with a tiny bottom-right control to reopen the
   sliders/menu. (Separate surface: `app/(app)/figures/`.)
+
+### Batch 7 — projection removed, finger toggle, stars-by-default — DONE
+- **Projection mode deleted**: `?projection=1` no longer enters a separate
+  projection live-mode (the display mode — closing the controls — replaces it).
+  The Projection tab pill was already removed; now the mode itself is unreachable.
+- **Finger touch is a click-toggle**: with finger distortion enabled, one click
+  latches it on (and it follows the pointer), another click turns it off —
+  instead of press-and-hold / move-to-activate. Touch-preset placement unchanged.
+- **Stars by default**: every preset now shows a background starfield — the star
+  count is floored (`Math.max(3, cfg.stars)`) at build, so even `stars: 0`
+  presets keep a gentle field; the slider still adds more above the floor.
