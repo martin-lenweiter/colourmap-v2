@@ -129,4 +129,31 @@ describe('GeometryField journeys', () => {
     expect(long.stages.at(-1)?.preset).toBe(long.stages[0].preset);
     expect(long.stages.at(-1)?.mode).toBe(long.stages[0].mode);
   });
+
+  it('builds the Diaporama play-all program from the featured presets', () => {
+    const dia = JOURNEYS.find((j) => j.name === 'Diaporama — Play All');
+    expect(dia).toBeDefined();
+    if (!dia) return;
+    // Many slides (the whole featured library, capped at 76). Each carries a
+    // preset palette + a mode; some modes self-colour (fire/gravity) so we don't
+    // require a PAL entry here — just a well-formed stage.
+    expect(dia.stages.length).toBeGreaterThanOrEqual(40);
+    expect(dia.stages.length).toBeLessThanOrEqual(76);
+    for (const stage of dia.stages) {
+      expect(typeof stage.preset, `Diaporama -> ${stage.name}`).toBe('string');
+      expect(stage.mode, `Diaporama -> ${stage.name}`).toBeTruthy();
+    }
+  });
+
+  it('Trip Number 3 evolves through a sacred pyramid, anchored in triangles', () => {
+    const t3 = JOURNEYS.find((j) => j.name === 'Trip Number 3');
+    expect(t3).toBeDefined();
+    if (!t3) return;
+    expect(t3.stages.length).toBeGreaterThanOrEqual(12);
+    // The requested evolution: a sacred pyramid act, still anchored in the
+    // triangle trip, with no hard kaleidoscope slice anywhere.
+    expect(t3.stages.some((s) => s.mode === 'pyramid3d')).toBe(true);
+    expect(t3.stages.some((s) => s.mode === 'tripnumber3')).toBe(true);
+    expect(t3.stages.every((s) => s.mode !== 'kaleidoscope')).toBe(true);
+  });
 });

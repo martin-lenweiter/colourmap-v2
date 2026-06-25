@@ -295,19 +295,25 @@ readable:
   acts while keeping each inside the 19–21 min duration test (trim other acts to
   compensate).
 
-### Spec — "Diaporama" all-presets mode (requested, not yet built)
-A playback mode that runs **every featured preset in order, one after another,
-all the way to #76, then loops infinitely** — a slideshow of the whole library.
-- Build on the journey engine: generate a synthetic `Journey` whose stages are
-  the `FEATURED_PRESETS` (name + tag entries, skipping headers) in list order,
-  each stage = `{ preset: PRESETS[name].preset, mode: PRESETS[name].mode, ...the
-  preset's numeric fields }`, with a per-slide `duration` (e.g. 12–20 s) and a
-  short `journeyLerpCfg` crossfade between slides so it never hard-cuts.
-- Loop seamlessly (last → first). Add a "Diaporama / Play All" control near the
-  Journeys tab; optional dwell-time slider.
-- Open question: some presets reset velocities on rebuild (mode swap) — the
-  crossfade hides most of it, but a few mode pairs may flash; can be tuned per
-  pair or given a 1 s fade-to-dark bridge.
+### Batch 5 — Diaporama, Trip 3 evolution, Liquid fix — DONE
+- **Diaporama — Play All** (journey, generated): a synthetic `Journey` built at
+  module load from `FEATURED_PRESETS` (name entries, skipping headers), capped at
+  **#76**, each slide carrying that preset's own config (palette + mode + numeric
+  fields), 14 s a slide, **looping forever** with the engine's crossfade. Pushed
+  onto `JOURNEYS` (id = length+1) so it shows in the Journeys tab; the builder's
+  sliders adapt to each stage's mode as it plays. Self-colouring modes
+  (fire/gravity) are included even though their palette isn't a PAL key.
+- **Trip Number 3 — fully evolved** (16 acts, ~16 min, seamless): One Triangle
+  (flowsacred, minimal) → Triangles Wake → Triangle Gate (tripnumber3) → Moving
+  Lines (flowlines) → Triangles 3D → Yantra Lift (yantra3d) → **Sacred Pyramid**
+  (pyramid3d) → Hypercube → Prism Core → Tri Sphere Blend → **Destructure**
+  (flowsands) → Knot Reform (tknot3d) → Yantra Flow → Triangle Storm → Lines
+  Settle → Return to One. Minimal→complex→destructure→loop, anchored in the
+  triangle, bookended in flowsacred for a smooth seam; no kaleidoscope slice.
+- **Liquid slider — now actually works on Flow Walkers**: complexity drives both
+  the damping (0.82→0.93) **and** loosens the spring (`liquidSpring` 1→~0.35), so
+  higher Liquid visibly makes the figure lag and smear even on the crisp
+  high-spring walker modes. Good from ~4 up.
 
 ### Spec — BPM-listening reactive mode (requested, feasibility = yes)
 A mode where the visuals lock to the **live BPM heard through the mic**, with no
