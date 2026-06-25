@@ -1,6 +1,6 @@
 import { isAuthSessionMissingError } from '@supabase/supabase-js';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-
 import ColourmapBrandButton from '@/components/ColourmapBrandButton';
 import ConditionalTopNav from '@/components/ConditionalTopNav';
 import DevBranchHud from '@/components/DevBranchHud';
@@ -13,6 +13,7 @@ import { StyleProvider } from '@/components/StyleContext';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { ViewModeProvider } from '@/components/ViewModeContext';
 import ViewModeSwitcher from '@/components/ViewModeSwitcher';
+import { isVisitorPath } from '@/lib/auth/visitor';
 import { SoundSessionProvider } from '@/lib/sound-session';
 import { createClient } from '@/lib/supabase/server';
 
@@ -55,7 +56,12 @@ export default async function AppLayout({
     throw error;
   }
 
-  if (!user) {
+  // Visitor mode: logged-out people may view the public visuals
+  // (`/geometry-field`) without signing in. Every other route still requires a
+  // session and redirects to /login.
+  const pathname = (await headers()).get('x-pathname');
+  const isVisitor = !user;
+  if (isVisitor && !isVisitorPath(pathname)) {
     redirect('/login');
   }
 
@@ -83,11 +89,15 @@ export default async function AppLayout({
                   used to hold a separate initials menu; freed for the
                   theme palette dot. (Per Martin 2026-04-26.) */}
                   <ColourmapBrandButton
-                    initials={deriveInitials(
-                      user.user_metadata?.full_name as string | undefined,
-                      user.email ?? '',
-                    )}
-                    email={user.email ?? ''}
+                    initials={
+                      user
+                        ? deriveInitials(
+                            user.user_metadata?.full_name as string | undefined,
+                            user.email ?? '',
+                          )
+                        : ''
+                    }
+                    email={user?.email ?? ''}
                   />
                   <div className="flex items-center justify-end gap-2">
                     {/* Phone/Design viewport toggle stays desktop-only —
@@ -98,6 +108,14 @@ export default async function AppLayout({
                       <ViewModeSwitcher />
                     </div>
                     <ThemeSwitcher />
+                    {isVisitor ? (
+                      <a
+                        href="/login"
+                        className="rounded-full border border-foreground/20 px-3 py-1 text-xs font-medium whitespace-nowrap"
+                      >
+                        Sign in
+                      </a>
+                    ) : null}
                   </div>
                 </div>
                 <ConditionalTopNav />

@@ -20,9 +20,17 @@ const { redirect } = vi.hoisted(() => ({
   redirect: vi.fn(),
 }));
 
+const { getHeader } = vi.hoisted(() => ({
+  getHeader: vi.fn<(name: string) => string | null>(() => null),
+}));
+
 vi.mock('next/navigation', () => ({
   redirect,
   usePathname: () => '/day',
+}));
+
+vi.mock('next/headers', () => ({
+  headers: vi.fn(async () => ({ get: getHeader })),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -89,6 +97,8 @@ describe('AppLayout', () => {
     createClient.mockClear();
     getUser.mockReset();
     redirect.mockReset();
+    getHeader.mockReset();
+    getHeader.mockReturnValue(null);
     getUser.mockResolvedValue({
       data: {
         user: {
@@ -147,5 +157,19 @@ describe('AppLayout', () => {
     ).rejects.toThrow('NEXT_REDIRECT');
 
     expect(redirect).toHaveBeenCalledWith('/login');
+  });
+
+  it('lets a logged-out visitor view the public visuals without redirecting', async () => {
+    getUser.mockResolvedValue({ data: { user: null }, error: null });
+    getHeader.mockReturnValue('/geometry-field');
+
+    const layout = await AppLayout({ children: <div>Visuals</div> });
+    const html = renderToStaticMarkup(layout);
+
+    expect(redirect).not.toHaveBeenCalled();
+    expect(html).toContain('Visuals');
+    // Visitor shell shows a Sign in link and no user card.
+    expect(html).toContain('Sign in');
+    expect(html).not.toContain('Sign out');
   });
 });
