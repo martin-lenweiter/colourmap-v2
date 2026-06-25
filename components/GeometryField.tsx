@@ -57,6 +57,7 @@ type Mode =
   | 'flowfield'
   | 'flowwalkers'
   | 'flowsacred'
+  | 'flowdance'
   | 'eclipse'
   | 'yinyang'
   | 'volcano'
@@ -1685,6 +1686,18 @@ export const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 3,
     mode: 'flowsacred',
+  },
+  'Dance Walkers': {
+    preset: 'Rose Quartz',
+    symmetry: 12,
+    complexity: 5,
+    glow: 5,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 9,
+    luminous: 3,
+    stars: 2,
+    mode: 'flowdance',
   },
   Eclipse: {
     preset: 'Golden Source',
@@ -5952,6 +5965,7 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'flowfield':
     case 'flowwalkers':
     case 'flowsacred':
+    case 'flowdance':
       return buildFlowField(cfg, R);
     case 'plasma':
       return buildPlasma(cfg, R);
@@ -6195,6 +6209,7 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'flowfield':
     case 'flowwalkers':
     case 'flowsacred':
+    case 'flowdance':
       updateFlowField(group, cfg, t, R);
       break;
     case 'plasma':
@@ -12527,6 +12542,16 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
+  flowdance: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
   lissajous: [
     { key: 'symmetry', label: 'Copies', min: 1, max: 12, step: 1 },
     { key: 'complexity', label: 'Curves', min: 1, max: 6, step: 1 },
@@ -13020,6 +13045,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   flowfield: 'Flow Field',
   flowwalkers: 'Flow Walkers',
   flowsacred: 'Flow Sacred',
+  flowdance: 'Dance Walkers',
   burst: 'DMT Vision',
   kaleidoscope: 'Cosmic Indigo',
   tunnel: 'Warp Tunnel',
@@ -13196,6 +13222,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'flowfield', label: 'Flow Field' },
   { mode: 'flowwalkers', label: 'Flow Walkers' },
   { mode: 'flowsacred', label: 'Flow Sacred' },
+  { mode: 'flowdance', label: 'Dance Walkers' },
   { mode: 'eclipse', label: 'Eclipse' },
   { mode: 'yinyang', label: 'Yin Yang' },
   { mode: 'volcano', label: 'Volcano' },
@@ -13263,6 +13290,7 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Flow Field', tag: 'FLOW' },
   { name: 'Flow Walkers', tag: 'FLOW' },
   { name: 'Flow Sacred', tag: 'FLOW' },
+  { name: 'Dance Walkers', tag: 'FLOW' },
   { name: 'Gravity', tag: 'TOP' },
   { name: 'Fire', tag: 'TOP' },
   { name: 'Prism3D Core', tag: 'PRISM' },
@@ -14337,6 +14365,52 @@ const FLOW_MOVEMENTS_SACRED = [
   { form: 0, spring: 0.07, swirl: 0.5, flow: 0.6, breath: 0.4, wob: 0.2 },
 ];
 
+// Dance Walkers — two walker figures that drift together, merge, bloom, dance,
+// divide and resolve into a heart, in one continuous evolution.
+function flowDanceFormation(f: number, i: number, R: number): [number, number] {
+  const N = FLOW_FIELD_COUNT;
+  if (f === 4) {
+    // Heart — all particles fill a heart curve.
+    const u = (i + 0.5) / N;
+    const th = u * Math.PI * 2;
+    const hx = 16 * Math.sin(th) ** 3;
+    const hy = 13 * Math.cos(th) - 5 * Math.cos(2 * th) - 2 * Math.cos(3 * th) - Math.cos(4 * th);
+    const s = R * 0.05;
+    const fill = ((i * 0.61803398875) % 1) ** 0.5;
+    return [lerp(0, hx * s, fill), lerp(-2 * s, hy * s, fill)];
+  }
+  // Two walker silhouettes (left/right halves of the particles).
+  const half = N >> 1;
+  const isLeft = i < half;
+  const j = isLeft ? i : i - half;
+  const side = isLeft ? -1 : 1;
+  const wq = (j + 0.5) / half;
+  const zone = wq < 0.2 ? 0 : wq < 0.44 ? 1 : wq < 0.66 ? 2 : wq < 0.83 ? 3 : 4;
+  const local = (wq * half * 1.61803398875) % 1;
+  const a = j * 2.399963229728653;
+  const spread = Math.sqrt(local);
+  const sx = Math.cos(a) * spread;
+  const sy = Math.sin(a) * spread;
+  const FR = R * 0.95;
+  const design = f === 3 ? 5 : 1; // posed "dance" design vs upright
+  const base = walkerLimbPoint(zone, sx, sy, 0, FR);
+  const p = dotWalkerDesignPoint(design, zone, sx, sy, 0, FR, base);
+  const wx = p.x + sx * p.scale * 0.4;
+  const wy = p.y + sy * p.scale * 0.4;
+  const sep = f === 0 ? R * 0.62 : f === 1 ? R * 0.34 : f === 2 ? 0 : R * 0.42;
+  return [wx + side * sep, wy];
+}
+
+const FLOW_MOVEMENTS_DANCE = [
+  { form: 0, spring: 0.1, swirl: 0.2, flow: 0.4, breath: 0.15, wob: 0.1 }, // apart
+  { form: 1, spring: 0.1, swirl: 0.3, flow: 0.5, breath: 0.2, wob: 0.1 }, // converge
+  { form: 2, spring: 0.09, swirl: 0.5, flow: 0.5, breath: 0.3, wob: 0.1 }, // merge
+  { form: 3, spring: 0.08, swirl: 0.7, flow: 0.6, breath: 0.4, wob: 0.15 }, // dance / bloom
+  { form: 1, spring: 0.1, swirl: 0.3, flow: 0.5, breath: 0.2, wob: 0.1 }, // divide
+  { form: 0, spring: 0.1, swirl: 0.2, flow: 0.4, breath: 0.15, wob: 0.1 }, // apart
+  { form: 4, spring: 0.11, swirl: 0.2, flow: 0.3, breath: 0.2, wob: 0.1 }, // heart
+];
+
 function flowFormationFor(
   mode: Mode,
   f: number,
@@ -14347,12 +14421,14 @@ function flowFormationFor(
 ): [number, number] {
   if (mode === 'flowwalkers') return flowWalkerFormation(f, i, R);
   if (mode === 'flowsacred') return flowSacredFormation(f, i, hx, hy, R);
+  if (mode === 'flowdance') return flowDanceFormation(f, i, R);
   return flowFormation(f, i, hx, hy, R);
 }
 
 function flowMovementsFor(mode: Mode) {
   if (mode === 'flowwalkers') return FLOW_MOVEMENTS_WALK;
   if (mode === 'flowsacred') return FLOW_MOVEMENTS_SACRED;
+  if (mode === 'flowdance') return FLOW_MOVEMENTS_DANCE;
   return FLOW_MOVEMENTS;
 }
 
@@ -14410,7 +14486,7 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
   // Movement state machine + phase clock are accumulated per-frame inside the
   // particle group (below) so changing Flow Speed never restarts the program.
   const MOVES = flowMovementsFor(cfg.mode);
-  const revRate = cfg.mode === 'flowwalkers' ? 0.06 : 0.4;
+  const revRate = cfg.mode === 'flowwalkers' || cfg.mode === 'flowdance' ? 0.06 : 0.4;
   const sound = Math.min(1, _voiceEnergy * 1.4 + _musicPulse * 0.5);
   const wells = Math.max(2, Math.min(4, Math.round(cfg.symmetry / 4) + 1));
   const turb = 0.4 + cfg.complexity / 10;

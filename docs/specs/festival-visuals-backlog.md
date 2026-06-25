@@ -203,9 +203,12 @@ readable:
 - **Magnetic Sands 2** — a mega-deep, long-evolving variant for ambient
   surprise over a long set.
 - **Dot Brain Loop** mega-develop — the two-figures-merge-and-move relation.
-- **Dance Walker** preset — two dot-walkers merge, bloom, dance, divide, dance,
-  merge into a heart (a full evolution). Natural fit as a Flow Walkers movement
-  set (two walker instances morphing).
+- **Dance Walkers — DONE** (`flowdance`, preset "Dance Walkers"): a flow mode
+  where the particles split into two walker figures that drift apart → converge
+  → merge → dance/bloom → divide → and resolve into a **heart**, looping
+  continuously on the flow engine. Heart is a parametric curve fill; the two
+  figures are the left/right halves of the particles with a per-movement
+  separation. (Also covers the Dot Brain Loop "two figures merge and move".)
 - **Trip Number 1** — remove the hard mode-cut so it evolves flowy like
   Magnetic Sands (journeys snap at mode swaps; true flow wants the flow-field
   approach).
