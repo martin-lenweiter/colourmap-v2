@@ -273,11 +273,60 @@ readable:
   (flowsacred) woven through the golden arc — now an 11-act, fully continuous
   ~12-minute loop (no kaleidoscope slice anywhere).
 
-### Still open (need your eyes on localhost / next batch)
-- **Flow Walkers full rebuild** — the crisp-hold tune helps, but to truly match
-  the **classic Dot Walker** (`buildDotWalker`, mode `dotwalker`, preset "Dot
-  Walker") it wants the **`dotWalkerTrail` thick-lines-from-dots** rendering,
-  not plain points sprung to a silhouette. Best done after a look on localhost.
-- **Deepen the remaining trips** (3, 4, 6, 7, Mega, festival 12–14) the same way
-  Trip 1 was — weaving flow continuity acts — keeping the festival trips inside
-  the 19–21 min test window.
+### Batch 4 — deepen the trips + Liquid slider — DONE
+- **Deepened Trips 3, 4, 6, 7 and Mega** — each gets three woven flow continuity
+  acts before its return, themed to the trip's own palettes (so seams stay
+  valid): Trip 3 → Yantra Flow / Triangle Lines / Triangle Sands; Trip 4 →
+  Prism Sands / Prism Lines / Prism Butterfly; Trip 6 → Crystal Lines / Crystal
+  Sands / Crystal Sacred; Trip 7 → Sand Knot / Rose Sand Lines / Sacred Orbit;
+  Mega → Pearl Sands / Heart Butterfly / Sacred Lines.
+- **Liquid slider** — the flow modes' `complexity` slider is now labelled
+  **"Liquid"** on Flow Walkers / Dance Walkers / Butterfly, and complexity now
+  drives the velocity damping (`liquidDamp` 0.82 → 0.93): higher = more momentum,
+  so particles trail and stream like liquid. Reads well from ~4 up, matching the
+  classic Dot Walker "Liquid" control (which maps to `complexity` too).
+
+### Still open
+- **Flow Walkers full rebuild** — the crisp-hold tune + Liquid damping help, but
+  to truly match the **classic Dot Walker** (`buildDotWalker`, mode `dotwalker`)
+  it wants the **`dotWalkerTrail` thick-lines-from-dots** rendering, not plain
+  points sprung to a silhouette. Best done after a look on localhost.
+- **Deepen festival trips 12–14** (Cathedral / Cosmos / Desert) — weave flow
+  acts while keeping each inside the 19–21 min duration test (trim other acts to
+  compensate).
+
+### Batch 5 — Diaporama, Trip 3 evolution, Liquid fix — DONE
+- **Diaporama — Play All** (journey, generated): a synthetic `Journey` built at
+  module load from `FEATURED_PRESETS` (name entries, skipping headers), capped at
+  **#76**, each slide carrying that preset's own config (palette + mode + numeric
+  fields), 14 s a slide, **looping forever** with the engine's crossfade. Pushed
+  onto `JOURNEYS` (id = length+1) so it shows in the Journeys tab; the builder's
+  sliders adapt to each stage's mode as it plays. Self-colouring modes
+  (fire/gravity) are included even though their palette isn't a PAL key.
+- **Trip Number 3 — fully evolved** (16 acts, ~16 min, seamless): One Triangle
+  (flowsacred, minimal) → Triangles Wake → Triangle Gate (tripnumber3) → Moving
+  Lines (flowlines) → Triangles 3D → Yantra Lift (yantra3d) → **Sacred Pyramid**
+  (pyramid3d) → Hypercube → Prism Core → Tri Sphere Blend → **Destructure**
+  (flowsands) → Knot Reform (tknot3d) → Yantra Flow → Triangle Storm → Lines
+  Settle → Return to One. Minimal→complex→destructure→loop, anchored in the
+  triangle, bookended in flowsacred for a smooth seam; no kaleidoscope slice.
+- **Liquid slider — now actually works on Flow Walkers**: complexity drives both
+  the damping (0.82→0.93) **and** loosens the spring (`liquidSpring` 1→~0.35), so
+  higher Liquid visibly makes the figure lag and smear even on the crisp
+  high-spring walker modes. Good from ~4 up.
+
+### Spec — BPM-listening reactive mode (requested, feasibility = yes)
+A mode where the visuals lock to the **live BPM heard through the mic**, with no
+DJ cable — the laptop just listens to the room.
+- **Feasible today.** The audio path already exists: the mic analyser feeds
+  `_musicBpm` / `_musicPulse` / `_musicBass` globals that the trip/tunnel modes
+  read. BPM-from-mic is standard: run the analyser's energy/flux through onset
+  detection, autocorrelate the onset envelope over a few seconds to estimate
+  tempo, and phase-lock a beat clock. Latency ~2–4 s to lock, then it tracks.
+- **Mode behaviour:** drive the flow `breathSpeed` / movement clock and pulse
+  scaling from the locked beat clock instead of wall-time, so formations breathe
+  and revolve *on the beat*; accent transitions on downbeats.
+- **Caveats:** room noise, reverb and crowd sound reduce accuracy vs a line
+  feed; works best with a clear 4/4 kick. Add a manual tap-tempo + BPM lock
+  fallback for when the estimate drifts. A line-in/cable remains the most
+  reliable, but mic-only is good enough for an ambient, beat-aware set.
