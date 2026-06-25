@@ -212,3 +212,45 @@ readable:
 - **Trip Number 1** — remove the hard mode-cut so it evolves flowy like
   Magnetic Sands (journeys snap at mode swaps; true flow wants the flow-field
   approach).
+
+### Flow-engine deepening — DONE (this batch)
+- **Magnetic Sands 2** (`flowsands`, preset "Magnetic Sands 2", Amber Dust): a
+  long **12-act (~15 min)** sandy game of chaos↔order — dots melt from waves →
+  ripple rings → vortex → **figure-8 dunes (double loop)** → dust and re-form.
+  High `wob` gives the grainy banding; two lemniscate acts give the double loop.
+- **Flow field — longer + double loops**: base movement table grown to **10
+  acts (~12.5 min)**, keeping every original formation and folding in two new
+  ones — a **Gerono-lemniscate figure-8** (nested ribbons) and a **double
+  spiral** (two counter-rotating arms), so the Magnetic-Sands double-loop motif
+  now lives in the base field too.
+- **Walk cycle animated**: the time phase is threaded into the walker
+  formations, so Flow Walkers / Dance Walkers now **step and sway** instead of
+  holding a frozen pose (`walkPh = ph × 20–22` drives the limbs).
+- **Walker context halo**: ~1-in-5 (walkers) / 1-in-6 (dance) particles ring the
+  figure with a slow 6-fold sacred halo, so the walker reads against a circle of
+  context (closer to the dot-walker framing).
+- **Flow Sacred — more forms**: added **hexagram, spiral galaxy, yantra
+  (nested triangles), focus arc** (mono) and lissajous; movement table grown to
+  9 acts opening on the calm focus arc.
+- **Trip Number 1 — slice fixed**: the sliced kaleidoscope "Golden Mandala" act
+  is replaced by a flowy **"Golden Sands"** (`flowsands`) act, so the trip
+  evolves continuously like Magnetic Sands instead of cutting to wedges.
+- **Preset list cleanup**: removed Golden Clock / Atom Light / Orbital Dance
+  (weak); moved **Starflow Galaxy** to the bottom of the good list; added
+  **Magnetic Sands 2** + **Golden Flow** to the FLOW group.
+
+### Still open (need your eyes on localhost / next batch)
+- **Flow Walkers / Dance Walkers quality** — the silhouette-as-spring approach
+  still doesn't match the **classic Dot Walker** (`buildDotWalker`, mode
+  `dotwalker`, preset "Dot Walker", used by Trip Number 5). What makes the
+  classic great is the **`dotWalkerTrail` thick-lines-from-dots** rendering; the
+  flow modes render plain points and the flow/spring forces blur the figure.
+  Next: rebuild Flow Walkers on the dot-walker trail/line technique rather than
+  springing points to a silhouette.
+- **Mega Trip (presets 10–13)** — Prism3D Core / Prism Bloom / Prism Seed /
+  Cathedral Glass, colourful sacred psychedelic.
+- **Butterfly mega trip** — evolution of Dot Brain Loop as a two-winged
+  butterfly with rotations + dance.
+- **Sacred star-sand line-art trip** — shifting sands that *draw* the
+  Orbital 3D / Helix 3D / Torus Knot / Rose 3D line-works out of star-sand, as
+  one continuous trip.

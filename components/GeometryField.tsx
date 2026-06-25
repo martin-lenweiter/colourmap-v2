@@ -58,6 +58,7 @@ type Mode =
   | 'flowwalkers'
   | 'flowsacred'
   | 'flowdance'
+  | 'flowsands'
   | 'eclipse'
   | 'yinyang'
   | 'volcano'
@@ -1698,6 +1699,30 @@ export const PRESETS: Record<string, Cfg> = {
     luminous: 3,
     stars: 2,
     mode: 'flowdance',
+  },
+  'Magnetic Sands 2': {
+    preset: 'Amber Dust',
+    symmetry: 14,
+    complexity: 6,
+    glow: 5,
+    breathSpeed: 0.45,
+    intensity: 8,
+    particles: 9,
+    luminous: 2.6,
+    stars: 3,
+    mode: 'flowsands',
+  },
+  'Golden Flow': {
+    preset: 'Golden Source',
+    symmetry: 12,
+    complexity: 5,
+    glow: 5,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 8,
+    luminous: 3,
+    stars: 3,
+    mode: 'flowfield',
   },
   Eclipse: {
     preset: 'Golden Source',
@@ -4735,16 +4760,18 @@ export const JOURNEYS: Journey[] = [
         stars: 2,
       },
       {
-        name: 'Golden Mandala',
+        name: 'Golden Sands',
         preset: 'Golden Source',
-        mode: 'kaleidoscope',
-        duration: 70,
-        symmetry: 16,
+        mode: 'flowsands',
+        duration: 85,
+        symmetry: 14,
+        complexity: 6,
         glow: 6,
-        breathSpeed: 0.3,
+        breathSpeed: 0.4,
         intensity: 8,
-        luminous: 3,
-        stars: 2,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
       },
       {
         name: 'Alchemical Sun',
@@ -5966,6 +5993,7 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'flowwalkers':
     case 'flowsacred':
     case 'flowdance':
+    case 'flowsands':
       return buildFlowField(cfg, R);
     case 'plasma':
       return buildPlasma(cfg, R);
@@ -6210,6 +6238,7 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'flowwalkers':
     case 'flowsacred':
     case 'flowdance':
+    case 'flowsands':
       updateFlowField(group, cfg, t, R);
       break;
     case 'plasma':
@@ -12552,6 +12581,16 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
     { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
   ],
+  flowsands: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
   lissajous: [
     { key: 'symmetry', label: 'Copies', min: 1, max: 12, step: 1 },
     { key: 'complexity', label: 'Curves', min: 1, max: 6, step: 1 },
@@ -13046,6 +13085,7 @@ const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
   flowwalkers: 'Flow Walkers',
   flowsacred: 'Flow Sacred',
   flowdance: 'Dance Walkers',
+  flowsands: 'Magnetic Sands 2',
   burst: 'DMT Vision',
   kaleidoscope: 'Cosmic Indigo',
   tunnel: 'Warp Tunnel',
@@ -13223,6 +13263,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'flowwalkers', label: 'Flow Walkers' },
   { mode: 'flowsacred', label: 'Flow Sacred' },
   { mode: 'flowdance', label: 'Dance Walkers' },
+  { mode: 'flowsands', label: 'Magnetic Sands 2' },
   { mode: 'eclipse', label: 'Eclipse' },
   { mode: 'yinyang', label: 'Yin Yang' },
   { mode: 'volcano', label: 'Volcano' },
@@ -13291,6 +13332,8 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Flow Walkers', tag: 'FLOW' },
   { name: 'Flow Sacred', tag: 'FLOW' },
   { name: 'Dance Walkers', tag: 'FLOW' },
+  { name: 'Magnetic Sands 2', tag: 'FLOW' },
+  { name: 'Golden Flow', tag: 'FLOW' },
   { name: 'Gravity', tag: 'TOP' },
   { name: 'Fire', tag: 'TOP' },
   { name: 'Prism3D Core', tag: 'PRISM' },
@@ -13330,7 +13373,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Sacred Sin Morph', tag: 'MUSIC' },
   { name: 'Chaos Sin Morph', tag: 'MUSIC' },
   { name: 'Drift Field', tag: 'MUSIC' },
-  { name: 'Starflow Galaxy', tag: 'MUSIC' },
   { name: 'Sacred Pyramid', tag: 'MUSIC' },
   { name: 'Focus Arc', tag: 'MUSIC' },
   { name: 'Yantra 3D', tag: 'YANTRA' },
@@ -13358,16 +13400,14 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Rose 3D', tag: '3D' },
   { name: 'Helix 3D', tag: '3D' },
   { name: 'Orbital 3D', tag: '3D' },
-  { name: 'Golden Clock', tag: 'CLOCK' },
   { name: 'Armillary Gold', tag: 'CLOCK' },
-  { name: 'Atom Light', tag: 'ATOM' },
-  { name: 'Orbital Dance', tag: 'ORBIT' },
   { name: 'Ripple Morph', tag: 'MORPH' },
   { name: 'EMBF Live', tag: 'EMBF' },
   { name: 'Entropy 3D', tag: 'CORE' },
   { name: 'Embrace', tag: 'DOT' },
   { name: 'Dot Tunnel', tag: 'DEPTH' },
   { name: 'Random Burst', tag: 'CHAOS' },
+  { name: 'Starflow Galaxy', tag: 'MUSIC' },
   { header: 'In Progress / To Develop', dim: true },
   { name: 'Chrysalis', tag: 'MORPH' },
   { name: 'Metamorph', tag: 'MORPH' },
@@ -14269,26 +14309,53 @@ function flowFormation(f: number, i: number, hx: number, hy: number, R: number):
     const gy = (Math.floor(i / cols) / (cols - 1) - 0.5) * R * 1.7;
     return [gx, gy];
   }
-  // f === 4: spiral
-  const r = u * R * 0.92;
-  const a = ga * 0.5 + (r / R) * 7;
-  return [Math.cos(a) * r, Math.sin(a) * r];
+  if (f === 4) {
+    // Spiral
+    const r = u * R * 0.92;
+    const a = ga * 0.5 + (r / R) * 7;
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  }
+  if (f === 5) {
+    // Gerono lemniscate — nested figure-8 ribbons (the Magnetic-Sands double loop)
+    const ring = 0.4 + 0.6 * ((i * 0.61803398875) % 1);
+    const t = u * Math.PI * 2;
+    return [Math.cos(t) * R * 0.95 * ring, Math.sin(2 * t) * 0.5 * R * 0.95 * ring];
+  }
+  // f === 6: double spiral (two counter-rotating arms)
+  const arm = i % 2 === 0 ? 1 : -1;
+  const r6 = u * R * 0.92;
+  const a6 = arm * (ga * 0.5 + (r6 / R) * 7);
+  return [Math.cos(a6) * r6, Math.sin(a6) * r6];
 }
 
 // Movements: each owns a target formation + force mix; the field crossfades
-// between them continuously (~75s each) so it is always transforming.
+// between them continuously (~75s each) so it is always transforming. A long
+// 10-act cycle (~12.5 min) that now folds in two figure-8 "double loop" acts.
 const FLOW_MOVEMENTS = [
   { form: 0, spring: 0.08, swirl: 0.3, flow: 0.5, breath: 0.2, wob: 0.1 },
   { form: 1, spring: 0.07, swirl: 0.45, flow: 0.6, breath: 0.35, wob: 0.25 },
+  { form: 5, spring: 0.06, swirl: 0.7, flow: 0.7, breath: 0.3, wob: 0.2 }, // figure-8 double loop
   { form: 0, spring: 0.05, swirl: 1.0, flow: 0.7, breath: 0.3, wob: 0.15 },
   { form: 2, spring: 0.09, swirl: 0.3, flow: 0.4, breath: 0.2, wob: 0.9 },
+  { form: 6, spring: 0.07, swirl: 0.55, flow: 0.65, breath: 0.4, wob: 0.2 }, // double spiral
   { form: 3, spring: 0.11, swirl: 0.2, flow: 0.3, breath: 0.15, wob: 0.1 },
+  { form: 5, spring: 0.06, swirl: 0.8, flow: 0.75, breath: 0.35, wob: 0.2 }, // figure-8 again, faster
   { form: 4, spring: 0.06, swirl: 0.6, flow: 0.7, breath: 0.5, wob: 0.2 },
+  { form: 1, spring: 0.07, swirl: 0.4, flow: 0.55, breath: 0.3, wob: 0.2 },
 ];
 
 // Flow Walkers — formations are walker silhouettes (designs 1–5); the field
 // morphs from one walking figure into the next through the flow.
-function flowWalkerFormation(design: number, i: number, R: number): [number, number] {
+function flowWalkerFormation(design: number, i: number, R: number, ph: number): [number, number] {
+  // ~1 in 5 particles ring the figure with a slow 6-fold sacred halo, so the
+  // walker reads against a circle of context (like the dot-walker mode).
+  if (i % 5 === 0) {
+    const cu = (i * 0.61803398875) % 1;
+    const ca = cu * Math.PI * 2 + ph * 0.15;
+    const petal = 0.92 + 0.1 * Math.cos(ca * 6);
+    const rr = R * (1.2 + 0.25 * cu) * petal;
+    return [Math.cos(ca) * rr, Math.sin(ca) * rr];
+  }
   const q = (i + 0.5) / FLOW_FIELD_COUNT;
   const zone = q < 0.2 ? 0 : q < 0.44 ? 1 : q < 0.66 ? 2 : q < 0.83 ? 3 : 4;
   const local = (q * FLOW_FIELD_COUNT * 1.61803398875) % 1;
@@ -14297,8 +14364,9 @@ function flowWalkerFormation(design: number, i: number, R: number): [number, num
   const sx = Math.cos(a) * spread;
   const sy = Math.sin(a) * spread;
   const FR = R * 1.5;
-  const base = walkerLimbPoint(zone, sx, sy, 0, FR);
-  const p = dotWalkerDesignPoint(Math.max(1, Math.min(5, design)), zone, sx, sy, 0, FR, base);
+  const walkPh = ph * 22; // animate the limbs — the figure walks
+  const base = walkerLimbPoint(zone, sx, sy, walkPh, FR);
+  const p = dotWalkerDesignPoint(Math.max(1, Math.min(5, design)), zone, sx, sy, walkPh, FR, base);
   return [p.x + sx * p.scale * 0.4, p.y + sy * p.scale * 0.4];
 }
 
@@ -14352,25 +14420,72 @@ function flowSacredFormation(
     const sub = R * 0.3;
     return [c[0] * sub * 1.6 + Math.cos(ca) * sub, c[1] * sub * 1.6 + Math.sin(ca) * sub];
   }
-  // f === 4: lissajous
-  const a = u * Math.PI * 2;
-  return [Math.sin(a * 3) * R * 0.85, Math.sin(a * 2) * R * 0.85];
+  if (f === 4) {
+    // Lissajous
+    const a = u * Math.PI * 2;
+    return [Math.sin(a * 3) * R * 0.85, Math.sin(a * 2) * R * 0.85];
+  }
+  if (f === 5) {
+    // Hexagram — two interlocking triangles
+    const a = u * Math.PI * 2 + (i % 2 ? Math.PI : 0);
+    const r = (0.55 + 0.45 * Math.abs(Math.cos(1.5 * a))) * R * 0.85;
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  }
+  if (f === 6) {
+    // Spiral galaxy
+    const arms = 3;
+    const r = u * R * 0.92;
+    const ga = (i % arms) * ((Math.PI * 2) / arms) + (r / R) * 6;
+    return [Math.cos(ga) * r, Math.sin(ga) * r];
+  }
+  if (f === 7) {
+    // Yantra — nested up/down triangles inside a bindu
+    const tier = Math.floor(u * 4); // 0..3 concentric triangles
+    const up = tier % 2 === 0 ? 1 : -1;
+    const scale = (1 - tier * 0.22) * R * 0.92;
+    const edge = (u * 4 - tier) * 3; // 0..3 around the triangle perimeter
+    const corner = Math.floor(edge);
+    const tt = edge - corner;
+    const ang = (k: number) => (k / 3) * Math.PI * 2 + Math.PI / 2;
+    const a0 = ang(corner);
+    const a1 = ang(corner + 1);
+    const x = lerp(Math.cos(a0), Math.cos(a1), tt) * scale;
+    const y = up * lerp(Math.sin(a0), Math.sin(a1), tt) * scale;
+    return [x, y];
+  }
+  // f === 8: focus arc — a single sweeping mono arc (calm point of focus)
+  const span = Math.PI * 1.25;
+  const a8 = -span / 2 + u * span;
+  const r8 = R * (0.55 + 0.4 * (1 - Math.abs(u - 0.5) * 2));
+  return [Math.cos(a8) * r8, Math.sin(a8) * r8];
 }
 
 const FLOW_MOVEMENTS_SACRED = [
+  { form: 8, spring: 0.09, swirl: 0.2, flow: 0.4, breath: 0.3, wob: 0.15 }, // focus arc
   { form: 1, spring: 0.08, swirl: 0.3, flow: 0.5, breath: 0.3, wob: 0.2 },
+  { form: 7, spring: 0.1, swirl: 0.25, flow: 0.4, breath: 0.2, wob: 0.2 }, // yantra
   { form: 2, spring: 0.09, swirl: 0.3, flow: 0.5, breath: 0.25, wob: 0.3 },
+  { form: 5, spring: 0.09, swirl: 0.3, flow: 0.45, breath: 0.25, wob: 0.25 },
   { form: 3, spring: 0.09, swirl: 0.25, flow: 0.4, breath: 0.2, wob: 0.4 },
-  { form: 4, spring: 0.08, swirl: 0.4, flow: 0.6, breath: 0.3, wob: 0.2 },
+  { form: 6, spring: 0.08, swirl: 0.45, flow: 0.6, breath: 0.3, wob: 0.2 },
+  { form: 4, spring: 0.08, swirl: 0.4, flow: 0.6, breath: 0.3, wob: 0.2 }, // lissajous
   { form: 0, spring: 0.07, swirl: 0.5, flow: 0.6, breath: 0.4, wob: 0.2 },
 ];
 
 // Dance Walkers — two walker figures that drift together, merge, bloom, dance,
 // divide and resolve into a heart, in one continuous evolution.
-function flowDanceFormation(f: number, i: number, R: number): [number, number] {
+function flowDanceFormation(f: number, i: number, R: number, ph: number): [number, number] {
   const N = FLOW_FIELD_COUNT;
+  // ~1 in 6 particles ring the pair with a slow sacred halo of context.
+  if (i % 6 === 0) {
+    const cu = (i * 0.61803398875) % 1;
+    const ca = cu * Math.PI * 2 + ph * 0.12;
+    const petal = 0.92 + 0.1 * Math.cos(ca * 6);
+    const rr = R * (1.25 + 0.22 * cu) * petal;
+    return [Math.cos(ca) * rr, Math.sin(ca) * rr];
+  }
   if (f === 4) {
-    // Heart — all particles fill a heart curve.
+    // Heart — particles fill a heart curve.
     const u = (i + 0.5) / N;
     const th = u * Math.PI * 2;
     const hx = 16 * Math.sin(th) ** 3;
@@ -14393,8 +14508,9 @@ function flowDanceFormation(f: number, i: number, R: number): [number, number] {
   const sy = Math.sin(a) * spread;
   const FR = R * 0.95;
   const design = f === 3 ? 5 : 1; // posed "dance" design vs upright
-  const base = walkerLimbPoint(zone, sx, sy, 0, FR);
-  const p = dotWalkerDesignPoint(design, zone, sx, sy, 0, FR, base);
+  const walkPh = ph * 20; // animate the limbs — the figures step and sway
+  const base = walkerLimbPoint(zone, sx, sy, walkPh, FR);
+  const p = dotWalkerDesignPoint(design, zone, sx, sy, walkPh, FR, base);
   const wx = p.x + sx * p.scale * 0.4;
   const wy = p.y + sy * p.scale * 0.4;
   const sep = f === 0 ? R * 0.62 : f === 1 ? R * 0.34 : f === 2 ? 0 : R * 0.42;
@@ -14411,6 +14527,68 @@ const FLOW_MOVEMENTS_DANCE = [
   { form: 4, spring: 0.11, swirl: 0.2, flow: 0.3, breath: 0.2, wob: 0.1 }, // heart
 ];
 
+// Magnetic Sands 2 — a long, sandy game of chaos and order: dense dots melt
+// from waves to ripples to a vortex, fold through figure-8 dunes, and re-form.
+// High wob gives the grainy banding; two lemniscate acts give the double loop.
+function flowSandsFormation(
+  f: number,
+  i: number,
+  hx: number,
+  hy: number,
+  R: number,
+): [number, number] {
+  if (f === 0) return [hx, hy];
+  const u = (i + 0.5) / FLOW_FIELD_COUNT;
+  const ga = i * 2.399963229728653;
+  if (f === 1) {
+    // Sand waves — horizontal flowing bands
+    const rows = 9;
+    const row = Math.floor(u * rows);
+    const fx = (((i * 0.61803398875) % 1) - 0.5) * R * 1.9;
+    const fy = ((row + 0.5) / rows - 0.5) * R * 1.7 + Math.sin((fx / R) * 3) * R * 0.12;
+    return [fx, fy];
+  }
+  if (f === 2) {
+    // Ripple rings — dense concentric bands
+    const nR = 11;
+    const ring = Math.floor(u * nR);
+    const rr = ((ring + 0.5) / nR) * R * 0.95;
+    const a = (u * nR - ring) * Math.PI * 2;
+    return [Math.cos(a) * rr, Math.sin(a) * rr];
+  }
+  if (f === 3) {
+    // Vortex — tight log spiral
+    const r = Math.sqrt(u) * R * 0.95;
+    const a = ga * 0.5 + (r / R) * 10;
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  }
+  if (f === 4) {
+    // Dune lemniscate — figure-8 (the double loop)
+    const ring = 0.35 + 0.65 * ((i * 0.61803398875) % 1);
+    const t = u * Math.PI * 2;
+    return [Math.cos(t) * R * 0.98 * ring, Math.sin(2 * t) * 0.55 * R * 0.98 * ring];
+  }
+  // f === 5: dust disk
+  const r = Math.sqrt(u) * R * 0.92;
+  return [Math.cos(ga) * r, Math.sin(ga) * r];
+}
+
+// 12 acts (~15 min) — long enough to keep surprising guests.
+const FLOW_MOVEMENTS_SANDS = [
+  { form: 5, spring: 0.05, swirl: 0.4, flow: 0.6, breath: 0.3, wob: 0.5 },
+  { form: 1, spring: 0.06, swirl: 0.25, flow: 0.5, breath: 0.25, wob: 0.7 },
+  { form: 2, spring: 0.07, swirl: 0.3, flow: 0.45, breath: 0.2, wob: 0.9 },
+  { form: 4, spring: 0.05, swirl: 0.7, flow: 0.7, breath: 0.35, wob: 0.4 }, // double loop
+  { form: 3, spring: 0.05, swirl: 0.9, flow: 0.75, breath: 0.3, wob: 0.3 },
+  { form: 1, spring: 0.06, swirl: 0.3, flow: 0.55, breath: 0.3, wob: 0.8 },
+  { form: 5, spring: 0.05, swirl: 0.5, flow: 0.6, breath: 0.4, wob: 0.5 },
+  { form: 4, spring: 0.05, swirl: 0.8, flow: 0.72, breath: 0.35, wob: 0.4 }, // double loop
+  { form: 2, spring: 0.07, swirl: 0.35, flow: 0.5, breath: 0.25, wob: 0.95 },
+  { form: 3, spring: 0.05, swirl: 1.0, flow: 0.8, breath: 0.3, wob: 0.3 },
+  { form: 1, spring: 0.06, swirl: 0.28, flow: 0.5, breath: 0.25, wob: 0.7 },
+  { form: 5, spring: 0.05, swirl: 0.45, flow: 0.6, breath: 0.35, wob: 0.5 },
+];
+
 function flowFormationFor(
   mode: Mode,
   f: number,
@@ -14418,10 +14596,12 @@ function flowFormationFor(
   hx: number,
   hy: number,
   R: number,
+  ph: number,
 ): [number, number] {
-  if (mode === 'flowwalkers') return flowWalkerFormation(f, i, R);
+  if (mode === 'flowwalkers') return flowWalkerFormation(f, i, R, ph);
   if (mode === 'flowsacred') return flowSacredFormation(f, i, hx, hy, R);
-  if (mode === 'flowdance') return flowDanceFormation(f, i, R);
+  if (mode === 'flowdance') return flowDanceFormation(f, i, R, ph);
+  if (mode === 'flowsands') return flowSandsFormation(f, i, hx, hy, R);
   return flowFormation(f, i, hx, hy, R);
 }
 
@@ -14429,6 +14609,7 @@ function flowMovementsFor(mode: Mode) {
   if (mode === 'flowwalkers') return FLOW_MOVEMENTS_WALK;
   if (mode === 'flowsacred') return FLOW_MOVEMENTS_SACRED;
   if (mode === 'flowdance') return FLOW_MOVEMENTS_DANCE;
+  if (mode === 'flowsands') return FLOW_MOVEMENTS_SANDS;
   return FLOW_MOVEMENTS;
 }
 
@@ -14544,8 +14725,8 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
 
       // Formation morph: crossfade this particle between the two movements'
       // target formations, then revolve the whole field slowly.
-      const fa = flowFormationFor(cfg.mode, formA, i, hx, hy, R);
-      const fb = flowFormationFor(cfg.mode, formB, i, hx, hy, R);
+      const fa = flowFormationFor(cfg.mode, formA, i, hx, hy, R, ph);
+      const fb = flowFormationFor(cfg.mode, formB, i, hx, hy, R, ph);
       const bx = lerp(fa[0], fb[0], mf);
       const by = lerp(fa[1], fb[1], mf);
       const ang = ph * revRate;
