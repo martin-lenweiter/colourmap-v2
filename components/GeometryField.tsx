@@ -1647,7 +1647,7 @@ export const PRESETS: Record<string, Cfg> = {
     symmetry: 6,
     complexity: 8,
     glow: 3,
-    breathSpeed: 0.35,
+    breathSpeed: 0.1,
     intensity: 8,
     particles: 0,
     luminous: 2,
@@ -13978,9 +13978,7 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Trip Number 2', tag: 'DROP' },
   { name: 'Trip Number 3', tag: 'TRI' },
   { name: 'Flow Field', tag: 'FLOW' },
-  { name: 'Flow Walkers', tag: 'FLOW' },
   { name: 'Flow Sacred', tag: 'FLOW' },
-  { name: 'Dance Walkers', tag: 'FLOW' },
   { name: 'Magnetic Sands 2', tag: 'FLOW' },
   { name: 'Butterfly', tag: 'FLOW' },
   { name: 'Star Sand Lines', tag: 'FLOW' },
@@ -22464,6 +22462,9 @@ export default function GeometryField() {
             height: '100%',
             display: 'block',
             touchAction: 'none',
+            // Display mode (controls hidden): fill ~10% more of the screen.
+            transform: open ? undefined : 'scale(1.1)',
+            transformOrigin: 'center center',
             cursor:
               cfg.mode === 'celtic' ||
               cfg.mode === 'lissajous3d' ||
@@ -22525,6 +22526,8 @@ export default function GeometryField() {
               inset: 0,
               width: '100%',
               height: '100%',
+              transform: open ? undefined : 'scale(1.1)',
+              transformOrigin: 'center center',
               mixBlendMode: cfg.mode === 'matrix' || cfg.mode === 'matrix3d' ? 'screen' : 'normal',
               opacity: cfg.mode === 'matrix' || cfg.mode === 'matrix3d' ? 0.85 : 1,
               pointerEvents: 'none',
@@ -22532,8 +22535,8 @@ export default function GeometryField() {
           />
         )}
 
-        {/* Page title */}
-        {!isProjectionMode && (
+        {/* Page title — hidden in full-screen display (controls closed) */}
+        {!isProjectionMode && open && (
           <div
             style={{
               position: 'absolute',
@@ -22599,35 +22602,40 @@ export default function GeometryField() {
           </div>
         )}
 
-        {/* Show-controls button when panel closed */}
+        {/* Show-controls — a tiny discrete arrow, bottom-right, when the panel
+        is closed (display mode), so the visual stays clean while projecting. */}
         {!open && !isProjectionMode && (
           <button
             type="button"
             onClick={() => setOpen(true)}
+            title="Show controls"
+            aria-label="Show controls"
             style={{
               position: 'absolute',
-              bottom: 16,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'rgba(8,6,4,0.72)',
+              bottom: 10,
+              right: 10,
+              width: 26,
+              height: 26,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(8,6,4,0.32)',
               border: `1px solid ${accentMid}`,
               borderRadius: 99,
-              padding: '6px 22px',
               color: accent,
-              fontFamily: 'var(--font-serif)',
-              fontSize: 10,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
+              fontSize: 11,
+              lineHeight: 1,
               cursor: 'pointer',
-              backdropFilter: 'blur(10px)',
+              backdropFilter: 'blur(6px)',
+              opacity: 0.45,
               zIndex: 20,
             }}
           >
-            ▲ Controls
+            ◤
           </button>
         )}
 
-        {!isProjectionMode && (
+        {!isProjectionMode && open && (
           <button
             type="button"
             onClick={handleFullscreen}
@@ -22771,13 +22779,6 @@ export default function GeometryField() {
                 {pill('Builder', tab === 'builder', () => setTab('builder'), true)}
                 {pill('Music Visuals', tab === 'music', () => setTab('music'), true)}
                 {pill('Journeys', tab === 'journey', () => setTab('journey'), true)}
-                {pill(
-                  'Projection',
-                  isProjectionMode,
-                  () =>
-                    window.open('/geometry-field?projection=1', '_blank', 'noopener,noreferrer'),
-                  true,
-                )}
                 {pill('Figures', false, () => window.location.assign('/figures'), true)}
               </div>
               <button
