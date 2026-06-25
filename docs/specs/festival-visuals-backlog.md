@@ -146,10 +146,21 @@ readable:
   continuous current-texture trip — scales, cyclones, eddies, gravity,
   revolutions). All slow, continuous, seamlessly looping.
 
-### Deferred (bigger engineering — see mega plan)
-- **Atomic Explosion dot quality** — the dots render worse than other presets;
-  needs the point-material path matched to the current-texture modes.
-- **Swirl Dot Tunnel "super-develop"** — magnetic-sand-inspired gravity ellipses
-  + sound patterns in the starry circle (a real mode rewrite).
+### Deep work (mode-level)
+- **Atomic Explosion dots — DONE.** It's a canvas-2D mode; the dots were flat
+  1px discs. Now drawn as a soft radial-gradient sprite with additive
+  (`lighter`) blending, sized by `luminous` — luminous like the Three.js point
+  modes.
+- **Swirl Dot Tunnel transformative pass — DONE (first pass).** `swirldottunnel`
+  now has magnetic-sand scale banding (a drifting radial pattern) and a gravity
+  element orbiting on an ellipse that nearby dots swirl around — so it evolves
+  and loops. Vanish point already pushed planet-size (glow→20).
+- **`flowfield` continuous-transformation mode — NEXT (the big build).** A new
+  mode with persistent velocity-carrying particles, elliptical revolutions
+  around moving gravity wells, scale patterns, and an internal slow phase that
+  drifts through movements (calm → vortex → scales → bloom → return) so a single
+  preset transforms continuously for 10+ min. Mic-reactive. ~200–400 lines.
+
+### Pending clarification
 - **Random Pulse → bottom** — no "Random Pulse" featured entry exists; confirm
   whether this means "Random Burst" or "Chaos Pulse".

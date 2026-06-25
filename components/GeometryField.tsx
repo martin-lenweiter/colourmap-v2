@@ -14221,8 +14221,27 @@ function updateDepthJourney(group: THREE.Group, cfg: Cfg, t: number, R: number):
             Math.sin(w * TAU + phase * 2) * 0.025;
           const tubeNoise = 0.84 + ringFrac * 0.18 + Math.sin(v * TAU * 5 + phase + w * 4) * 0.035;
           const radius = vanishing + R * 1.14 * near * tubeNoise;
-          x = Math.cos(a) * radius;
-          y = Math.sin(a) * radius * 0.72;
+          if (cfg.mode === 'swirldottunnel') {
+            // Magnetic-sand scale banding — a radial pattern that drifts and evolves.
+            const evo = phase * 0.5;
+            const sand =
+              1 + Math.sin(a * Math.max(3, cfg.symmetry * 0.5) + evo * 3 + travel * 6) * 0.12;
+            const r2 = radius * sand;
+            x = Math.cos(a) * r2;
+            y = Math.sin(a) * r2 * 0.72;
+            // A gravity element orbiting on an ellipse; nearby dots swirl around it.
+            const gx = Math.cos(evo) * R * 0.24;
+            const gy = Math.sin(evo * 1.3) * R * 0.14;
+            const ddx = x - gx;
+            const ddy = y - gy;
+            const gd = Math.hypot(ddx, ddy) + R * 0.05;
+            const swirlAmt = (R * R * 0.012 * near) / (gd * gd);
+            x += (-ddy / gd) * swirlAmt;
+            y += (ddx / gd) * swirlAmt;
+          } else {
+            x = Math.cos(a) * radius;
+            y = Math.sin(a) * radius * 0.72;
+          }
           z = (0.5 - travel) * R * 0.72;
         } else if (i < dotLimit && cfg.mode === 'dotroad') {
           const travel = (q + phase * 0.82) % 1;
@@ -18680,6 +18699,25 @@ export default function GeometryField() {
         s: 0.75 + Math.random() * 1,
       }));
 
+      // Soft glowing dot sprite (drawn additively) so the canvas dots have the
+      // same luminous quality as the Three.js point modes (e.g. Cyclone Tiles),
+      // instead of flat 1px discs.
+      const dotSprite = document.createElement('canvas');
+      const DSR = 24;
+      dotSprite.width = DSR * 2;
+      dotSprite.height = DSR * 2;
+      const dctx = dotSprite.getContext('2d');
+      if (dctx) {
+        const g = dctx.createRadialGradient(DSR, DSR, 0, DSR, DSR, DSR);
+        g.addColorStop(0, `rgba(${pr},${pg},${pb},1)`);
+        g.addColorStop(0.35, `rgba(${pr},${pg},${pb},0.5)`);
+        g.addColorStop(1, `rgba(${pr},${pg},${pb},0)`);
+        dctx.fillStyle = g;
+        dctx.beginPath();
+        dctx.arc(DSR, DSR, DSR, 0, Math.PI * 2);
+        dctx.fill();
+      }
+
       function drawExplosion() {
         if (!canvasModeActiveRef.current) return;
         const W = mc!.width;
@@ -18694,6 +18732,7 @@ export default function GeometryField() {
         ctx!.fillStyle = 'rgba(7,2,0,0.64)';
         ctx!.fillRect(0, 0, W, H);
 
+        ctx!.globalCompositeOperation = 'lighter';
         for (const dot of dots) {
           let x = 0;
           let y = 0;
@@ -18731,11 +18770,11 @@ export default function GeometryField() {
               (ring > 0.55 ? -radius * 0.16 : 0);
             alpha = (1 - q * 0.42) * (0.42 + iF * 0.44);
           }
-          ctx!.beginPath();
-          ctx!.arc(cx + x, cy + y, dot.s, 0, Math.PI * 2);
-          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0.12, alpha)})`;
-          ctx!.fill();
+          const sz = dot.s * (3.2 + cfg.luminous * 1.1);
+          ctx!.globalAlpha = Math.max(0.12, alpha);
+          ctx!.drawImage(dotSprite, cx + x - sz, cy + y - sz, sz * 2, sz * 2);
         }
+        ctx!.globalAlpha = 1;
 
         canvasModeAnimRef.current = requestAnimationFrame(drawExplosion);
       }
@@ -20444,6 +20483,7 @@ export default function GeometryField() {
     cfg.complexity,
     cfg.symmetry,
     cfg.glow,
+    cfg.luminous,
   ]);
 
   function startJourney(id: number) {
