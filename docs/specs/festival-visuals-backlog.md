@@ -364,3 +364,9 @@ DJ cable — the laptop just listens to the room.
 - **Stars by default**: every preset now shows a background starfield — the star
   count is floored (`Math.max(3, cfg.stars)`) at build, so even `stars: 0`
   presets keep a gentle field; the slider still adds more above the floor.
+
+- **Diaporama pacing**: each slide now holds **~60s (a minute)** and every slide
+  is capped to breathSpeed **0.18**, so it drifts by calmly rather than
+  flickering past. A small skip list keeps the loop on the good ones —
+  Sacred Sin Morph (also removed from the featured list), Chaos Sin Morph,
+  Drift Field and Sacred Pyramid are excluded from the diaporama.

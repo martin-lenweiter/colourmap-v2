@@ -14017,7 +14017,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Chaos Tri Sphere', tag: '3D' },
   { name: 'Alchemical Dot Sun', tag: 'DOT' },
   { name: 'Sin Morph', tag: 'TOP' },
-  { name: 'Sacred Sin Morph', tag: 'MUSIC' },
   { name: 'Chaos Sin Morph', tag: 'MUSIC' },
   { name: 'Drift Field', tag: 'MUSIC' },
   { name: 'Sacred Pyramid', tag: 'MUSIC' },
@@ -14074,8 +14073,20 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
 // engine crossfades between slides so it never hard-cuts, and the builder's
 // sliders adapt to each stage's mode as it plays. Pushed onto JOURNEYS so it
 // appears in the Journeys tab like any other program.
+// Slow + calm: each slide holds ~a minute, and every preset's animation speed
+// is capped so nothing races by — it should drift, not flicker. A few presets
+// are skipped so the loop stays on the ones worth lingering on.
+const DIAPORAMA_SLIDE_SEC = 60;
+const DIAPORAMA_MAX_SPEED = 0.18;
+const DIAPORAMA_SKIP = new Set([
+  'Sacred Sin Morph',
+  'Chaos Sin Morph',
+  'Drift Field',
+  'Sacred Pyramid',
+]);
 const DIAPORAMA_STAGES: JourneyStage[] = FEATURED_PRESETS.flatMap((item) => {
   if (!('name' in item)) return [];
+  if (DIAPORAMA_SKIP.has(item.name)) return [];
   const p = PRESETS[item.name];
   if (!p) return [];
   return [
@@ -14083,11 +14094,11 @@ const DIAPORAMA_STAGES: JourneyStage[] = FEATURED_PRESETS.flatMap((item) => {
       name: item.name,
       preset: p.preset,
       mode: p.mode,
-      duration: 14,
+      duration: DIAPORAMA_SLIDE_SEC,
       symmetry: p.symmetry,
       complexity: p.complexity,
       glow: p.glow,
-      breathSpeed: p.breathSpeed,
+      breathSpeed: Math.min(p.breathSpeed ?? DIAPORAMA_MAX_SPEED, DIAPORAMA_MAX_SPEED),
       intensity: p.intensity,
       particles: p.particles,
       luminous: p.luminous,
@@ -14100,7 +14111,7 @@ JOURNEYS.push({
   id: JOURNEYS.length + 1,
   name: 'Diaporama — Play All',
   icon: 'ALL',
-  desc: `Every preset, one after another — the whole library as a slideshow, up to #${DIAPORAMA_STAGES.length}, looping forever. ~${Math.round((DIAPORAMA_STAGES.length * 14) / 60)} minutes at 14s a slide; the sliders adapt to each stage as it plays.`,
+  desc: `Every preset, one after another — the whole library as a slideshow, up to #${DIAPORAMA_STAGES.length}, looping forever. Slow and calm: ~${Math.round((DIAPORAMA_STAGES.length * DIAPORAMA_SLIDE_SEC) / 60)} minutes at ${DIAPORAMA_SLIDE_SEC}s a slide; the sliders adapt to each stage as it plays.`,
   stages: DIAPORAMA_STAGES,
 });
 
