@@ -14160,6 +14160,48 @@ const DEPTH_LINE_SEGMENTS = 72;
 /* ── Flow Field — continuous-transformation particle system ───── */
 const FLOW_FIELD_COUNT = 5200;
 
+// Target formations the flow field morphs between (0 = the dense home disk).
+function flowFormation(f: number, i: number, hx: number, hy: number, R: number): [number, number] {
+  if (f === 0) return [hx, hy];
+  const u = (i + 0.5) / FLOW_FIELD_COUNT;
+  const ga = i * 2.399963229728653;
+  if (f === 1) {
+    // Phyllotaxis sunflower
+    const r = Math.sqrt(u) * R * 0.92;
+    return [Math.cos(ga) * r, Math.sin(ga) * r];
+  }
+  if (f === 2) {
+    // Concentric rings
+    const nR = 7;
+    const ring = Math.floor(u * nR);
+    const rr = ((ring + 0.6) / nR) * R * 0.92;
+    const a = (u * nR - ring) * Math.PI * 2;
+    return [Math.cos(a) * rr, Math.sin(a) * rr];
+  }
+  if (f === 3) {
+    // Square lattice
+    const cols = Math.round(Math.sqrt(FLOW_FIELD_COUNT));
+    const gx = ((i % cols) / (cols - 1) - 0.5) * R * 1.7;
+    const gy = (Math.floor(i / cols) / (cols - 1) - 0.5) * R * 1.7;
+    return [gx, gy];
+  }
+  // f === 4: spiral
+  const r = u * R * 0.92;
+  const a = ga * 0.5 + (r / R) * 7;
+  return [Math.cos(a) * r, Math.sin(a) * r];
+}
+
+// Movements: each owns a target formation + force mix; the field crossfades
+// between them continuously (~75s each) so it is always transforming.
+const FLOW_MOVEMENTS = [
+  { form: 0, spring: 0.08, swirl: 0.3, flow: 0.5, breath: 0.2, wob: 0.1 },
+  { form: 1, spring: 0.07, swirl: 0.45, flow: 0.6, breath: 0.35, wob: 0.25 },
+  { form: 0, spring: 0.05, swirl: 1.0, flow: 0.7, breath: 0.3, wob: 0.15 },
+  { form: 2, spring: 0.09, swirl: 0.3, flow: 0.4, breath: 0.2, wob: 0.9 },
+  { form: 3, spring: 0.11, swirl: 0.2, flow: 0.3, breath: 0.15, wob: 0.1 },
+  { form: 4, spring: 0.06, swirl: 0.6, flow: 0.7, breath: 0.5, wob: 0.2 },
+];
+
 function buildFlowField(cfg: Cfg, R: number): THREE.Group {
   const group = new THREE.Group();
   const pos = new Float32Array(FLOW_FIELD_COUNT * 3);
@@ -14209,12 +14251,24 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
   const iF = cfg.intensity / 10;
   const speed = Math.max(0.05, cfg.breathSpeed);
   const ph = t * 0.00018 * speed;
-  // Internal movement cycle: calm → vortex → scales → bloom → return, all
-  // running continuously so one preset transforms for minutes without a snap.
-  const cycle = (t * 0.00001 * speed) % 1;
-  const wSwirl = 0.5 + 0.5 * Math.sin(cycle * Math.PI * 2);
-  const wScale = 0.5 + 0.5 * Math.sin(cycle * Math.PI * 2 + 2.0);
-  const wBloom = 0.5 + 0.5 * Math.sin(cycle * Math.PI * 2 + 4.0);
+  // Movement state machine: crossfade between formations + force mixes, ~75s
+  // each, continuously — the field is always transforming with no snap.
+  const mClock = ((t / 1000) * speed) / 75;
+  const mLen = FLOW_MOVEMENTS.length;
+  const mi = ((Math.floor(mClock) % mLen) + mLen) % mLen;
+  const mn = (mi + 1) % mLen;
+  let mf = mClock - Math.floor(mClock);
+  mf = mf * mf * (3 - 2 * mf);
+  const MA = FLOW_MOVEMENTS[mi];
+  const MB = FLOW_MOVEMENTS[mn];
+  const springK = lerp(MA.spring, MB.spring, mf);
+  const swirlW = lerp(MA.swirl, MB.swirl, mf);
+  const flowW = lerp(MA.flow, MB.flow, mf);
+  const breathW = lerp(MA.breath, MB.breath, mf);
+  const wobW = lerp(MA.wob, MB.wob, mf);
+  const formA = MA.form;
+  const formB = MB.form;
+  const hueCycle = (mClock * 0.1) % 1;
   const sound = Math.min(1, _voiceEnergy * 1.4 + _musicPulse * 0.5);
   const wells = Math.max(2, Math.min(4, Math.round(cfg.symmetry / 4) + 1));
   const turb = 0.4 + cfg.complexity / 10;
@@ -14245,18 +14299,23 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
       const hx = home[i * 2];
       const hy = home[i * 2 + 1];
 
-      // Revolve the whole home distribution slowly so the dense disk stays full.
+      // Formation morph: crossfade this particle between the two movements'
+      // target formations, then revolve the whole field slowly.
+      const fa = flowFormation(formA, i, hx, hy, R);
+      const fb = flowFormation(formB, i, hx, hy, R);
+      const bx = lerp(fa[0], fb[0], mf);
+      const by = lerp(fa[1], fb[1], mf);
       const ang = ph * 0.4;
       const ca = Math.cos(ang);
       const sa = Math.sin(ang);
-      let tx = hx * ca - hy * sa;
-      let ty = hx * sa + hy * ca;
+      let tx = bx * ca - by * sa;
+      let ty = bx * sa + by * ca;
 
-      // Breathing flow drift of the target — organic motion that never collapses.
-      tx += Math.sin(ty * 0.011 + ph * 2 + s0 * 6) * R * 0.07 * turb * (0.5 + wSwirl);
-      ty += Math.cos(tx * 0.011 - ph * 2 + s0 * 6) * R * 0.07 * turb * (0.5 + wSwirl);
+      // Organic flow drift of the target, weighted by the movement.
+      tx += Math.sin(ty * 0.011 + ph * 2 + s0 * 6) * R * 0.07 * turb * flowW;
+      ty += Math.cos(tx * 0.011 - ph * 2 + s0 * 6) * R * 0.07 * turb * flowW;
 
-      // Gravity wells orbiting on ellipses — swirl the target locally (eddies), bounded.
+      // Gravity wells orbiting on ellipses — swirl the target locally (eddies).
       for (let k = 0; k < wells; k++) {
         const kp = ph * (0.6 + k * 0.27) + (k / wells) * Math.PI * 2;
         const gx = Math.cos(kp) * R * (0.34 + 0.1 * k);
@@ -14264,25 +14323,25 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
         const dx = tx - gx;
         const dy = ty - gy;
         const d2 = dx * dx + dy * dy + R * R * 0.02;
-        const sw = ((R * R * 0.05) / d2) * (0.5 + wSwirl) * 0.02;
+        const sw = ((R * R * 0.05) / d2) * swirlW * 0.02;
         tx += -dy * sw;
         ty += dx * sw;
       }
 
-      // Subtle magnetic-sand scale wobble on the target radius — a pattern, not a pull.
+      // Magnetic-sand scale wobble on the target radius — a pattern, not a pull.
       const trad = Math.hypot(tx, ty) + 0.0001;
-      const wob = Math.sin((trad / R) * scaleBands * Math.PI + ph * 2.5) * R * 0.03 * wScale;
+      const wob = Math.sin((trad / R) * scaleBands * Math.PI + ph * 2.5) * R * 0.03 * wobW;
       tx += (tx / trad) * wob;
       ty += (ty / trad) * wob;
 
-      // Gentle whole-disk breathing (keeps the centre populated).
-      const breath = 1 + wBloom * 0.08 * (0.5 + sound);
+      // Gentle whole-field breathing (keeps the centre populated).
+      const breath = 1 + breathW * 0.08 * (0.5 + sound);
       tx *= breath;
       ty *= breath;
 
-      // Spring toward the revolving, perturbed target → preserves the dense circle.
-      let vx = (vel[i * 3] + (tx - px) * 0.06) * 0.84;
-      let vy = (vel[i * 3 + 1] + (ty - py) * 0.06) * 0.84;
+      // Spring toward the revolving, perturbed target → preserves dense formations.
+      let vx = (vel[i * 3] + (tx - px) * springK) * 0.84;
+      let vy = (vel[i * 3 + 1] + (ty - py) * springK) * 0.84;
       const vmax = R * 0.05;
       const vmag = Math.hypot(vx, vy);
       if (vmag > vmax) {
@@ -14301,7 +14360,7 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
       arr[i * 3 + 2] = Math.sin(rad * 0.01 + ph * 3 + s0 * 6) * R * 0.05 + force.z;
 
       // Per-particle hue drifts outward across the radius and over the cycle.
-      let hue = (baseHsl.h + (rad / R) * hueSpread + cycle * 0.12 + s0 * 0.05) % 1;
+      let hue = (baseHsl.h + (rad / R) * hueSpread + hueCycle + s0 * 0.05) % 1;
       if (hue < 0) hue += 1;
       tmpCol.setHSL(hue, Math.min(1, baseHsl.s + 0.18), Math.min(0.72, baseHsl.l + 0.12));
       cArr[i * 3] = tmpCol.r * bright;
