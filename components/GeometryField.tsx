@@ -54,6 +54,7 @@ type Mode =
   | 'cyclonetiles'
   | 'eddylace'
   | 'magneticsand'
+  | 'flowfield'
   | 'eclipse'
   | 'yinyang'
   | 'volcano'
@@ -1646,6 +1647,18 @@ export const PRESETS: Record<string, Cfg> = {
     luminous: 2,
     stars: 0,
     mode: 'magneticsand',
+  },
+  'Flow Field': {
+    preset: 'Cosmic Indigo',
+    symmetry: 12,
+    complexity: 6,
+    glow: 5,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 8,
+    luminous: 3,
+    stars: 3,
+    mode: 'flowfield',
   },
   Eclipse: {
     preset: 'Golden Source',
@@ -5910,6 +5923,8 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'gravity':
     case 'fire':
       return buildCurrentTexture(cfg, R);
+    case 'flowfield':
+      return buildFlowField(cfg, R);
     case 'plasma':
       return buildPlasma(cfg, R);
     case 'nebula':
@@ -6148,6 +6163,9 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'gravity':
     case 'fire':
       updateCurrentTexture(group, cfg, t, R);
+      break;
+    case 'flowfield':
+      updateFlowField(group, cfg, t, R);
       break;
     case 'plasma':
       updatePlasma(group, cfg, t, R);
@@ -12939,6 +12957,7 @@ function slidersFor(mode: Mode): SliderDef[] {
 /* ── Mode pill definitions ──────────────────────────────────── */
 
 const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
+  flowfield: 'Flow Field',
   burst: 'DMT Vision',
   kaleidoscope: 'Cosmic Indigo',
   tunnel: 'Warp Tunnel',
@@ -13112,6 +13131,7 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'cyclonetiles', label: 'Cyclone Tiles' },
   { mode: 'eddylace', label: 'Eddy Lace' },
   { mode: 'magneticsand', label: 'Magnetic Sand' },
+  { mode: 'flowfield', label: 'Flow Field' },
   { mode: 'eclipse', label: 'Eclipse' },
   { mode: 'yinyang', label: 'Yin Yang' },
   { mode: 'volcano', label: 'Volcano' },
@@ -13176,7 +13196,7 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Trip Number 1', tag: 'TRIP' },
   { name: 'Trip Number 2', tag: 'DROP' },
   { name: 'Trip Number 3', tag: 'TRI' },
-  { name: 'Atomic Explosion', tag: 'TOP' },
+  { name: 'Flow Field', tag: 'FLOW' },
   { name: 'Gravity', tag: 'TOP' },
   { name: 'Fire', tag: 'TOP' },
   { name: 'Prism3D Core', tag: 'PRISM' },
@@ -14126,6 +14146,132 @@ function updateDotWalker(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
 const DEPTH_DOT_COUNT = 2800;
 const DEPTH_LINE_RINGS = 34;
 const DEPTH_LINE_SEGMENTS = 72;
+
+/* ── Flow Field — continuous-transformation particle system ───── */
+const FLOW_FIELD_COUNT = 5200;
+
+function buildFlowField(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pal = PAL[cfg.preset] ?? PAL['Cosmic Indigo'];
+  const pos = new Float32Array(FLOW_FIELD_COUNT * 3);
+  const vel = new Float32Array(FLOW_FIELD_COUNT * 3);
+  const seed = new Float32Array(FLOW_FIELD_COUNT * 3);
+  for (let i = 0; i < FLOW_FIELD_COUNT; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = Math.sqrt(Math.random()) * R * 0.9;
+    pos[i * 3] = Math.cos(a) * r;
+    pos[i * 3 + 1] = Math.sin(a) * r;
+    pos[i * 3 + 2] = (Math.random() - 0.5) * R * 0.12;
+    seed[i * 3] = Math.random();
+    seed[i * 3 + 1] = Math.random();
+    seed[i * 3 + 2] = Math.random();
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const pts = new THREE.Points(
+    geo,
+    circlePtsMat(hdrColor(pal.rgb, cfg.intensity / 10, 2.4), 2.6 + cfg.luminous * 0.6, 0.85),
+  );
+  pts.userData.tag = 'flowField';
+  pts.userData.vel = vel;
+  pts.userData.seed = seed;
+  group.add(pts);
+  return group;
+}
+
+function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Cosmic Indigo'];
+  const iF = cfg.intensity / 10;
+  const speed = Math.max(0.05, cfg.breathSpeed);
+  const ph = t * 0.00018 * speed;
+  // Internal movement cycle: calm → vortex → scales → bloom → return, all
+  // running continuously so one preset transforms for minutes without a snap.
+  const cycle = (t * 0.00001 * speed) % 1;
+  const wSwirl = 0.5 + 0.5 * Math.sin(cycle * Math.PI * 2);
+  const wScale = 0.5 + 0.5 * Math.sin(cycle * Math.PI * 2 + 2.0);
+  const wBloom = 0.5 + 0.5 * Math.sin(cycle * Math.PI * 2 + 4.0);
+  const sound = Math.min(1, _voiceEnergy * 1.4 + _musicPulse * 0.5);
+  const wells = Math.max(2, Math.min(4, Math.round(cfg.symmetry / 4) + 1));
+  const turb = 0.4 + cfg.complexity / 10;
+  const scaleBands = 4 + Math.round(cfg.complexity);
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'flowField') continue;
+    const pts = child as THREE.Points;
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const vel = pts.userData.vel as Float32Array;
+    const seed = pts.userData.seed as Float32Array;
+    const drawCount = Math.round(lerp(2200, FLOW_FIELD_COUNT, cfg.particles / 10));
+
+    for (let i = 0; i < FLOW_FIELD_COUNT; i++) {
+      let px = arr[i * 3];
+      let py = arr[i * 3 + 1];
+      const s0 = seed[i * 3];
+      let fx = 0;
+      let fy = 0;
+
+      // (a) gravity wells orbiting on ellipses — revolution (swirl) + slight pull
+      for (let k = 0; k < wells; k++) {
+        const kp = ph * (0.6 + k * 0.27) + (k / wells) * Math.PI * 2;
+        const gx = Math.cos(kp) * R * (0.34 + 0.1 * k);
+        const gy = Math.sin(kp * 1.3) * R * (0.2 + 0.06 * k);
+        const dx = px - gx;
+        const dy = py - gy;
+        const d = Math.hypot(dx, dy) + R * 0.06;
+        const inv = ((R * R) / (d * d)) * 0.00018 * (0.6 + wSwirl);
+        fx += ((-dy / d) * 0.9 - (dx / d) * 0.16) * inv;
+        fy += ((dx / d) * 0.9 - (dy / d) * 0.16) * inv;
+      }
+
+      // (b) curl/flow noise — organic continuous drift
+      fx += Math.sin(py * 0.012 + ph * 2 + s0 * 6) * R * 0.00022 * turb;
+      fy += Math.cos(px * 0.012 - ph * 2 + s0 * 6) * R * 0.00022 * turb;
+
+      // (c) magnetic-sand scale banding — pull toward nearest band radius
+      const rad = Math.hypot(px, py) + 0.0001;
+      const band = R * 0.92;
+      const target = (Math.round((rad / band) * scaleBands) / scaleBands) * band;
+      const bandPull = (target - rad) * 0.0009 * wScale;
+      fx += (px / rad) * bandPull;
+      fy += (py / rad) * bandPull;
+
+      // (d) bloom (outward, sound-reactive) + soft containment
+      const out = (wBloom * 0.6 + sound * 0.5) * 0.00012 * R;
+      fx += (px / rad) * out;
+      fy += (py / rad) * out;
+      if (rad > R * 1.05) {
+        fx -= (px / rad) * (rad - R * 1.05) * 0.004;
+        fy -= (py / rad) * (rad - R * 1.05) * 0.004;
+      }
+
+      // integrate with damping + velocity clamp
+      let vx = (vel[i * 3] + fx) * 0.94;
+      let vy = (vel[i * 3 + 1] + fy) * 0.94;
+      const vmax = R * 0.04;
+      const vmag = Math.hypot(vx, vy);
+      if (vmag > vmax) {
+        vx = (vx / vmag) * vmax;
+        vy = (vy / vmag) * vmax;
+      }
+      vel[i * 3] = vx;
+      vel[i * 3 + 1] = vy;
+      px += vx;
+      py += vy;
+
+      const force = fingerForce(px, py, 0, R);
+      arr[i * 3] = px + force.x;
+      arr[i * 3 + 1] = py + force.y;
+      arr[i * 3 + 2] = Math.sin(rad * 0.01 + ph * 3 + s0 * 6) * R * 0.05 + force.z;
+    }
+    posAttr.needsUpdate = true;
+    pts.geometry.setDrawRange(0, drawCount);
+    const mat = pts.material as THREE.PointsMaterial;
+    mat.size = (2.0 + cfg.luminous * 0.7 + sound * 1.5) * (R / 260);
+    mat.opacity = Math.min(0.95, 0.55 + iF * 0.3 + sound * 0.15);
+    updateMat(pts, pal.rgb, iF, 2.0 + cfg.luminous * 0.3 + cfg.glow * 0.06);
+  }
+}
 
 function buildDepthJourney(cfg: Cfg, R: number): THREE.Group {
   const group = new THREE.Group();
@@ -18819,6 +18965,22 @@ export default function GeometryField() {
         if (dots.length > 1600) dots.splice(0, dots.length - 1600);
       }
 
+      const touchSprite = document.createElement('canvas');
+      const TSR = 24;
+      touchSprite.width = TSR * 2;
+      touchSprite.height = TSR * 2;
+      const tctx = touchSprite.getContext('2d');
+      if (tctx) {
+        const g = tctx.createRadialGradient(TSR, TSR, 0, TSR, TSR, TSR);
+        g.addColorStop(0, `rgba(${pr},${pg},${pb},1)`);
+        g.addColorStop(0.35, `rgba(${pr},${pg},${pb},0.5)`);
+        g.addColorStop(1, `rgba(${pr},${pg},${pb},0)`);
+        tctx.fillStyle = g;
+        tctx.beginPath();
+        tctx.arc(TSR, TSR, TSR, 0, Math.PI * 2);
+        tctx.fill();
+      }
+
       function drawTouchPreset() {
         if (!canvasModeActiveRef.current) return;
         const W = mc!.width;
@@ -18831,6 +18993,7 @@ export default function GeometryField() {
 
         emitTouchDots(W, H);
 
+        ctx!.globalCompositeOperation = 'lighter';
         for (let i = dots.length - 1; i >= 0; i--) {
           const dot = dots[i];
           const cx = _distortWorldX + W / 2;
@@ -18848,10 +19011,9 @@ export default function GeometryField() {
           dot.age += 1;
           const lifeT = dot.age / dot.life;
           const alpha = Math.sin(Math.min(1, lifeT) * Math.PI) * (0.34 + iF * 0.45);
-          ctx!.beginPath();
-          ctx!.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
-          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0, alpha)})`;
-          ctx!.fill();
+          const sz = dot.size * (2.6 + cfg.luminous * 0.9);
+          ctx!.globalAlpha = Math.max(0, alpha);
+          ctx!.drawImage(touchSprite, dot.x - sz, dot.y - sz, sz * 2, sz * 2);
           if (
             dot.age >= dot.life ||
             dot.x < -40 ||
@@ -18863,6 +19025,8 @@ export default function GeometryField() {
           }
         }
 
+        ctx!.globalAlpha = 1;
+        ctx!.globalCompositeOperation = 'source-over';
         if (!hasTouched && dots.length === 0) {
           ctx!.fillStyle = `rgba(${pr},${pg},${pb},0.66)`;
           ctx!.font = `600 ${Math.max(14, Math.round(Math.min(W, H) * 0.036))}px serif`;

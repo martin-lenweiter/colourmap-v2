@@ -155,11 +155,26 @@ readable:
   now has magnetic-sand scale banding (a drifting radial pattern) and a gravity
   element orbiting on an ellipse that nearby dots swirl around — so it evolves
   and loops. Vanish point already pushed planet-size (glow→20).
-- **`flowfield` continuous-transformation mode — NEXT (the big build).** A new
-  mode with persistent velocity-carrying particles, elliptical revolutions
-  around moving gravity wells, scale patterns, and an internal slow phase that
-  drifts through movements (calm → vortex → scales → bloom → return) so a single
-  preset transforms continuously for 10+ min. Mic-reactive. ~200–400 lines.
+- **`flowfield` continuous-transformation mode — DONE (first version).** New
+  mode `flowfield` (`buildFlowField`/`updateFlowField`, ~5200 persistent
+  velocity-carrying particles). Forces: gravity wells orbiting on ellipses
+  (revolutions), curl/flow drift, magnetic-sand scale banding, sound-reactive
+  bloom + soft containment. An internal movement cycle (calm → vortex → scales
+  → bloom → return) runs continuously so one preset transforms for minutes with
+  no snap. Finger-distortion + mic reactive. Preset "Flow Field" (Cosmic Indigo)
+  in the featured list; soft additive `circlePtsMat` dots. Tunable via
+  symmetry (well count), complexity (turbulence + scale bands), particles
+  (density), luminous (size), glow/intensity (colour).
+- **Touch Preset light — DONE.** Same soft-additive-sprite treatment as Atomic
+  Explosion, so its dots glow like the other presets.
+- **Atomic Explosion** removed from the featured list (still not landing for the
+  show, per request); mode + registry kept.
+
+### Flowfield — possible next depth
+- Per-particle hue drift / palette gradients across the radius.
+- Wire it into a journey (keep symmetry/complexity fixed per stage so the
+  particle field isn't rebuilt mid-stage — rebuild resets velocities).
+- A dedicated MODE_SLIDERS entry with movement-flavoured labels.
 
 ### Pending clarification
 - **Random Pulse → bottom** — no "Random Pulse" featured entry exists; confirm
