@@ -14017,7 +14017,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Chaos Tri Sphere', tag: '3D' },
   { name: 'Alchemical Dot Sun', tag: 'DOT' },
   { name: 'Sin Morph', tag: 'TOP' },
-  { name: 'Sacred Sin Morph', tag: 'MUSIC' },
   { name: 'Chaos Sin Morph', tag: 'MUSIC' },
   { name: 'Drift Field', tag: 'MUSIC' },
   { name: 'Sacred Pyramid', tag: 'MUSIC' },
@@ -14074,12 +14073,20 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
 // engine crossfades between slides so it never hard-cuts, and the builder's
 // sliders adapt to each stage's mode as it plays. Pushed onto JOURNEYS so it
 // appears in the Journeys tab like any other program.
-// Slow + calm: each slide holds for a while, and every preset's animation speed
-// is capped so nothing races by — it should drift, not flicker.
-const DIAPORAMA_SLIDE_SEC = 24;
+// Slow + calm: each slide holds ~a minute, and every preset's animation speed
+// is capped so nothing races by — it should drift, not flicker. A few presets
+// are skipped so the loop stays on the ones worth lingering on.
+const DIAPORAMA_SLIDE_SEC = 60;
 const DIAPORAMA_MAX_SPEED = 0.18;
+const DIAPORAMA_SKIP = new Set([
+  'Sacred Sin Morph',
+  'Chaos Sin Morph',
+  'Drift Field',
+  'Sacred Pyramid',
+]);
 const DIAPORAMA_STAGES: JourneyStage[] = FEATURED_PRESETS.flatMap((item) => {
   if (!('name' in item)) return [];
+  if (DIAPORAMA_SKIP.has(item.name)) return [];
   const p = PRESETS[item.name];
   if (!p) return [];
   return [
