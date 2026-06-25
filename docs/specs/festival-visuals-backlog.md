@@ -330,3 +330,26 @@ DJ cable — the laptop just listens to the room.
   feed; works best with a clear 4/4 kick. Add a manual tap-tempo + BPM lock
   fallback for when the estimate drifts. A line-in/cable remains the most
   reliable, but mic-only is good enough for an ambient, beat-aware set.
+
+### Batch 6 — display polish + curation — DONE
+- **Full-screen display zoom**: when the controls panel is closed (display
+  mode), the canvas + overlay scale to **+10%** so the visual fills more of the
+  screen. The "Geometry Field" title and the Full button hide; the prominent
+  "▲ Controls" pill becomes a **tiny discrete ◤ arrow, bottom-right**, so
+  there's almost nothing on screen while projecting.
+- **Magnetic Sand** (classic) default Flow Speed **0.35 → 0.10**.
+- **Removed presets**: Flow Walkers + Dance Walkers dropped from the featured
+  list (the silhouette-spring figures never matched the classic Dot Walker; the
+  modes remain for the journeys that use them).
+- **Removed the "Projection" category pill** from the builder tab row (next to
+  Figures); projection is still reachable via `?projection=1`.
+
+### Still open / requested
+- **Presets fill more (some ~2×)**: each mode sets its own radius as roughly
+  `Math.min(W, H) × 0.38–0.48`, so on wide screens they leave margin. The +10%
+  display zoom is a global CSS scale on top; a true "fill the screen" / 2× needs
+  raising that per-mode factor (or threading a global fill multiplier into the
+  render). Best tuned per preset with eyes on localhost.
+- **Figures page full view**: same treatment as the geometry display — strip all
+  chrome to just the model, with a tiny bottom-right control to reopen the
+  sliders/menu. (Separate surface: `app/(app)/figures/`.)
