@@ -14074,6 +14074,10 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
 // engine crossfades between slides so it never hard-cuts, and the builder's
 // sliders adapt to each stage's mode as it plays. Pushed onto JOURNEYS so it
 // appears in the Journeys tab like any other program.
+// Slow + calm: each slide holds for a while, and every preset's animation speed
+// is capped so nothing races by — it should drift, not flicker.
+const DIAPORAMA_SLIDE_SEC = 24;
+const DIAPORAMA_MAX_SPEED = 0.18;
 const DIAPORAMA_STAGES: JourneyStage[] = FEATURED_PRESETS.flatMap((item) => {
   if (!('name' in item)) return [];
   const p = PRESETS[item.name];
@@ -14083,11 +14087,11 @@ const DIAPORAMA_STAGES: JourneyStage[] = FEATURED_PRESETS.flatMap((item) => {
       name: item.name,
       preset: p.preset,
       mode: p.mode,
-      duration: 14,
+      duration: DIAPORAMA_SLIDE_SEC,
       symmetry: p.symmetry,
       complexity: p.complexity,
       glow: p.glow,
-      breathSpeed: p.breathSpeed,
+      breathSpeed: Math.min(p.breathSpeed ?? DIAPORAMA_MAX_SPEED, DIAPORAMA_MAX_SPEED),
       intensity: p.intensity,
       particles: p.particles,
       luminous: p.luminous,
@@ -14100,7 +14104,7 @@ JOURNEYS.push({
   id: JOURNEYS.length + 1,
   name: 'Diaporama — Play All',
   icon: 'ALL',
-  desc: `Every preset, one after another — the whole library as a slideshow, up to #${DIAPORAMA_STAGES.length}, looping forever. ~${Math.round((DIAPORAMA_STAGES.length * 14) / 60)} minutes at 14s a slide; the sliders adapt to each stage as it plays.`,
+  desc: `Every preset, one after another — the whole library as a slideshow, up to #${DIAPORAMA_STAGES.length}, looping forever. Slow and calm: ~${Math.round((DIAPORAMA_STAGES.length * DIAPORAMA_SLIDE_SEC) / 60)} minutes at ${DIAPORAMA_SLIDE_SEC}s a slide; the sliders adapt to each stage as it plays.`,
   stages: DIAPORAMA_STAGES,
 });
 

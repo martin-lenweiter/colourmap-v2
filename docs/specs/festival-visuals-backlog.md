@@ -364,3 +364,7 @@ DJ cable — the laptop just listens to the room.
 - **Stars by default**: every preset now shows a background starfield — the star
   count is floored (`Math.max(3, cfg.stars)`) at build, so even `stars: 0`
   presets keep a gentle field; the slider still adds more above the floor.
+
+- **Diaporama pacing**: slowed to **24s a slide** and every slide capped to
+  breathSpeed **0.18**, so the whole library drifts by calmly rather than
+  flickering past.
