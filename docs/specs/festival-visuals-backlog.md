@@ -330,3 +330,37 @@ DJ cable — the laptop just listens to the room.
   feed; works best with a clear 4/4 kick. Add a manual tap-tempo + BPM lock
   fallback for when the estimate drifts. A line-in/cable remains the most
   reliable, but mic-only is good enough for an ambient, beat-aware set.
+
+### Batch 6 — display polish + curation — DONE
+- **Full-screen display zoom**: when the controls panel is closed (display
+  mode), the canvas + overlay scale to **+10%** so the visual fills more of the
+  screen. The "Geometry Field" title and the Full button hide; the prominent
+  "▲ Controls" pill becomes a **tiny discrete ◤ arrow, bottom-right**, so
+  there's almost nothing on screen while projecting.
+- **Magnetic Sand** (classic) default Flow Speed **0.35 → 0.10**.
+- **Removed presets**: Flow Walkers + Dance Walkers dropped from the featured
+  list (the silhouette-spring figures never matched the classic Dot Walker; the
+  modes remain for the journeys that use them).
+- **Removed the "Projection" category pill** from the builder tab row (next to
+  Figures); projection is still reachable via `?projection=1`.
+
+### Still open / requested
+- **Presets fill more (some ~2×)**: each mode sets its own radius as roughly
+  `Math.min(W, H) × 0.38–0.48`, so on wide screens they leave margin. The +10%
+  display zoom is a global CSS scale on top; a true "fill the screen" / 2× needs
+  raising that per-mode factor (or threading a global fill multiplier into the
+  render). Best tuned per preset with eyes on localhost.
+- **Figures page full view**: same treatment as the geometry display — strip all
+  chrome to just the model, with a tiny bottom-right control to reopen the
+  sliders/menu. (Separate surface: `app/(app)/figures/`.)
+
+### Batch 7 — projection removed, finger toggle, stars-by-default — DONE
+- **Projection mode deleted**: `?projection=1` no longer enters a separate
+  projection live-mode (the display mode — closing the controls — replaces it).
+  The Projection tab pill was already removed; now the mode itself is unreachable.
+- **Finger touch is a click-toggle**: with finger distortion enabled, one click
+  latches it on (and it follows the pointer), another click turns it off —
+  instead of press-and-hold / move-to-activate. Touch-preset placement unchanged.
+- **Stars by default**: every preset now shows a background starfield — the star
+  count is floored (`Math.max(3, cfg.stars)`) at build, so even `stars: 0`
+  presets keep a gentle field; the slider still adds more above the floor.
