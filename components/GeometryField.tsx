@@ -964,7 +964,7 @@ export const PRESETS: Record<string, Cfg> = {
     symmetry: 9,
     complexity: 6.8,
     glow: 3.2,
-    breathSpeed: 1.18,
+    breathSpeed: 0.2,
     intensity: 9.2,
     particles: 9,
     luminous: 3.6,
@@ -3988,7 +3988,7 @@ export const JOURNEYS: Journey[] = [
       {
         name: 'Desert Cut',
         preset: 'Amber Dust',
-        mode: 'linetunnel3d',
+        mode: 'swirldottunnel',
         duration: 30,
         symmetry: 16,
         complexity: 8.2,
@@ -4329,7 +4329,7 @@ export const JOURNEYS: Journey[] = [
       {
         name: 'Desert Cut',
         preset: 'Amber Dust',
-        mode: 'linetunnel3d',
+        mode: 'swirldottunnel',
         duration: 120,
         symmetry: 16,
         complexity: 8.2,
@@ -4459,18 +4459,6 @@ export const JOURNEYS: Journey[] = [
         breathSpeed: 0.5,
         luminous: 3,
         stars: 4,
-      },
-      {
-        name: 'Crazy Burst',
-        preset: 'Violet Portal',
-        mode: 'burst',
-        duration: 35,
-        glow: 8,
-        breathSpeed: 0.55,
-        intensity: 9,
-        particles: 8,
-        luminous: 4,
-        stars: 2,
       },
       {
         name: 'Dot Heart',
@@ -4832,9 +4820,9 @@ export const JOURNEYS: Journey[] = [
         stars: 4,
       },
       {
-        name: 'Line Temple',
+        name: 'Knot Temple',
         preset: 'Golden Source',
-        mode: 'linetunnel3d',
+        mode: 'tknot3d',
         duration: 50,
         symmetry: 16,
         complexity: 8,
@@ -4996,9 +4984,9 @@ export const JOURNEYS: Journey[] = [
         stars: 3,
       },
       {
-        name: 'Line Temple',
+        name: 'Knot Temple',
         preset: 'Golden Source',
-        mode: 'linetunnel3d',
+        mode: 'tknot3d',
         duration: 55,
         symmetry: 16,
         complexity: 8,
@@ -5047,18 +5035,6 @@ export const JOURNEYS: Journey[] = [
         particles: 8,
         luminous: 3,
         stars: 1,
-      },
-      {
-        name: 'Crazy Burst',
-        preset: 'Violet Portal',
-        mode: 'burst',
-        duration: 40,
-        glow: 8,
-        breathSpeed: 0.55,
-        intensity: 9,
-        particles: 8,
-        luminous: 4,
-        stars: 2,
       },
       {
         name: 'Desert Drop',
@@ -12438,7 +12414,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'symmetry', label: 'Mirrors', min: 3, max: 14, step: 1 },
     { key: 'complexity', label: 'Desert Chaos', min: 1, max: 10, step: 0.5 },
     { key: 'glow', label: 'Heat Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Drop Pulse', min: 0.2, max: 2.2, step: 0.05 },
+    { key: 'breathSpeed', label: 'Drop Pulse', min: 0.1, max: 0.3, step: 0.01 },
     { key: 'intensity', label: 'Rings', min: 1, max: 10, step: 0.5 },
     { key: 'particles', label: 'Dust', min: 1, max: 10, step: 1 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
@@ -14472,9 +14448,13 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
           Math.sin(mirrorA * 2 + t * 0.0011 + ri) * R * 0.026 * (0.35 + soundEnergy);
         const rOff = noise * chaosAmt * R * 0.22 + desertLift;
         const r2 = Math.max(0, radius + rOff);
-        arr[p * 3] = Math.cos(a) * r2;
-        arr[p * 3 + 1] = Math.sin(a) * r2 * (0.86 + beatKick * 0.06);
-        arr[p * 3 + 2] = Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy;
+        const px = Math.cos(a) * r2;
+        const py = Math.sin(a) * r2 * (0.86 + beatKick * 0.06);
+        const pz = Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy;
+        const f = fingerForce(px, py, pz, R);
+        arr[p * 3] = px + f.x;
+        arr[p * 3 + 1] = py + f.y;
+        arr[p * 3 + 2] = pz + f.z;
       }
     } else {
       for (let p = 0; p < halfPts; p++) {
@@ -14485,14 +14465,19 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
           Math.sin(a * 17 + t * 0.00014 * speed) * 0.1;
         const rOff = sym ? noise * chaosAmt * R * 0.32 : noise * chaosAmt * R * 0.28 * Math.sin(a);
         const r2 = Math.max(0, radius + rOff);
+        const ry = Math.sin(a) * r2;
         // Right side
-        arr[p * 3] = Math.cos(a) * r2;
-        arr[p * 3 + 1] = Math.sin(a) * r2;
-        arr[p * 3 + 2] = 0;
+        const rx = Math.cos(a) * r2;
+        const fr = fingerForce(rx, ry, 0, R);
+        arr[p * 3] = rx + fr.x;
+        arr[p * 3 + 1] = ry + fr.y;
+        arr[p * 3 + 2] = fr.z;
         // Mirrored left side (rorschach)
-        arr[(halfPts + p) * 3] = -Math.cos(a) * r2;
-        arr[(halfPts + p) * 3 + 1] = Math.sin(a) * r2;
-        arr[(halfPts + p) * 3 + 2] = 0;
+        const lx = -Math.cos(a) * r2;
+        const fl = fingerForce(lx, ry, 0, R);
+        arr[(halfPts + p) * 3] = lx + fl.x;
+        arr[(halfPts + p) * 3 + 1] = ry + fl.y;
+        arr[(halfPts + p) * 3 + 2] = fl.z;
       }
     }
     posAttr.needsUpdate = true;

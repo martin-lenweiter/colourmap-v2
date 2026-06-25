@@ -120,3 +120,14 @@ readable:
   golden trip → swirl → Fibonacci → prism → ocean → triangle/yantra/hypercube/
   line-temple → dot-walkers (solo + trio) → dot heart → crazy burst → desert
   drop → dust vortex → home. Kept *in addition* to the individual trips.
+
+### Trip fixes
+- **`linetunnel3d` removed from all journeys** (it wasn't rendering): "Desert
+  Cut" → `swirldottunnel`, "Line Temple" → `tknot3d` (renamed "Knot Temple").
+  Still present as a registry preset + mode-picker button.
+- **Violet-Portal "Crazy Burst" removed** from Trip 4 and Long Trip.
+- **Trip Number 2 (drop pulse) slowed** — preset default `breathSpeed` 1.18 →
+  0.20, and a dedicated `tripnumber2` speed slider capped to **0.10–0.30**
+  (the default 0.05–1.5 ran far too fast).
+- **Finger distortion now affects the pulse rings** (`updatePulse`) for both
+  `pulse` and `tripnumber2`.
