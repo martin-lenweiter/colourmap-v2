@@ -189,6 +189,23 @@ readable:
   resets velocities).
 - Trails / motion-blur feedback for an optional streak look.
 
-### Pending clarification
-- **Random Pulse → bottom** — no "Random Pulse" featured entry exists; confirm
-  whether this means "Random Burst" or "Chaos Pulse".
+### Resolved / flow-field tuning
+- **Random Burst** moved to the bottom of the good preset list.
+- **Flow Speed slider** range extended to **0.05–8** (fast-forward to preview
+  the transformation quickly); dedicated panels added for Flow Walkers/Sacred.
+- **Speed is now continuous** — the phase + movement clock accumulate per-frame
+  (`dt × speed`), so changing Flow Speed only changes the rate going forward.
+  It no longer restarts/jumps the program; the continuum is kept.
+
+### Requested next (deep, particle-evolution engine)
+- **Develop Flow Walkers + Flow Sacred much further** — animate the walkers
+  (walk cycle), more sacred formations.
+- **Magnetic Sands 2** — a mega-deep, long-evolving variant for ambient
+  surprise over a long set.
+- **Dot Brain Loop** mega-develop — the two-figures-merge-and-move relation.
+- **Dance Walker** preset — two dot-walkers merge, bloom, dance, divide, dance,
+  merge into a heart (a full evolution). Natural fit as a Flow Walkers movement
+  set (two walker instances morphing).
+- **Trip Number 1** — remove the hard mode-cut so it evolves flowy like
+  Magnetic Sands (journeys snap at mode swaps; true flow wants the flow-field
+  approach).

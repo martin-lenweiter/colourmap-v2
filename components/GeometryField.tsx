@@ -12501,7 +12501,27 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
     { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
     { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
+  flowwalkers: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Walkers', min: 1, max: 4, step: 1 },
+  ],
+  flowsacred: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 8, step: 0.05 },
     { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
     { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
     { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
@@ -13290,7 +13310,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Yantra Colour', tag: 'YANTRA' },
   { name: 'Yantra Mono', tag: 'YANTRA' },
   { name: 'Chaos Pulse', tag: 'CHAOS' },
-  { name: 'Random Burst', tag: 'CHAOS' },
   { name: 'Chaos Tri Gold', tag: '3D' },
   { name: 'Chaos Storm 3D', tag: '3D' },
   { name: 'Drift Gold', tag: 'FLOW' },
@@ -13320,6 +13339,7 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Entropy 3D', tag: 'CORE' },
   { name: 'Embrace', tag: 'DOT' },
   { name: 'Dot Tunnel', tag: 'DEPTH' },
+  { name: 'Random Burst', tag: 'CHAOS' },
   { header: 'In Progress / To Develop', dim: true },
   { name: 'Chrysalis', tag: 'MORPH' },
   { name: 'Metamorph', tag: 'MORPH' },
@@ -14376,6 +14396,9 @@ function buildFlowField(cfg: Cfg, R: number): THREE.Group {
   pts.userData.vel = vel;
   pts.userData.seed = seed;
   pts.userData.home = home;
+  pts.userData.lastT = -1;
+  pts.userData.flowPh = 0;
+  pts.userData.flowMClock = 0;
   group.add(pts);
   return group;
 }
@@ -14384,27 +14407,10 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
   const pal = PAL[cfg.preset] ?? PAL['Cosmic Indigo'];
   const iF = cfg.intensity / 10;
   const speed = Math.max(0.05, cfg.breathSpeed);
-  const ph = t * 0.00018 * speed;
-  // Movement state machine: crossfade between formations + force mixes, ~75s
-  // each, continuously — the field is always transforming with no snap.
+  // Movement state machine + phase clock are accumulated per-frame inside the
+  // particle group (below) so changing Flow Speed never restarts the program.
   const MOVES = flowMovementsFor(cfg.mode);
-  const mClock = ((t / 1000) * speed) / 75;
-  const mLen = MOVES.length;
-  const mi = ((Math.floor(mClock) % mLen) + mLen) % mLen;
-  const mn = (mi + 1) % mLen;
-  let mf = mClock - Math.floor(mClock);
-  mf = mf * mf * (3 - 2 * mf);
-  const MA = MOVES[mi];
-  const MB = MOVES[mn];
-  const springK = lerp(MA.spring, MB.spring, mf);
-  const swirlW = lerp(MA.swirl, MB.swirl, mf);
-  const flowW = lerp(MA.flow, MB.flow, mf);
-  const breathW = lerp(MA.breath, MB.breath, mf);
-  const wobW = lerp(MA.wob, MB.wob, mf);
-  const formA = MA.form;
-  const formB = MB.form;
   const revRate = cfg.mode === 'flowwalkers' ? 0.06 : 0.4;
-  const hueCycle = (mClock * 0.1) % 1;
   const sound = Math.min(1, _voiceEnergy * 1.4 + _musicPulse * 0.5);
   const wells = Math.max(2, Math.min(4, Math.round(cfg.symmetry / 4) + 1));
   const turb = 0.4 + cfg.complexity / 10;
@@ -14427,6 +14433,31 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
     const seed = pts.userData.seed as Float32Array;
     const home = pts.userData.home as Float32Array;
     const drawCount = Math.round(lerp(2200, FLOW_FIELD_COUNT, cfg.particles / 10));
+
+    // Accumulate the phase + movement clock per-frame (dt × speed) so changing
+    // Flow Speed only changes the rate going forward — the continuum is kept.
+    const last = pts.userData.lastT as number;
+    const dt = last < 0 ? 16 : Math.max(0, Math.min(100, t - last));
+    pts.userData.lastT = t;
+    const ph = (pts.userData.flowPh as number) + dt * 0.00018 * speed;
+    pts.userData.flowPh = ph;
+    const mClock = (pts.userData.flowMClock as number) + ((dt / 1000) * speed) / 75;
+    pts.userData.flowMClock = mClock;
+    const mLen = MOVES.length;
+    const mi = ((Math.floor(mClock) % mLen) + mLen) % mLen;
+    const mn = (mi + 1) % mLen;
+    let mf = mClock - Math.floor(mClock);
+    mf = mf * mf * (3 - 2 * mf);
+    const MA = MOVES[mi];
+    const MB = MOVES[mn];
+    const springK = lerp(MA.spring, MB.spring, mf);
+    const swirlW = lerp(MA.swirl, MB.swirl, mf);
+    const flowW = lerp(MA.flow, MB.flow, mf);
+    const breathW = lerp(MA.breath, MB.breath, mf);
+    const wobW = lerp(MA.wob, MB.wob, mf);
+    const formA = MA.form;
+    const formB = MB.form;
+    const hueCycle = (mClock * 0.1) % 1;
 
     for (let i = 0; i < FLOW_FIELD_COUNT; i++) {
       let px = arr[i * 3];
