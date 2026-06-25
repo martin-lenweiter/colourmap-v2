@@ -14166,12 +14166,15 @@ function buildFlowField(cfg: Cfg, R: number): THREE.Group {
   const vel = new Float32Array(FLOW_FIELD_COUNT * 3);
   const seed = new Float32Array(FLOW_FIELD_COUNT * 3);
   const col = new Float32Array(FLOW_FIELD_COUNT * 3).fill(1);
+  const home = new Float32Array(FLOW_FIELD_COUNT * 2);
   for (let i = 0; i < FLOW_FIELD_COUNT; i++) {
     const a = Math.random() * Math.PI * 2;
     const r = Math.sqrt(Math.random()) * R * 0.9;
     pos[i * 3] = Math.cos(a) * r;
     pos[i * 3 + 1] = Math.sin(a) * r;
     pos[i * 3 + 2] = (Math.random() - 0.5) * R * 0.12;
+    home[i * 2] = pos[i * 3];
+    home[i * 2 + 1] = pos[i * 3 + 1];
     seed[i * 3] = Math.random();
     seed[i * 3 + 1] = Math.random();
     seed[i * 3 + 2] = Math.random();
@@ -14196,6 +14199,7 @@ function buildFlowField(cfg: Cfg, R: number): THREE.Group {
   pts.userData.tag = 'flowField';
   pts.userData.vel = vel;
   pts.userData.seed = seed;
+  pts.userData.home = home;
   group.add(pts);
   return group;
 }
@@ -14231,53 +14235,55 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
     const cArr = colAttr.array as Float32Array;
     const vel = pts.userData.vel as Float32Array;
     const seed = pts.userData.seed as Float32Array;
+    const home = pts.userData.home as Float32Array;
     const drawCount = Math.round(lerp(2200, FLOW_FIELD_COUNT, cfg.particles / 10));
 
     for (let i = 0; i < FLOW_FIELD_COUNT; i++) {
       let px = arr[i * 3];
       let py = arr[i * 3 + 1];
       const s0 = seed[i * 3];
-      let fx = 0;
-      let fy = 0;
+      const hx = home[i * 2];
+      const hy = home[i * 2 + 1];
 
-      // (a) gravity wells orbiting on ellipses — revolution (swirl) + slight pull
+      // Revolve the whole home distribution slowly so the dense disk stays full.
+      const ang = ph * 0.4;
+      const ca = Math.cos(ang);
+      const sa = Math.sin(ang);
+      let tx = hx * ca - hy * sa;
+      let ty = hx * sa + hy * ca;
+
+      // Breathing flow drift of the target — organic motion that never collapses.
+      tx += Math.sin(ty * 0.011 + ph * 2 + s0 * 6) * R * 0.07 * turb * (0.5 + wSwirl);
+      ty += Math.cos(tx * 0.011 - ph * 2 + s0 * 6) * R * 0.07 * turb * (0.5 + wSwirl);
+
+      // Gravity wells orbiting on ellipses — swirl the target locally (eddies), bounded.
       for (let k = 0; k < wells; k++) {
         const kp = ph * (0.6 + k * 0.27) + (k / wells) * Math.PI * 2;
         const gx = Math.cos(kp) * R * (0.34 + 0.1 * k);
         const gy = Math.sin(kp * 1.3) * R * (0.2 + 0.06 * k);
-        const dx = px - gx;
-        const dy = py - gy;
-        const d = Math.hypot(dx, dy) + R * 0.06;
-        const inv = ((R * R) / (d * d)) * 0.00018 * (0.6 + wSwirl);
-        fx += ((-dy / d) * 0.9 - (dx / d) * 0.16) * inv;
-        fy += ((dx / d) * 0.9 - (dy / d) * 0.16) * inv;
+        const dx = tx - gx;
+        const dy = ty - gy;
+        const d2 = dx * dx + dy * dy + R * R * 0.02;
+        const sw = ((R * R * 0.05) / d2) * (0.5 + wSwirl) * 0.02;
+        tx += -dy * sw;
+        ty += dx * sw;
       }
 
-      // (b) curl/flow noise — organic continuous drift
-      fx += Math.sin(py * 0.012 + ph * 2 + s0 * 6) * R * 0.00022 * turb;
-      fy += Math.cos(px * 0.012 - ph * 2 + s0 * 6) * R * 0.00022 * turb;
+      // Subtle magnetic-sand scale wobble on the target radius — a pattern, not a pull.
+      const trad = Math.hypot(tx, ty) + 0.0001;
+      const wob = Math.sin((trad / R) * scaleBands * Math.PI + ph * 2.5) * R * 0.03 * wScale;
+      tx += (tx / trad) * wob;
+      ty += (ty / trad) * wob;
 
-      // (c) magnetic-sand scale banding — pull toward nearest band radius
-      const rad = Math.hypot(px, py) + 0.0001;
-      const band = R * 0.92;
-      const target = (Math.round((rad / band) * scaleBands) / scaleBands) * band;
-      const bandPull = (target - rad) * 0.0009 * wScale;
-      fx += (px / rad) * bandPull;
-      fy += (py / rad) * bandPull;
+      // Gentle whole-disk breathing (keeps the centre populated).
+      const breath = 1 + wBloom * 0.08 * (0.5 + sound);
+      tx *= breath;
+      ty *= breath;
 
-      // (d) bloom (outward, sound-reactive) + soft containment
-      const out = (wBloom * 0.6 + sound * 0.5) * 0.00012 * R;
-      fx += (px / rad) * out;
-      fy += (py / rad) * out;
-      if (rad > R * 1.05) {
-        fx -= (px / rad) * (rad - R * 1.05) * 0.004;
-        fy -= (py / rad) * (rad - R * 1.05) * 0.004;
-      }
-
-      // integrate with damping + velocity clamp
-      let vx = (vel[i * 3] + fx) * 0.94;
-      let vy = (vel[i * 3 + 1] + fy) * 0.94;
-      const vmax = R * 0.04;
+      // Spring toward the revolving, perturbed target → preserves the dense circle.
+      let vx = (vel[i * 3] + (tx - px) * 0.06) * 0.84;
+      let vy = (vel[i * 3 + 1] + (ty - py) * 0.06) * 0.84;
+      const vmax = R * 0.05;
       const vmag = Math.hypot(vx, vy);
       if (vmag > vmax) {
         vx = (vx / vmag) * vmax;
@@ -14288,6 +14294,7 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
       px += vx;
       py += vy;
 
+      const rad = Math.hypot(px, py) + 0.0001;
       const force = fingerForce(px, py, 0, R);
       arr[i * 3] = px + force.x;
       arr[i * 3 + 1] = py + force.y;
