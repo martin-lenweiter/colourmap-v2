@@ -54,6 +54,9 @@ type Mode =
   | 'cyclonetiles'
   | 'eddylace'
   | 'magneticsand'
+  | 'flowfield'
+  | 'flowwalkers'
+  | 'flowsacred'
   | 'eclipse'
   | 'yinyang'
   | 'volcano'
@@ -914,8 +917,8 @@ export const PRESETS: Record<string, Cfg> = {
     preset: 'Golden Source',
     symmetry: 13,
     complexity: 8.4,
-    glow: 8.4,
-    breathSpeed: 0.68,
+    glow: 20,
+    breathSpeed: 0.13,
     intensity: 8.8,
     particles: 10,
     luminous: 4.2,
@@ -964,7 +967,7 @@ export const PRESETS: Record<string, Cfg> = {
     symmetry: 9,
     complexity: 6.8,
     glow: 3.2,
-    breathSpeed: 1.18,
+    breathSpeed: 0.2,
     intensity: 9.2,
     particles: 9,
     luminous: 3.6,
@@ -1647,6 +1650,42 @@ export const PRESETS: Record<string, Cfg> = {
     stars: 0,
     mode: 'magneticsand',
   },
+  'Flow Field': {
+    preset: 'Cosmic Indigo',
+    symmetry: 12,
+    complexity: 6,
+    glow: 5,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 8,
+    luminous: 3,
+    stars: 3,
+    mode: 'flowfield',
+  },
+  'Flow Walkers': {
+    preset: 'Cosmic Indigo',
+    symmetry: 12,
+    complexity: 5,
+    glow: 4,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 8,
+    luminous: 3,
+    stars: 2,
+    mode: 'flowwalkers',
+  },
+  'Flow Sacred': {
+    preset: 'Violet Portal',
+    symmetry: 12,
+    complexity: 6,
+    glow: 6,
+    breathSpeed: 0.5,
+    intensity: 8,
+    particles: 8,
+    luminous: 3,
+    stars: 3,
+    mode: 'flowsacred',
+  },
   Eclipse: {
     preset: 'Golden Source',
     symmetry: 9,
@@ -1687,11 +1726,11 @@ export const PRESETS: Record<string, Cfg> = {
     preset: 'Golden Source',
     symmetry: 12,
     complexity: 8.8,
-    glow: 8.2,
+    glow: 5,
     breathSpeed: 0.3,
-    intensity: 9.4,
+    intensity: 7,
     particles: 2,
-    luminous: 4.2,
+    luminous: 2.8,
     stars: 5,
     mode: 'atomicexplosion',
   },
@@ -1868,9 +1907,9 @@ export const PRESETS: Record<string, Cfg> = {
     preset: 'Fibonacci Bloom',
     symmetry: 12,
     complexity: 7,
-    glow: 7,
+    glow: 4,
     breathSpeed: 0.22,
-    intensity: 9,
+    intensity: 6,
     particles: 5,
     luminous: 2,
     stars: 0,
@@ -3988,7 +4027,7 @@ export const JOURNEYS: Journey[] = [
       {
         name: 'Desert Cut',
         preset: 'Amber Dust',
-        mode: 'linetunnel3d',
+        mode: 'swirldottunnel',
         duration: 30,
         symmetry: 16,
         complexity: 8.2,
@@ -4329,7 +4368,7 @@ export const JOURNEYS: Journey[] = [
       {
         name: 'Desert Cut',
         preset: 'Amber Dust',
-        mode: 'linetunnel3d',
+        mode: 'swirldottunnel',
         duration: 120,
         symmetry: 16,
         complexity: 8.2,
@@ -4381,6 +4420,1167 @@ export const JOURNEYS: Journey[] = [
         particles: 6,
         luminous: 3.4,
         stars: 4,
+      },
+    ],
+  },
+  {
+    id: 15,
+    name: 'Trip Number 4',
+    icon: 'TRIP4',
+    desc: 'Prisms, ocean currents and a beating heart — kaleidoscope blends and two crazy bursts in between. A long ~8-minute looping trip.',
+    stages: [
+      {
+        name: 'Prism Bloom',
+        preset: 'Prism Rose',
+        mode: 'prism',
+        duration: 55,
+        symmetry: 8,
+        complexity: 6,
+        glow: 7,
+        breathSpeed: 0.5,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Prism Fold',
+        preset: 'Prism Void',
+        mode: 'prism3d',
+        duration: 55,
+        symmetry: 8,
+        complexity: 6,
+        glow: 7,
+        breathSpeed: 0.45,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Kaleido Crystal',
+        preset: 'Prism Ice',
+        mode: 'kaleidoscope',
+        duration: 45,
+        symmetry: 16,
+        glow: 7,
+        breathSpeed: 0.3,
+        luminous: 3,
+        stars: 2,
+      },
+      {
+        name: 'Ocean Drift',
+        preset: 'Deep Current',
+        mode: 'current',
+        duration: 55,
+        symmetry: 4,
+        complexity: 5,
+        glow: 3,
+        breathSpeed: 0.35,
+        intensity: 7,
+        luminous: 2,
+      },
+      {
+        name: 'Cyclone Tiles',
+        preset: 'Deep Current',
+        mode: 'cyclonetiles',
+        duration: 50,
+        symmetry: 8,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.55,
+        intensity: 8,
+        luminous: 2,
+      },
+      {
+        name: 'Storm Surge',
+        preset: 'Cosmic Indigo',
+        mode: 'lorenz',
+        duration: 40,
+        complexity: 7,
+        glow: 5,
+        breathSpeed: 0.5,
+        luminous: 3,
+        stars: 4,
+      },
+      {
+        name: 'Dot Heart',
+        preset: 'Golden Source',
+        mode: 'dotheart',
+        duration: 55,
+        symmetry: 9,
+        complexity: 6.4,
+        glow: 7,
+        breathSpeed: 0.72,
+        intensity: 8,
+        particles: 8,
+        luminous: 3,
+        stars: 1,
+      },
+      {
+        name: 'Warp Bridge',
+        preset: 'Warp Drive',
+        mode: 'warp',
+        duration: 45,
+        breathSpeed: 0.6,
+        glow: 6,
+        luminous: 3,
+        stars: 9,
+      },
+      {
+        name: 'Prism Return',
+        preset: 'Prism Rose',
+        mode: 'prism',
+        duration: 50,
+        symmetry: 8,
+        complexity: 6,
+        glow: 7,
+        breathSpeed: 0.5,
+        intensity: 8,
+        luminous: 3,
+      },
+    ],
+  },
+  {
+    id: 16,
+    name: 'Trip Number 5',
+    icon: 'WALK',
+    desc: 'The dot-walkers. Each figure enters alone, blends into three, then morphs into the next shape — cycling through all five walkers in a long ~7.5-minute loop.',
+    stages: [
+      {
+        name: 'Walker I · solo',
+        preset: 'Golden Source',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 1,
+        stars: 1,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.7,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker I · trio',
+        preset: 'Golden Source',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 1,
+        stars: 3,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.7,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker II · solo',
+        preset: 'Amber Dust',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 2,
+        stars: 1,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.72,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker II · trio',
+        preset: 'Amber Dust',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 2,
+        stars: 3,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.72,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker III · solo',
+        preset: 'Cosmic Indigo',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 3,
+        stars: 1,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.74,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker III · trio',
+        preset: 'Cosmic Indigo',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 3,
+        stars: 3,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.74,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker IV · solo',
+        preset: 'Forest Ceremony',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 4,
+        stars: 1,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.72,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker IV · trio',
+        preset: 'Forest Ceremony',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 4,
+        stars: 3,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.72,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker V · solo',
+        preset: 'Violet Portal',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 5,
+        stars: 1,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.74,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walker V · trio',
+        preset: 'Violet Portal',
+        mode: 'dotwalker',
+        duration: 45,
+        symmetry: 5,
+        stars: 3,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.74,
+        intensity: 8,
+        luminous: 3,
+      },
+    ],
+  },
+  {
+    id: 17,
+    name: 'Trip Number 1',
+    icon: 'TRIP1',
+    desc: 'The golden trip — slow, warm and long. Trip-1 geometry breathing through swirl tunnels, Fibonacci drift, a golden mandala and an alchemical sun, then home. Smooth ~9.5-minute loop.',
+    stages: [
+      {
+        name: 'Golden Trip',
+        preset: 'Golden Source',
+        mode: 'tripnumber1',
+        duration: 80,
+        symmetry: 10,
+        complexity: 7.6,
+        glow: 6.8,
+        breathSpeed: 0.34,
+        intensity: 8.4,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+      {
+        name: 'Swirl Bloom',
+        preset: 'Golden Source',
+        mode: 'swirldottunnel',
+        duration: 70,
+        symmetry: 12,
+        complexity: 7,
+        glow: 6,
+        breathSpeed: 0.42,
+        intensity: 8,
+        particles: 8,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Fibonacci Drift',
+        preset: 'Fibonacci Bloom',
+        mode: 'fibonacci',
+        duration: 70,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.2,
+        intensity: 7,
+        luminous: 2,
+        stars: 2,
+      },
+      {
+        name: 'Golden Mandala',
+        preset: 'Golden Source',
+        mode: 'kaleidoscope',
+        duration: 70,
+        symmetry: 16,
+        glow: 6,
+        breathSpeed: 0.3,
+        intensity: 8,
+        luminous: 3,
+        stars: 2,
+      },
+      {
+        name: 'Alchemical Sun',
+        preset: 'Golden Source',
+        mode: 'dotalchemicalsun',
+        duration: 70,
+        symmetry: 10,
+        complexity: 7,
+        glow: 6,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 8,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Golden Trip II',
+        preset: 'Golden Source',
+        mode: 'tripnumber1',
+        duration: 80,
+        symmetry: 12,
+        complexity: 8,
+        glow: 7,
+        breathSpeed: 0.36,
+        intensity: 8.4,
+        particles: 9,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Orbital Calm',
+        preset: 'Calm Field',
+        mode: 'orbital',
+        duration: 70,
+        symmetry: 8,
+        glow: 4,
+        breathSpeed: 0.18,
+        intensity: 7,
+        luminous: 2,
+        stars: 4,
+      },
+      {
+        name: 'Return Trip',
+        preset: 'Golden Source',
+        mode: 'tripnumber1',
+        duration: 70,
+        symmetry: 10,
+        complexity: 7.6,
+        glow: 6.8,
+        breathSpeed: 0.34,
+        intensity: 8.4,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+    ],
+  },
+  {
+    id: 18,
+    name: 'Trip Number 3',
+    icon: 'TRIP3',
+    desc: 'The triangle trip, evolving — angular trip-3 gates transforming through yantra, hypercube, prism core, chaos triangles and a line temple. Many transformations; ~7.5-minute loop.',
+    stages: [
+      {
+        name: 'Triangle Gate',
+        preset: 'Golden Source',
+        mode: 'tripnumber3',
+        duration: 55,
+        symmetry: 12,
+        complexity: 7.4,
+        glow: 4.8,
+        breathSpeed: 0.86,
+        intensity: 8.8,
+        particles: 8,
+        luminous: 3.8,
+        stars: 5,
+      },
+      {
+        name: 'Yantra Lift',
+        preset: 'Yantra Fire',
+        mode: 'yantra3d',
+        duration: 50,
+        symmetry: 12,
+        complexity: 7,
+        glow: 5,
+        breathSpeed: 0.8,
+        intensity: 8.6,
+        luminous: 3.6,
+        stars: 5,
+      },
+      {
+        name: 'Hypercube Fold',
+        preset: '4D Crystal',
+        mode: 'hypercube',
+        duration: 50,
+        complexity: 8,
+        glow: 7,
+        breathSpeed: 0.5,
+        intensity: 8,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Prism Core',
+        preset: 'Prism Void',
+        mode: 'prism3d',
+        duration: 50,
+        symmetry: 8,
+        complexity: 6,
+        glow: 7,
+        breathSpeed: 0.5,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Chaos Triangles',
+        preset: 'Cosmic Indigo',
+        mode: 'chaostri3d',
+        duration: 45,
+        complexity: 8,
+        glow: 5,
+        breathSpeed: 0.6,
+        intensity: 8,
+        luminous: 3,
+        stars: 4,
+      },
+      {
+        name: 'Knot Temple',
+        preset: 'Golden Source',
+        mode: 'tknot3d',
+        duration: 50,
+        symmetry: 16,
+        complexity: 8,
+        glow: 6,
+        breathSpeed: 1.0,
+        intensity: 8.8,
+        luminous: 3.8,
+        stars: 4,
+      },
+      {
+        name: 'Kaleido Yantra',
+        preset: 'Yantra Fire',
+        mode: 'kaleidoscope',
+        duration: 50,
+        symmetry: 16,
+        glow: 6,
+        breathSpeed: 0.4,
+        intensity: 8,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Triangle Storm',
+        preset: 'Golden Source',
+        mode: 'tripnumber3',
+        duration: 55,
+        symmetry: 14,
+        complexity: 8.2,
+        glow: 5.2,
+        breathSpeed: 1.0,
+        intensity: 9,
+        particles: 8,
+        luminous: 3.8,
+        stars: 5,
+      },
+      {
+        name: 'Return Triangle',
+        preset: 'Golden Source',
+        mode: 'tripnumber3',
+        duration: 50,
+        symmetry: 12,
+        complexity: 7.4,
+        glow: 4.8,
+        breathSpeed: 0.86,
+        intensity: 8.8,
+        particles: 8,
+        luminous: 3.8,
+        stars: 5,
+      },
+    ],
+  },
+  {
+    id: 19,
+    name: 'Long Trip',
+    icon: 'LONG',
+    desc: 'Everything, woven into one ~15-minute journey — the golden trip, prisms and ocean, the triangle evolutions, the dot-walkers, a beating heart and a crazy burst, the desert drop, and home. The full set as a single long loop.',
+    stages: [
+      {
+        name: 'Golden Trip',
+        preset: 'Golden Source',
+        mode: 'tripnumber1',
+        duration: 60,
+        symmetry: 10,
+        complexity: 7.6,
+        glow: 6.8,
+        breathSpeed: 0.34,
+        intensity: 8.4,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+      {
+        name: 'Swirl Bloom',
+        preset: 'Golden Source',
+        mode: 'swirldottunnel',
+        duration: 55,
+        symmetry: 12,
+        complexity: 7,
+        glow: 6,
+        breathSpeed: 0.42,
+        intensity: 8,
+        particles: 8,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Fibonacci Drift',
+        preset: 'Fibonacci Bloom',
+        mode: 'fibonacci',
+        duration: 55,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.2,
+        intensity: 7,
+        luminous: 2,
+        stars: 2,
+      },
+      {
+        name: 'Prism Bloom',
+        preset: 'Prism Rose',
+        mode: 'prism',
+        duration: 55,
+        symmetry: 8,
+        complexity: 6,
+        glow: 7,
+        breathSpeed: 0.5,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Ocean Drift',
+        preset: 'Deep Current',
+        mode: 'current',
+        duration: 55,
+        symmetry: 4,
+        complexity: 5,
+        glow: 3,
+        breathSpeed: 0.35,
+        intensity: 7,
+        luminous: 2,
+      },
+      {
+        name: 'Triangle Gate',
+        preset: 'Golden Source',
+        mode: 'tripnumber3',
+        duration: 60,
+        symmetry: 12,
+        complexity: 7.4,
+        glow: 4.8,
+        breathSpeed: 0.86,
+        intensity: 8.8,
+        particles: 8,
+        luminous: 3.8,
+        stars: 5,
+      },
+      {
+        name: 'Yantra Lift',
+        preset: 'Yantra Fire',
+        mode: 'yantra3d',
+        duration: 55,
+        symmetry: 12,
+        complexity: 7,
+        glow: 5,
+        breathSpeed: 0.8,
+        intensity: 8.6,
+        luminous: 3.6,
+        stars: 5,
+      },
+      {
+        name: 'Hypercube Fold',
+        preset: '4D Crystal',
+        mode: 'hypercube',
+        duration: 55,
+        complexity: 8,
+        glow: 7,
+        breathSpeed: 0.5,
+        intensity: 8,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Knot Temple',
+        preset: 'Golden Source',
+        mode: 'tknot3d',
+        duration: 55,
+        symmetry: 16,
+        complexity: 8,
+        glow: 6,
+        breathSpeed: 1.0,
+        intensity: 8.8,
+        luminous: 3.8,
+        stars: 4,
+      },
+      {
+        name: 'Walkers Solo',
+        preset: 'Cosmic Indigo',
+        mode: 'dotwalker',
+        duration: 55,
+        symmetry: 3,
+        stars: 1,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.72,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Walkers Trio',
+        preset: 'Forest Ceremony',
+        mode: 'dotwalker',
+        duration: 55,
+        symmetry: 4,
+        stars: 3,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.74,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Dot Heart',
+        preset: 'Golden Source',
+        mode: 'dotheart',
+        duration: 60,
+        symmetry: 9,
+        complexity: 6.4,
+        glow: 7,
+        breathSpeed: 0.72,
+        intensity: 8,
+        particles: 8,
+        luminous: 3,
+        stars: 1,
+      },
+      {
+        name: 'Desert Drop',
+        preset: 'Amber Dust',
+        mode: 'tripnumber2',
+        duration: 55,
+        symmetry: 9,
+        complexity: 6.8,
+        glow: 3.2,
+        breathSpeed: 1.18,
+        intensity: 9.2,
+        particles: 9,
+        luminous: 3.6,
+        stars: 4,
+      },
+      {
+        name: 'Dust Vortex',
+        preset: 'Amber Dust',
+        mode: 'swirldottunnel',
+        duration: 55,
+        symmetry: 16,
+        complexity: 7.8,
+        glow: 7,
+        breathSpeed: 0.94,
+        intensity: 8.6,
+        particles: 9,
+        luminous: 3.2,
+        stars: 3,
+      },
+      {
+        name: 'Golden Return',
+        preset: 'Golden Source',
+        mode: 'tripnumber1',
+        duration: 55,
+        symmetry: 10,
+        complexity: 7.6,
+        glow: 6.8,
+        breathSpeed: 0.34,
+        intensity: 8.4,
+        particles: 9,
+        luminous: 2.8,
+        stars: 3,
+      },
+    ],
+  },
+  {
+    id: 20,
+    name: 'Trip Number 6',
+    icon: 'TRIP6',
+    desc: 'A slow, continuous evolution of the 4D crystal — hypercube folding through lattice, torus knot, prism core and wave crystal, then back. Pleasant and transformative.',
+    stages: [
+      {
+        name: '4D Crystal',
+        preset: '4D Crystal',
+        mode: 'hypercube',
+        duration: 80,
+        complexity: 8,
+        glow: 7,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+        stars: 2,
+      },
+      {
+        name: 'Crystal Lattice',
+        preset: 'Crystal Lattice',
+        mode: 'geodesic',
+        duration: 75,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.16,
+        intensity: 8,
+        luminous: 3,
+        stars: 2,
+      },
+      {
+        name: 'Torus Crystal',
+        preset: 'Cosmic Indigo',
+        mode: 'tknot3d',
+        duration: 75,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+        stars: 2,
+      },
+      {
+        name: 'Prism Core',
+        preset: 'Prism Void',
+        mode: 'prism3d',
+        duration: 75,
+        symmetry: 8,
+        complexity: 6,
+        glow: 7,
+        breathSpeed: 0.2,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Wave Crystal',
+        preset: 'Blue Astral',
+        mode: 'lissajous3d',
+        duration: 75,
+        complexity: 5,
+        glow: 6,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Return Crystal',
+        preset: '4D Crystal',
+        mode: 'hypercube',
+        duration: 75,
+        complexity: 8,
+        glow: 7,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+        stars: 2,
+      },
+    ],
+  },
+  {
+    id: 21,
+    name: 'Trip Number 7',
+    icon: 'TRIP7',
+    desc: 'Lines that reshape and move — orbital 3D woven through torus knot, rose, helix and wave curves in one continuous, slow, transformative journey.',
+    stages: [
+      {
+        name: 'Orbital Lines',
+        preset: 'Cosmic Indigo',
+        mode: 'orbital3d',
+        duration: 80,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.16,
+        intensity: 8,
+        luminous: 3,
+        stars: 4,
+      },
+      {
+        name: 'Torus Weave',
+        preset: 'Violet Portal',
+        mode: 'tknot3d',
+        duration: 75,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Rose Lines',
+        preset: 'Blue Astral',
+        mode: 'rose3d',
+        duration: 75,
+        complexity: 5,
+        glow: 6,
+        breathSpeed: 0.16,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Helix Drift',
+        preset: 'Forest Ceremony',
+        mode: 'helix3d',
+        duration: 75,
+        complexity: 5,
+        glow: 5,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Wave Lines',
+        preset: 'Crystal Lattice',
+        mode: 'lissajous3d',
+        duration: 75,
+        complexity: 5,
+        glow: 6,
+        breathSpeed: 0.16,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Helix Spiral',
+        preset: 'Cosmic Indigo',
+        mode: 'helix3d',
+        duration: 70,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Return Orbit',
+        preset: 'Cosmic Indigo',
+        mode: 'orbital3d',
+        duration: 75,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.16,
+        intensity: 8,
+        luminous: 3,
+        stars: 4,
+      },
+    ],
+  },
+  {
+    id: 22,
+    name: 'Mega Trip',
+    icon: 'MEGA',
+    desc: 'Sacred psychedelia, ~13 minutes, continuous and transformative — alchemical dots into heart dots, orbits, living cells and liquid pearl, prism and prism core, cathedral glass and vitral, a rainbow mandala and a bloom field, then home to the dots.',
+    stages: [
+      {
+        name: 'Alchemical Dots',
+        preset: 'Golden Source',
+        mode: 'dotalchemicalsun',
+        duration: 55,
+        symmetry: 10,
+        complexity: 7,
+        glow: 6,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 8,
+        luminous: 3,
+        stars: 2,
+      },
+      {
+        name: 'Heart Dots',
+        preset: 'Rose Quartz',
+        mode: 'dotheart',
+        duration: 55,
+        symmetry: 9,
+        complexity: 6.4,
+        glow: 7,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 8,
+        luminous: 3,
+        stars: 1,
+      },
+      {
+        name: 'Orbital Bloom',
+        preset: 'Violet Portal',
+        mode: 'orbital',
+        duration: 55,
+        symmetry: 10,
+        glow: 6,
+        breathSpeed: 0.2,
+        intensity: 8,
+        luminous: 3,
+        stars: 3,
+      },
+      {
+        name: 'Orbit Rings',
+        preset: 'Cosmic Indigo',
+        mode: 'orbit',
+        duration: 55,
+        glow: 6,
+        breathSpeed: 0.2,
+        intensity: 8,
+        luminous: 3,
+        stars: 4,
+      },
+      {
+        name: 'Orbital 3D',
+        preset: 'Blue Astral',
+        mode: 'orbital3d',
+        duration: 55,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+        stars: 4,
+      },
+      {
+        name: 'Living Cells',
+        preset: 'Cell Biolum',
+        mode: 'cells',
+        duration: 55,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.3,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Liquid Pearl',
+        preset: 'Liquid Pearl',
+        mode: 'liquid',
+        duration: 55,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.3,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Prism Bloom',
+        preset: 'Prism Rose',
+        mode: 'prism',
+        duration: 55,
+        symmetry: 8,
+        complexity: 6,
+        glow: 7,
+        breathSpeed: 0.4,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Prism Core',
+        preset: 'Prism Void',
+        mode: 'prism3d',
+        duration: 55,
+        symmetry: 8,
+        complexity: 6,
+        glow: 7,
+        breathSpeed: 0.4,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Cathedral Glass',
+        preset: 'Sacred Architecture',
+        mode: 'cathedral',
+        duration: 55,
+        symmetry: 10,
+        complexity: 6,
+        glow: 7,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Vitral Window',
+        preset: 'Sacred Vitral',
+        mode: 'vitral',
+        duration: 55,
+        symmetry: 12,
+        glow: 6,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Rainbow Mandala',
+        preset: 'Rainbow Mist',
+        mode: 'kaleidoscope',
+        duration: 55,
+        symmetry: 16,
+        glow: 7,
+        breathSpeed: 0.3,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Bloom Field',
+        preset: 'Fibonacci Bloom',
+        mode: 'bloom',
+        duration: 55,
+        complexity: 6,
+        glow: 6,
+        breathSpeed: 0.3,
+        intensity: 8,
+        luminous: 3,
+        stars: 2,
+      },
+      {
+        name: 'Return to Dots',
+        preset: 'Golden Source',
+        mode: 'dotalchemicalsun',
+        duration: 55,
+        symmetry: 10,
+        complexity: 7,
+        glow: 6,
+        breathSpeed: 0.4,
+        intensity: 8,
+        particles: 8,
+        luminous: 3,
+        stars: 2,
+      },
+    ],
+  },
+  {
+    id: 23,
+    name: 'Magnetic Sands',
+    icon: 'SANDS',
+    desc: 'The continuous-transformation trip — built around magnetic sand. Sand fields evolve through scales, cyclone tiles, eddy lace and deep currents, with orbital revolutions and gravity wells. Slow, patterned, endlessly reshaping. ~11-minute loop.',
+    stages: [
+      {
+        name: 'Magnetic Sands',
+        preset: 'Amber Dust',
+        mode: 'magneticsand',
+        duration: 70,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.16,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Sand Scales',
+        preset: 'Terra Globe',
+        mode: 'currentscales',
+        duration: 65,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Cyclone Tiles',
+        preset: 'Deep Current',
+        mode: 'cyclonetiles',
+        duration: 65,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.2,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Eddy Lace',
+        preset: 'Cosmic Indigo',
+        mode: 'eddylace',
+        duration: 65,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Deep Current',
+        preset: 'Deep Current',
+        mode: 'current',
+        duration: 65,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.16,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Orbital Revolution',
+        preset: 'Cosmic Indigo',
+        mode: 'orbital3d',
+        duration: 65,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.16,
+        intensity: 8,
+        luminous: 3,
+        stars: 4,
+      },
+      {
+        name: 'Gravity Wells',
+        preset: 'Forest Ceremony',
+        mode: 'gravity',
+        duration: 65,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.18,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Cyclone Storm',
+        preset: 'Amber Dust',
+        mode: 'cyclonetiles',
+        duration: 65,
+        complexity: 7,
+        glow: 6,
+        breathSpeed: 0.22,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Sand Currents',
+        preset: 'Golden Source',
+        mode: 'current',
+        duration: 65,
+        complexity: 5,
+        glow: 4,
+        breathSpeed: 0.16,
+        intensity: 8,
+        luminous: 3,
+      },
+      {
+        name: 'Magnetic Return',
+        preset: 'Amber Dust',
+        mode: 'magneticsand',
+        duration: 65,
+        complexity: 6,
+        glow: 5,
+        breathSpeed: 0.16,
+        intensity: 8,
+        luminous: 3,
       },
     ],
   },
@@ -4749,6 +5949,10 @@ function buildModeGroup(cfg: Cfg, R: number): THREE.Group {
     case 'gravity':
     case 'fire':
       return buildCurrentTexture(cfg, R);
+    case 'flowfield':
+    case 'flowwalkers':
+    case 'flowsacred':
+      return buildFlowField(cfg, R);
     case 'plasma':
       return buildPlasma(cfg, R);
     case 'nebula':
@@ -4987,6 +6191,11 @@ function updateModeGroup(group: THREE.Group, cfg: Cfg, dots: Dot[], t: number, R
     case 'gravity':
     case 'fire':
       updateCurrentTexture(group, cfg, t, R);
+      break;
+    case 'flowfield':
+    case 'flowwalkers':
+    case 'flowsacred':
+      updateFlowField(group, cfg, t, R);
       break;
     case 'plasma':
       updatePlasma(group, cfg, t, R);
@@ -11288,6 +12497,16 @@ const DEFAULT_SLIDERS: SliderDef[] = [
 ];
 
 const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
+  flowfield: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
   lissajous: [
     { key: 'symmetry', label: 'Copies', min: 1, max: 12, step: 1 },
     { key: 'complexity', label: 'Curves', min: 1, max: 6, step: 1 },
@@ -11681,8 +12900,8 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
   swirldottunnel: [
     { key: 'symmetry', label: 'Rings', min: 6, max: 28, step: 1 },
     { key: 'complexity', label: 'Swirl', min: 1, max: 10, step: 0.5 },
-    { key: 'glow', label: 'Vanish Point', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Forward Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'glow', label: 'Vanish Point', min: 0, max: 20, step: 0.5 },
+    { key: 'breathSpeed', label: 'Forward Speed', min: 0.05, max: 1.5, step: 0.01 },
     { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
     { key: 'particles', label: 'Dots', min: 1, max: 10, step: 1 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
@@ -11718,7 +12937,7 @@ const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
     { key: 'symmetry', label: 'Mirrors', min: 3, max: 14, step: 1 },
     { key: 'complexity', label: 'Desert Chaos', min: 1, max: 10, step: 0.5 },
     { key: 'glow', label: 'Heat Colour', min: 0, max: 10, step: 0.5 },
-    { key: 'breathSpeed', label: 'Drop Pulse', min: 0.2, max: 2.2, step: 0.05 },
+    { key: 'breathSpeed', label: 'Drop Pulse', min: 0.1, max: 0.3, step: 0.01 },
     { key: 'intensity', label: 'Rings', min: 1, max: 10, step: 0.5 },
     { key: 'particles', label: 'Dust', min: 1, max: 10, step: 1 },
     { key: 'luminous', label: 'Bloom', min: 0, max: 5, step: 0.1 },
@@ -11778,6 +12997,9 @@ function slidersFor(mode: Mode): SliderDef[] {
 /* ── Mode pill definitions ──────────────────────────────────── */
 
 const MODE_TO_PRESET: Partial<Record<Mode, string>> = {
+  flowfield: 'Flow Field',
+  flowwalkers: 'Flow Walkers',
+  flowsacred: 'Flow Sacred',
   burst: 'DMT Vision',
   kaleidoscope: 'Cosmic Indigo',
   tunnel: 'Warp Tunnel',
@@ -11951,6 +13173,9 @@ const MODES: { mode: Mode; label: string }[] = [
   { mode: 'cyclonetiles', label: 'Cyclone Tiles' },
   { mode: 'eddylace', label: 'Eddy Lace' },
   { mode: 'magneticsand', label: 'Magnetic Sand' },
+  { mode: 'flowfield', label: 'Flow Field' },
+  { mode: 'flowwalkers', label: 'Flow Walkers' },
+  { mode: 'flowsacred', label: 'Flow Sacred' },
   { mode: 'eclipse', label: 'Eclipse' },
   { mode: 'yinyang', label: 'Yin Yang' },
   { mode: 'volcano', label: 'Volcano' },
@@ -12015,16 +13240,15 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Trip Number 1', tag: 'TRIP' },
   { name: 'Trip Number 2', tag: 'DROP' },
   { name: 'Trip Number 3', tag: 'TRI' },
-  { name: 'Buddha Boy Currents', tag: 'FORM' },
-  { name: 'Scriptures', tag: 'TOP' },
-  { name: 'Vertical Scriptures', tag: 'TOP' },
-  { name: 'Eclipse', tag: 'TOP' },
-  { name: 'Yin Yang', tag: 'TOP' },
-  { name: 'Atomic Explosion', tag: 'TOP' },
+  { name: 'Flow Field', tag: 'FLOW' },
+  { name: 'Flow Walkers', tag: 'FLOW' },
+  { name: 'Flow Sacred', tag: 'FLOW' },
   { name: 'Gravity', tag: 'TOP' },
   { name: 'Fire', tag: 'TOP' },
   { name: 'Prism3D Core', tag: 'PRISM' },
   { name: 'Prism Bloom', tag: 'PRISM' },
+  { name: 'Prism Seed', tag: 'PRISM' },
+  { name: 'Cathedral Glass', tag: 'GLASS' },
   { name: 'Clock Orbit', tag: 'CLOCK' },
   { name: 'Ocean Drift', tag: 'CURRENT' },
   { name: 'Current 3D', tag: 'CURRENT' },
@@ -12052,8 +13276,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Quantum Chaos', tag: 'CHAOS' },
   { name: 'Chaos Triangles', tag: '3D' },
   { name: 'Chaos Tri Sphere', tag: '3D' },
-  { name: 'Brain Topography', tag: 'SELF' },
-  { name: 'Walking Figure', tag: 'CHAR' },
   { name: 'Dot Walker', tag: 'CHAR' },
   { name: 'Alchemical Dot Sun', tag: 'DOT' },
   { name: 'Sin Morph', tag: 'TOP' },
@@ -12063,7 +13285,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Starflow Galaxy', tag: 'MUSIC' },
   { name: 'Sacred Pyramid', tag: 'MUSIC' },
   { name: 'Focus Arc', tag: 'MUSIC' },
-  { name: 'Chrysalis Rings', tag: 'MORPH' },
   { name: 'Yantra 3D', tag: 'YANTRA' },
   { name: 'Yantra Prism', tag: 'YANTRA' },
   { name: 'Yantra Colour', tag: 'YANTRA' },
@@ -12077,13 +13298,6 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Deep Flow 3D', tag: 'FLOW' },
   { name: 'Plasma Field', tag: 'FLOW' },
   { name: 'Solar Flare', tag: 'FLOW' },
-  { name: 'Music Entropy', tag: 'MUSIC' },
-  { name: 'Music Nebula', tag: 'MUSIC' },
-  { name: 'Groove Lattice', tag: 'MUSIC' },
-  { name: 'Nebula Veil', tag: 'NEBULA' },
-  { name: 'Nebula Bloom', tag: 'NEBULA' },
-  { name: 'Dot Galaxy', tag: 'GALAXY' },
-  { name: 'Emotion Field', tag: 'SELF' },
   { name: 'Emotion Storm', tag: 'SELF' },
   { name: 'Star Map', tag: 'SELF' },
   { name: 'Constellation Gold', tag: 'SELF' },
@@ -12103,12 +13317,9 @@ export const FEATURED_PRESETS: FeaturedItem[] = [
   { name: 'Orbital Dance', tag: 'ORBIT' },
   { name: 'Ripple Morph', tag: 'MORPH' },
   { name: 'EMBF Live', tag: 'EMBF' },
-  { name: 'Cathedral Glass', tag: 'GLASS' },
-  { name: 'Prism Seed', tag: 'PRISM' },
   { name: 'Entropy 3D', tag: 'CORE' },
   { name: 'Embrace', tag: 'DOT' },
   { name: 'Dot Tunnel', tag: 'DEPTH' },
-  { name: 'Line Tunnel 3D', tag: 'DEPTH' },
   { header: 'In Progress / To Develop', dim: true },
   { name: 'Chrysalis', tag: 'MORPH' },
   { name: 'Metamorph', tag: 'MORPH' },
@@ -12676,17 +13887,7 @@ function buildDotWalker(cfg: Cfg, R: number): THREE.Group {
   dots.userData.tag = 'dotWalkerDots';
   group.add(dots);
 
-  for (let walker = 0; walker < 4; walker++) {
-    const trailGeo = new THREE.BufferGeometry();
-    trailGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(220 * 3), 3));
-    const trail = new THREE.Line(
-      trailGeo,
-      lineMat(hdrColor(pal.rgb, cfg.intensity / 10, 1.8), 0.2),
-    );
-    trail.userData.tag = 'dotWalkerTrail';
-    trail.userData.walkerIndex = walker;
-    group.add(trail);
-  }
+  // Walker trails intentionally omitted — no lines below the figures.
 
   return group;
 }
@@ -12992,6 +14193,325 @@ const DEPTH_DOT_COUNT = 2800;
 const DEPTH_LINE_RINGS = 34;
 const DEPTH_LINE_SEGMENTS = 72;
 
+/* ── Flow Field — continuous-transformation particle system ───── */
+const FLOW_FIELD_COUNT = 5200;
+
+// Target formations the flow field morphs between (0 = the dense home disk).
+function flowFormation(f: number, i: number, hx: number, hy: number, R: number): [number, number] {
+  if (f === 0) return [hx, hy];
+  const u = (i + 0.5) / FLOW_FIELD_COUNT;
+  const ga = i * 2.399963229728653;
+  if (f === 1) {
+    // Phyllotaxis sunflower
+    const r = Math.sqrt(u) * R * 0.92;
+    return [Math.cos(ga) * r, Math.sin(ga) * r];
+  }
+  if (f === 2) {
+    // Concentric rings
+    const nR = 7;
+    const ring = Math.floor(u * nR);
+    const rr = ((ring + 0.6) / nR) * R * 0.92;
+    const a = (u * nR - ring) * Math.PI * 2;
+    return [Math.cos(a) * rr, Math.sin(a) * rr];
+  }
+  if (f === 3) {
+    // Square lattice
+    const cols = Math.round(Math.sqrt(FLOW_FIELD_COUNT));
+    const gx = ((i % cols) / (cols - 1) - 0.5) * R * 1.7;
+    const gy = (Math.floor(i / cols) / (cols - 1) - 0.5) * R * 1.7;
+    return [gx, gy];
+  }
+  // f === 4: spiral
+  const r = u * R * 0.92;
+  const a = ga * 0.5 + (r / R) * 7;
+  return [Math.cos(a) * r, Math.sin(a) * r];
+}
+
+// Movements: each owns a target formation + force mix; the field crossfades
+// between them continuously (~75s each) so it is always transforming.
+const FLOW_MOVEMENTS = [
+  { form: 0, spring: 0.08, swirl: 0.3, flow: 0.5, breath: 0.2, wob: 0.1 },
+  { form: 1, spring: 0.07, swirl: 0.45, flow: 0.6, breath: 0.35, wob: 0.25 },
+  { form: 0, spring: 0.05, swirl: 1.0, flow: 0.7, breath: 0.3, wob: 0.15 },
+  { form: 2, spring: 0.09, swirl: 0.3, flow: 0.4, breath: 0.2, wob: 0.9 },
+  { form: 3, spring: 0.11, swirl: 0.2, flow: 0.3, breath: 0.15, wob: 0.1 },
+  { form: 4, spring: 0.06, swirl: 0.6, flow: 0.7, breath: 0.5, wob: 0.2 },
+];
+
+// Flow Walkers — formations are walker silhouettes (designs 1–5); the field
+// morphs from one walking figure into the next through the flow.
+function flowWalkerFormation(design: number, i: number, R: number): [number, number] {
+  const q = (i + 0.5) / FLOW_FIELD_COUNT;
+  const zone = q < 0.2 ? 0 : q < 0.44 ? 1 : q < 0.66 ? 2 : q < 0.83 ? 3 : 4;
+  const local = (q * FLOW_FIELD_COUNT * 1.61803398875) % 1;
+  const a = i * 2.399963229728653;
+  const spread = Math.sqrt(local);
+  const sx = Math.cos(a) * spread;
+  const sy = Math.sin(a) * spread;
+  const FR = R * 1.5;
+  const base = walkerLimbPoint(zone, sx, sy, 0, FR);
+  const p = dotWalkerDesignPoint(Math.max(1, Math.min(5, design)), zone, sx, sy, 0, FR, base);
+  return [p.x + sx * p.scale * 0.4, p.y + sy * p.scale * 0.4];
+}
+
+const FLOW_MOVEMENTS_WALK = [
+  { form: 1, spring: 0.1, swirl: 0.2, flow: 0.4, breath: 0.15, wob: 0.1 },
+  { form: 2, spring: 0.1, swirl: 0.25, flow: 0.45, breath: 0.2, wob: 0.1 },
+  { form: 3, spring: 0.1, swirl: 0.3, flow: 0.5, breath: 0.2, wob: 0.1 },
+  { form: 4, spring: 0.1, swirl: 0.25, flow: 0.45, breath: 0.2, wob: 0.1 },
+  { form: 5, spring: 0.1, swirl: 0.2, flow: 0.4, breath: 0.15, wob: 0.1 },
+];
+
+// Flow Sacred — sacred-geometry formations (rose, star, flower-of-life,
+// lissajous) morphing through one colourful psychedelic field.
+function flowSacredFormation(
+  f: number,
+  i: number,
+  hx: number,
+  hy: number,
+  R: number,
+): [number, number] {
+  if (f === 0) return [hx, hy];
+  const u = (i + 0.5) / FLOW_FIELD_COUNT;
+  if (f === 1) {
+    // Rose curve (rhodonea)
+    const k = 5;
+    const a = u * Math.PI * 2;
+    const r = Math.cos(k * a) * R * 0.9;
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  }
+  if (f === 2) {
+    // Star polygon ring
+    const points = 6;
+    const a = u * Math.PI * 2;
+    const star = 0.7 + 0.3 * Math.cos(a * points);
+    return [Math.cos(a) * R * 0.9 * star, Math.sin(a) * R * 0.9 * star];
+  }
+  if (f === 3) {
+    // Flower-of-life: seven sub-circles
+    const centers = [
+      [0, 0],
+      [1, 0],
+      [0.5, 0.866],
+      [-0.5, 0.866],
+      [-1, 0],
+      [-0.5, -0.866],
+      [0.5, -0.866],
+    ];
+    const cell = Math.floor(u * 7) % 7;
+    const ca = (u * 7 - Math.floor(u * 7)) * Math.PI * 2;
+    const c = centers[cell];
+    const sub = R * 0.3;
+    return [c[0] * sub * 1.6 + Math.cos(ca) * sub, c[1] * sub * 1.6 + Math.sin(ca) * sub];
+  }
+  // f === 4: lissajous
+  const a = u * Math.PI * 2;
+  return [Math.sin(a * 3) * R * 0.85, Math.sin(a * 2) * R * 0.85];
+}
+
+const FLOW_MOVEMENTS_SACRED = [
+  { form: 1, spring: 0.08, swirl: 0.3, flow: 0.5, breath: 0.3, wob: 0.2 },
+  { form: 2, spring: 0.09, swirl: 0.3, flow: 0.5, breath: 0.25, wob: 0.3 },
+  { form: 3, spring: 0.09, swirl: 0.25, flow: 0.4, breath: 0.2, wob: 0.4 },
+  { form: 4, spring: 0.08, swirl: 0.4, flow: 0.6, breath: 0.3, wob: 0.2 },
+  { form: 0, spring: 0.07, swirl: 0.5, flow: 0.6, breath: 0.4, wob: 0.2 },
+];
+
+function flowFormationFor(
+  mode: Mode,
+  f: number,
+  i: number,
+  hx: number,
+  hy: number,
+  R: number,
+): [number, number] {
+  if (mode === 'flowwalkers') return flowWalkerFormation(f, i, R);
+  if (mode === 'flowsacred') return flowSacredFormation(f, i, hx, hy, R);
+  return flowFormation(f, i, hx, hy, R);
+}
+
+function flowMovementsFor(mode: Mode) {
+  if (mode === 'flowwalkers') return FLOW_MOVEMENTS_WALK;
+  if (mode === 'flowsacred') return FLOW_MOVEMENTS_SACRED;
+  return FLOW_MOVEMENTS;
+}
+
+function buildFlowField(cfg: Cfg, R: number): THREE.Group {
+  const group = new THREE.Group();
+  const pos = new Float32Array(FLOW_FIELD_COUNT * 3);
+  const vel = new Float32Array(FLOW_FIELD_COUNT * 3);
+  const seed = new Float32Array(FLOW_FIELD_COUNT * 3);
+  const col = new Float32Array(FLOW_FIELD_COUNT * 3).fill(1);
+  const home = new Float32Array(FLOW_FIELD_COUNT * 2);
+  for (let i = 0; i < FLOW_FIELD_COUNT; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = Math.sqrt(Math.random()) * R * 0.9;
+    pos[i * 3] = Math.cos(a) * r;
+    pos[i * 3 + 1] = Math.sin(a) * r;
+    pos[i * 3 + 2] = (Math.random() - 0.5) * R * 0.12;
+    home[i * 2] = pos[i * 3];
+    home[i * 2 + 1] = pos[i * 3 + 1];
+    seed[i * 3] = Math.random();
+    seed[i * 3 + 1] = Math.random();
+    seed[i * 3 + 2] = Math.random();
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const pts = new THREE.Points(
+    geo,
+    new THREE.PointsMaterial({
+      size: 2.6 + cfg.luminous * 0.6,
+      map: getCircleTex(),
+      vertexColors: true,
+      sizeAttenuation: false,
+      transparent: true,
+      opacity: 0.85,
+      alphaTest: 0.01,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    }),
+  );
+  pts.userData.tag = 'flowField';
+  pts.userData.vel = vel;
+  pts.userData.seed = seed;
+  pts.userData.home = home;
+  group.add(pts);
+  return group;
+}
+
+function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
+  const pal = PAL[cfg.preset] ?? PAL['Cosmic Indigo'];
+  const iF = cfg.intensity / 10;
+  const speed = Math.max(0.05, cfg.breathSpeed);
+  const ph = t * 0.00018 * speed;
+  // Movement state machine: crossfade between formations + force mixes, ~75s
+  // each, continuously — the field is always transforming with no snap.
+  const MOVES = flowMovementsFor(cfg.mode);
+  const mClock = ((t / 1000) * speed) / 75;
+  const mLen = MOVES.length;
+  const mi = ((Math.floor(mClock) % mLen) + mLen) % mLen;
+  const mn = (mi + 1) % mLen;
+  let mf = mClock - Math.floor(mClock);
+  mf = mf * mf * (3 - 2 * mf);
+  const MA = MOVES[mi];
+  const MB = MOVES[mn];
+  const springK = lerp(MA.spring, MB.spring, mf);
+  const swirlW = lerp(MA.swirl, MB.swirl, mf);
+  const flowW = lerp(MA.flow, MB.flow, mf);
+  const breathW = lerp(MA.breath, MB.breath, mf);
+  const wobW = lerp(MA.wob, MB.wob, mf);
+  const formA = MA.form;
+  const formB = MB.form;
+  const revRate = cfg.mode === 'flowwalkers' ? 0.06 : 0.4;
+  const hueCycle = (mClock * 0.1) % 1;
+  const sound = Math.min(1, _voiceEnergy * 1.4 + _musicPulse * 0.5);
+  const wells = Math.max(2, Math.min(4, Math.round(cfg.symmetry / 4) + 1));
+  const turb = 0.4 + cfg.complexity / 10;
+  const scaleBands = 4 + Math.round(cfg.complexity);
+  const baseCol = new THREE.Color(pal.rgb[0] / 255, pal.rgb[1] / 255, pal.rgb[2] / 255);
+  const baseHsl = { h: 0, s: 0, l: 0 };
+  baseCol.getHSL(baseHsl);
+  const hueSpread = 0.04 + cfg.glow * 0.03;
+  const bright = iF * (1.5 + cfg.luminous * 0.15);
+  const tmpCol = new THREE.Color();
+
+  for (const child of group.children) {
+    if (child.userData.tag !== 'flowField') continue;
+    const pts = child as THREE.Points;
+    const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const colAttr = pts.geometry.getAttribute('color') as THREE.BufferAttribute;
+    const arr = posAttr.array as Float32Array;
+    const cArr = colAttr.array as Float32Array;
+    const vel = pts.userData.vel as Float32Array;
+    const seed = pts.userData.seed as Float32Array;
+    const home = pts.userData.home as Float32Array;
+    const drawCount = Math.round(lerp(2200, FLOW_FIELD_COUNT, cfg.particles / 10));
+
+    for (let i = 0; i < FLOW_FIELD_COUNT; i++) {
+      let px = arr[i * 3];
+      let py = arr[i * 3 + 1];
+      const s0 = seed[i * 3];
+      const hx = home[i * 2];
+      const hy = home[i * 2 + 1];
+
+      // Formation morph: crossfade this particle between the two movements'
+      // target formations, then revolve the whole field slowly.
+      const fa = flowFormationFor(cfg.mode, formA, i, hx, hy, R);
+      const fb = flowFormationFor(cfg.mode, formB, i, hx, hy, R);
+      const bx = lerp(fa[0], fb[0], mf);
+      const by = lerp(fa[1], fb[1], mf);
+      const ang = ph * revRate;
+      const ca = Math.cos(ang);
+      const sa = Math.sin(ang);
+      let tx = bx * ca - by * sa;
+      let ty = bx * sa + by * ca;
+
+      // Organic flow drift of the target, weighted by the movement.
+      tx += Math.sin(ty * 0.011 + ph * 2 + s0 * 6) * R * 0.07 * turb * flowW;
+      ty += Math.cos(tx * 0.011 - ph * 2 + s0 * 6) * R * 0.07 * turb * flowW;
+
+      // Gravity wells orbiting on ellipses — swirl the target locally (eddies).
+      for (let k = 0; k < wells; k++) {
+        const kp = ph * (0.6 + k * 0.27) + (k / wells) * Math.PI * 2;
+        const gx = Math.cos(kp) * R * (0.34 + 0.1 * k);
+        const gy = Math.sin(kp * 1.3) * R * (0.2 + 0.06 * k);
+        const dx = tx - gx;
+        const dy = ty - gy;
+        const d2 = dx * dx + dy * dy + R * R * 0.02;
+        const sw = ((R * R * 0.05) / d2) * swirlW * 0.02;
+        tx += -dy * sw;
+        ty += dx * sw;
+      }
+
+      // Magnetic-sand scale wobble on the target radius — a pattern, not a pull.
+      const trad = Math.hypot(tx, ty) + 0.0001;
+      const wob = Math.sin((trad / R) * scaleBands * Math.PI + ph * 2.5) * R * 0.03 * wobW;
+      tx += (tx / trad) * wob;
+      ty += (ty / trad) * wob;
+
+      // Gentle whole-field breathing (keeps the centre populated).
+      const breath = 1 + breathW * 0.08 * (0.5 + sound);
+      tx *= breath;
+      ty *= breath;
+
+      // Spring toward the revolving, perturbed target → preserves dense formations.
+      let vx = (vel[i * 3] + (tx - px) * springK) * 0.84;
+      let vy = (vel[i * 3 + 1] + (ty - py) * springK) * 0.84;
+      const vmax = R * 0.05;
+      const vmag = Math.hypot(vx, vy);
+      if (vmag > vmax) {
+        vx = (vx / vmag) * vmax;
+        vy = (vy / vmag) * vmax;
+      }
+      vel[i * 3] = vx;
+      vel[i * 3 + 1] = vy;
+      px += vx;
+      py += vy;
+
+      const rad = Math.hypot(px, py) + 0.0001;
+      const force = fingerForce(px, py, 0, R);
+      arr[i * 3] = px + force.x;
+      arr[i * 3 + 1] = py + force.y;
+      arr[i * 3 + 2] = Math.sin(rad * 0.01 + ph * 3 + s0 * 6) * R * 0.05 + force.z;
+
+      // Per-particle hue drifts outward across the radius and over the cycle.
+      let hue = (baseHsl.h + (rad / R) * hueSpread + hueCycle + s0 * 0.05) % 1;
+      if (hue < 0) hue += 1;
+      tmpCol.setHSL(hue, Math.min(1, baseHsl.s + 0.18), Math.min(0.72, baseHsl.l + 0.12));
+      cArr[i * 3] = tmpCol.r * bright;
+      cArr[i * 3 + 1] = tmpCol.g * bright;
+      cArr[i * 3 + 2] = tmpCol.b * bright;
+    }
+    posAttr.needsUpdate = true;
+    colAttr.needsUpdate = true;
+    pts.geometry.setDrawRange(0, drawCount);
+    const mat = pts.material as THREE.PointsMaterial;
+    mat.size = (2.0 + cfg.luminous * 0.7 + sound * 1.5) * (R / 260);
+    mat.opacity = Math.min(0.95, 0.55 + iF * 0.3 + sound * 0.15);
+  }
+}
+
 function buildDepthJourney(cfg: Cfg, R: number): THREE.Group {
   const group = new THREE.Group();
   const pal = PAL[cfg.preset] ?? PAL['Blue Astral'];
@@ -13086,8 +14606,27 @@ function updateDepthJourney(group: THREE.Group, cfg: Cfg, t: number, R: number):
             Math.sin(w * TAU + phase * 2) * 0.025;
           const tubeNoise = 0.84 + ringFrac * 0.18 + Math.sin(v * TAU * 5 + phase + w * 4) * 0.035;
           const radius = vanishing + R * 1.14 * near * tubeNoise;
-          x = Math.cos(a) * radius;
-          y = Math.sin(a) * radius * 0.72;
+          if (cfg.mode === 'swirldottunnel') {
+            // Magnetic-sand scale banding — a radial pattern that drifts and evolves.
+            const evo = phase * 0.5;
+            const sand =
+              1 + Math.sin(a * Math.max(3, cfg.symmetry * 0.5) + evo * 3 + travel * 6) * 0.12;
+            const r2 = radius * sand;
+            x = Math.cos(a) * r2;
+            y = Math.sin(a) * r2 * 0.72;
+            // A gravity element orbiting on an ellipse; nearby dots swirl around it.
+            const gx = Math.cos(evo) * R * 0.24;
+            const gy = Math.sin(evo * 1.3) * R * 0.14;
+            const ddx = x - gx;
+            const ddy = y - gy;
+            const gd = Math.hypot(ddx, ddy) + R * 0.05;
+            const swirlAmt = (R * R * 0.012 * near) / (gd * gd);
+            x += (-ddy / gd) * swirlAmt;
+            y += (ddx / gd) * swirlAmt;
+          } else {
+            x = Math.cos(a) * radius;
+            y = Math.sin(a) * radius * 0.72;
+          }
           z = (0.5 - travel) * R * 0.72;
         } else if (i < dotLimit && cfg.mode === 'dotroad') {
           const travel = (q + phase * 0.82) % 1;
@@ -13770,9 +15309,13 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
           Math.sin(mirrorA * 2 + t * 0.0011 + ri) * R * 0.026 * (0.35 + soundEnergy);
         const rOff = noise * chaosAmt * R * 0.22 + desertLift;
         const r2 = Math.max(0, radius + rOff);
-        arr[p * 3] = Math.cos(a) * r2;
-        arr[p * 3 + 1] = Math.sin(a) * r2 * (0.86 + beatKick * 0.06);
-        arr[p * 3 + 2] = Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy;
+        const px = Math.cos(a) * r2;
+        const py = Math.sin(a) * r2 * (0.86 + beatKick * 0.06);
+        const pz = Math.sin(a * 3 + t * 0.001 + ri) * R * 0.035 * soundEnergy;
+        const f = fingerForce(px, py, pz, R);
+        arr[p * 3] = px + f.x;
+        arr[p * 3 + 1] = py + f.y;
+        arr[p * 3 + 2] = pz + f.z;
       }
     } else {
       for (let p = 0; p < halfPts; p++) {
@@ -13783,14 +15326,19 @@ function updatePulse(group: THREE.Group, cfg: Cfg, t: number, R: number): void {
           Math.sin(a * 17 + t * 0.00014 * speed) * 0.1;
         const rOff = sym ? noise * chaosAmt * R * 0.32 : noise * chaosAmt * R * 0.28 * Math.sin(a);
         const r2 = Math.max(0, radius + rOff);
+        const ry = Math.sin(a) * r2;
         // Right side
-        arr[p * 3] = Math.cos(a) * r2;
-        arr[p * 3 + 1] = Math.sin(a) * r2;
-        arr[p * 3 + 2] = 0;
+        const rx = Math.cos(a) * r2;
+        const fr = fingerForce(rx, ry, 0, R);
+        arr[p * 3] = rx + fr.x;
+        arr[p * 3 + 1] = ry + fr.y;
+        arr[p * 3 + 2] = fr.z;
         // Mirrored left side (rorschach)
-        arr[(halfPts + p) * 3] = -Math.cos(a) * r2;
-        arr[(halfPts + p) * 3 + 1] = Math.sin(a) * r2;
-        arr[(halfPts + p) * 3 + 2] = 0;
+        const lx = -Math.cos(a) * r2;
+        const fl = fingerForce(lx, ry, 0, R);
+        arr[(halfPts + p) * 3] = lx + fl.x;
+        arr[(halfPts + p) * 3 + 1] = ry + fl.y;
+        arr[(halfPts + p) * 3 + 2] = fl.z;
       }
     }
     posAttr.needsUpdate = true;
@@ -17536,6 +19084,25 @@ export default function GeometryField() {
         s: 0.75 + Math.random() * 1,
       }));
 
+      // Soft glowing dot sprite (drawn additively) so the canvas dots have the
+      // same luminous quality as the Three.js point modes (e.g. Cyclone Tiles),
+      // instead of flat 1px discs.
+      const dotSprite = document.createElement('canvas');
+      const DSR = 24;
+      dotSprite.width = DSR * 2;
+      dotSprite.height = DSR * 2;
+      const dctx = dotSprite.getContext('2d');
+      if (dctx) {
+        const g = dctx.createRadialGradient(DSR, DSR, 0, DSR, DSR, DSR);
+        g.addColorStop(0, `rgba(${pr},${pg},${pb},1)`);
+        g.addColorStop(0.35, `rgba(${pr},${pg},${pb},0.5)`);
+        g.addColorStop(1, `rgba(${pr},${pg},${pb},0)`);
+        dctx.fillStyle = g;
+        dctx.beginPath();
+        dctx.arc(DSR, DSR, DSR, 0, Math.PI * 2);
+        dctx.fill();
+      }
+
       function drawExplosion() {
         if (!canvasModeActiveRef.current) return;
         const W = mc!.width;
@@ -17550,6 +19117,7 @@ export default function GeometryField() {
         ctx!.fillStyle = 'rgba(7,2,0,0.64)';
         ctx!.fillRect(0, 0, W, H);
 
+        ctx!.globalCompositeOperation = 'lighter';
         for (const dot of dots) {
           let x = 0;
           let y = 0;
@@ -17587,11 +19155,11 @@ export default function GeometryField() {
               (ring > 0.55 ? -radius * 0.16 : 0);
             alpha = (1 - q * 0.42) * (0.42 + iF * 0.44);
           }
-          ctx!.beginPath();
-          ctx!.arc(cx + x, cy + y, dot.s, 0, Math.PI * 2);
-          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0.12, alpha)})`;
-          ctx!.fill();
+          const sz = dot.s * (3.2 + cfg.luminous * 1.1);
+          ctx!.globalAlpha = Math.max(0.12, alpha);
+          ctx!.drawImage(dotSprite, cx + x - sz, cy + y - sz, sz * 2, sz * 2);
         }
+        ctx!.globalAlpha = 1;
 
         canvasModeAnimRef.current = requestAnimationFrame(drawExplosion);
       }
@@ -17636,6 +19204,22 @@ export default function GeometryField() {
         if (dots.length > 1600) dots.splice(0, dots.length - 1600);
       }
 
+      const touchSprite = document.createElement('canvas');
+      const TSR = 24;
+      touchSprite.width = TSR * 2;
+      touchSprite.height = TSR * 2;
+      const tctx = touchSprite.getContext('2d');
+      if (tctx) {
+        const g = tctx.createRadialGradient(TSR, TSR, 0, TSR, TSR, TSR);
+        g.addColorStop(0, `rgba(${pr},${pg},${pb},1)`);
+        g.addColorStop(0.35, `rgba(${pr},${pg},${pb},0.5)`);
+        g.addColorStop(1, `rgba(${pr},${pg},${pb},0)`);
+        tctx.fillStyle = g;
+        tctx.beginPath();
+        tctx.arc(TSR, TSR, TSR, 0, Math.PI * 2);
+        tctx.fill();
+      }
+
       function drawTouchPreset() {
         if (!canvasModeActiveRef.current) return;
         const W = mc!.width;
@@ -17648,6 +19232,7 @@ export default function GeometryField() {
 
         emitTouchDots(W, H);
 
+        ctx!.globalCompositeOperation = 'lighter';
         for (let i = dots.length - 1; i >= 0; i--) {
           const dot = dots[i];
           const cx = _distortWorldX + W / 2;
@@ -17665,10 +19250,9 @@ export default function GeometryField() {
           dot.age += 1;
           const lifeT = dot.age / dot.life;
           const alpha = Math.sin(Math.min(1, lifeT) * Math.PI) * (0.34 + iF * 0.45);
-          ctx!.beginPath();
-          ctx!.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
-          ctx!.fillStyle = `rgba(${pr},${pg},${pb},${Math.max(0, alpha)})`;
-          ctx!.fill();
+          const sz = dot.size * (2.6 + cfg.luminous * 0.9);
+          ctx!.globalAlpha = Math.max(0, alpha);
+          ctx!.drawImage(touchSprite, dot.x - sz, dot.y - sz, sz * 2, sz * 2);
           if (
             dot.age >= dot.life ||
             dot.x < -40 ||
@@ -17680,6 +19264,8 @@ export default function GeometryField() {
           }
         }
 
+        ctx!.globalAlpha = 1;
+        ctx!.globalCompositeOperation = 'source-over';
         if (!hasTouched && dots.length === 0) {
           ctx!.fillStyle = `rgba(${pr},${pg},${pb},0.66)`;
           ctx!.font = `600 ${Math.max(14, Math.round(Math.min(W, H) * 0.036))}px serif`;
@@ -19300,6 +20886,7 @@ export default function GeometryField() {
     cfg.complexity,
     cfg.symmetry,
     cfg.glow,
+    cfg.luminous,
   ]);
 
   function startJourney(id: number) {
@@ -20257,10 +21844,10 @@ export default function GeometryField() {
                             >
                               <span
                                 style={{
-                                  minWidth: 13,
-                                  fontSize: 9,
+                                  minWidth: 18,
+                                  fontSize: 13,
                                   fontWeight: 700,
-                                  opacity: 0.48,
+                                  opacity: 0.72,
                                   color: accent,
                                   textAlign: 'right',
                                 }}
@@ -20336,7 +21923,7 @@ export default function GeometryField() {
                               gap: 2,
                             }}
                           >
-                            <span style={{ fontSize: 8, opacity: 0.45, letterSpacing: '0.08em' }}>
+                            <span style={{ fontSize: 11, opacity: 0.6, letterSpacing: '0.08em' }}>
                               {String(idx + 1).padStart(2, '0')}
                             </span>
                             <span
@@ -21478,9 +23065,9 @@ export default function GeometryField() {
                         <span
                           style={{
                             fontFamily: 'var(--font-serif)',
-                            fontSize: 9,
+                            fontSize: 12,
                             color: accent,
-                            opacity: 0.5,
+                            opacity: 0.7,
                             flexShrink: 0,
                           }}
                         >

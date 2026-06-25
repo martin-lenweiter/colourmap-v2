@@ -57,4 +57,76 @@ describe('GeometryField journeys', () => {
       expect(journeyById(id).stages.length).toBeGreaterThanOrEqual(8);
     }
   });
+
+  it('Trip Number 4 is a valid, seamlessly-looping trip', () => {
+    const t4 = JOURNEYS.find((j) => j.name === 'Trip Number 4');
+    expect(t4).toBeDefined();
+    if (!t4) return;
+    for (const stage of t4.stages) {
+      expect(PAL[stage.preset], `Trip Number 4 -> ${stage.name}`).toBeDefined();
+    }
+    // Seamless loop: the final act eases back into the first (same palette + mode).
+    expect(t4.stages.at(-1)?.preset).toBe(t4.stages[0].preset);
+    expect(t4.stages.at(-1)?.mode).toBe(t4.stages[0].mode);
+  });
+
+  it('Trip Number 5 cycles the dot-walkers with valid palettes', () => {
+    const t5 = JOURNEYS.find((j) => j.name === 'Trip Number 5');
+    expect(t5).toBeDefined();
+    if (!t5) return;
+    for (const stage of t5.stages) {
+      expect(stage.mode).toBe('dotwalker');
+      expect(PAL[stage.preset], `Trip Number 5 -> ${stage.name}`).toBeDefined();
+    }
+    // Walker shape is driven by symmetry (1-5); it should visit every design.
+    const designs = new Set(t5.stages.map((s) => s.symmetry));
+    for (const d of [1, 2, 3, 4, 5]) expect(designs.has(d)).toBe(true);
+    // Count is driven by stars; it alternates solo (1) and trio (3).
+    expect(t5.stages.some((s) => s.stars === 1)).toBe(true);
+    expect(t5.stages.some((s) => s.stars === 3)).toBe(true);
+  });
+
+  it('Trip Number 1 and 3 are valid, seamlessly-looping trips', () => {
+    for (const name of ['Trip Number 1', 'Trip Number 3']) {
+      const trip = JOURNEYS.find((j) => j.name === name);
+      expect(trip, name).toBeDefined();
+      if (!trip) continue;
+      expect(trip.stages.length).toBeGreaterThanOrEqual(8);
+      for (const stage of trip.stages) {
+        expect(PAL[stage.preset], `${name} -> ${stage.name}`).toBeDefined();
+      }
+      // Seamless loop: final act eases back into the first (same palette + mode).
+      expect(trip.stages.at(-1)?.preset).toBe(trip.stages[0].preset);
+      expect(trip.stages.at(-1)?.mode).toBe(trip.stages[0].mode);
+    }
+  });
+
+  it('Trip 6, Trip 7, Mega Trip and Magnetic Sands are valid, looping trips', () => {
+    for (const name of ['Trip Number 6', 'Trip Number 7', 'Mega Trip', 'Magnetic Sands']) {
+      const trip = JOURNEYS.find((j) => j.name === name);
+      expect(trip, name).toBeDefined();
+      if (!trip) continue;
+      expect(trip.stages.length).toBeGreaterThanOrEqual(6);
+      for (const stage of trip.stages) {
+        expect(PAL[stage.preset], `${name} -> ${stage.name}`).toBeDefined();
+      }
+      expect(trip.stages.at(-1)?.preset).toBe(trip.stages[0].preset);
+      expect(trip.stages.at(-1)?.mode).toBe(trip.stages[0].mode);
+    }
+  });
+
+  it('Long Trip combines many modes into one valid, looping set', () => {
+    const long = JOURNEYS.find((j) => j.name === 'Long Trip');
+    expect(long).toBeDefined();
+    if (!long) return;
+    // It's a long, varied journey.
+    expect(long.stages.length).toBeGreaterThanOrEqual(12);
+    expect(new Set(long.stages.map((s) => s.mode)).size).toBeGreaterThanOrEqual(8);
+    for (const stage of long.stages) {
+      expect(PAL[stage.preset], `Long Trip -> ${stage.name}`).toBeDefined();
+    }
+    // Seamless loop.
+    expect(long.stages.at(-1)?.preset).toBe(long.stages[0].preset);
+    expect(long.stages.at(-1)?.mode).toBe(long.stages[0].mode);
+  });
 });

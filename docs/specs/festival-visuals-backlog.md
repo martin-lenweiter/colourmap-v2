@@ -77,3 +77,118 @@ two-machine control→projection journey sync entirely — that change is on hol
 3. Decide §2 colour approach → implement.
 4. §3 STATIC Series presets/journeys on top of §1+§2.
 5. §4 soldier dance.
+
+---
+
+## Builder curation log
+
+Festival prep trimmed the builder's preset/mode surface and made it more
+readable:
+
+- **Enlarged index numbers** across the builder — preset (9→13px), mode
+  (8→11px), and journey-phase (9→12px) numbers, at higher opacity.
+- **Removed from the builder tab row:** Arena and Figure Stars pills.
+- **Removed from FEATURED_PRESETS:** Mode Sun (registry kept — used by
+  ArchetypeBridge / BuildLab), Deep Gaze (fully removed), Line Tunnel 3D,
+  Walking Figure (#40), presets 4–8 (Buddha Boy Currents, Scriptures,
+  Vertical Scriptures, Eclipse, Yin Yang), and Brain Topography.
+- **Atomic Explosion toned down** — glow 8.2→5, luminous 4.2→2.8, intensity
+  9.4→7, so it reads as fine points rather than big blown-out dots, matching
+  the other presets' light. Kept in the featured list.
+- **Trip Number 4** (journey id 15) — a ~8-minute looping trip combining
+  Prism Bloom, Prism3D Core, Ocean Drift, Cyclone Tiles and Dot Heart, enriched
+  with kaleidoscope blends, a storm-attractor surge and a crazy burst, looping
+  seamlessly back to the opening prism.
+
+- **No lines below the dot walkers** — removed the walker trail lines from
+  `buildDotWalker` (for the base walker they rendered as a ground line under
+  the feet).
+- **Trip Number 5** (journey id 16) — the dot-walker loop. All `dotwalker`,
+  sweeping `symmetry` (1–5 = the five walker shapes) and toggling `stars`
+  (1↔3 = solo/trio): each walker enters solo, blends to three, then morphs to
+  the next shape; ~7.5-minute seamless loop. (Walker shape = `cfg.symmetry`,
+  count = `cfg.stars`, so the existing journey engine drives it directly.)
+- **Trip Number 1** (journey id 17) — the golden trip developed into a smooth
+  ~9.5-minute loop: `tripnumber1` spine with new elements between (swirl-dot
+  tunnel, Fibonacci drift, golden mandala, alchemical sun, orbital calm), long
+  stages for gentle transitions, looping back to the opening trip.
+- **Trip Number 3** (journey id 18) — the triangle trip with more
+  transformations: `tripnumber3` gates evolving through yantra-3D, hypercube,
+  prism core, chaos triangles, a line temple and kaleido-yantra; ~7.5-minute
+  seamless loop.
+- **Long Trip** (journey id 19) — the whole set woven into one ~15-minute loop:
+  golden trip → swirl → Fibonacci → prism → ocean → triangle/yantra/hypercube/
+  line-temple → dot-walkers (solo + trio) → dot heart → crazy burst → desert
+  drop → dust vortex → home. Kept *in addition* to the individual trips.
+
+### Trip fixes
+- **`linetunnel3d` removed from all journeys** (it wasn't rendering): "Desert
+  Cut" → `swirldottunnel`, "Line Temple" → `tknot3d` (renamed "Knot Temple").
+  Still present as a registry preset + mode-picker button.
+- **Violet-Portal "Crazy Burst" removed** from Trip 4 and Long Trip.
+- **Trip Number 2 (drop pulse) slowed** — preset default `breathSpeed` 1.18 →
+  0.20, and a dedicated `tripnumber2` speed slider capped to **0.10–0.30**
+  (the default 0.05–1.5 ran far too fast).
+- **Finger distortion now affects the pulse rings** (`updatePulse`) for both
+  `pulse` and `tripnumber2`.
+
+### Curation + new trips (session 2)
+- **Removed from FEATURED_PRESETS:** Chrysalis Rings, and featured #57–63
+  (Music Entropy, Music Nebula, Groove Lattice, Nebula Veil, Nebula Bloom,
+  Dot Galaxy, Emotion Field).
+- **Cathedral Glass + Prism Seed** moved up next to the Prism family.
+- **Yantra Colour** toned down (glow 7→4, intensity 9→6) — too bright on open.
+- **Swirl Dot Tunnel** vanish point pushed planet-size: "Vanish Point" slider
+  max 10→20, preset glow→20, forward speed default 0.68→0.13.
+- **New journeys:** Trip Number 6 (id 20, 4D-crystal evolution), Trip Number 7
+  (id 21, orbital/torus/rose/helix line weave), Mega Trip (id 22, sacred
+  psychedelia: dots→orbits→cells→prism→glass→mandala), Magnetic Sands (id 23,
+  continuous current-texture trip — scales, cyclones, eddies, gravity,
+  revolutions). All slow, continuous, seamlessly looping.
+
+### Deep work (mode-level)
+- **Atomic Explosion dots — DONE.** It's a canvas-2D mode; the dots were flat
+  1px discs. Now drawn as a soft radial-gradient sprite with additive
+  (`lighter`) blending, sized by `luminous` — luminous like the Three.js point
+  modes.
+- **Swirl Dot Tunnel transformative pass — DONE (first pass).** `swirldottunnel`
+  now has magnetic-sand scale banding (a drifting radial pattern) and a gravity
+  element orbiting on an ellipse that nearby dots swirl around — so it evolves
+  and loops. Vanish point already pushed planet-size (glow→20).
+- **`flowfield` continuous-transformation mode — DONE (first version).** New
+  mode `flowfield` (`buildFlowField`/`updateFlowField`, ~5200 persistent
+  velocity-carrying particles). Forces: gravity wells orbiting on ellipses
+  (revolutions), curl/flow drift, magnetic-sand scale banding, sound-reactive
+  bloom + soft containment. An internal movement cycle (calm → vortex → scales
+  → bloom → return) runs continuously so one preset transforms for minutes with
+  no snap. Finger-distortion + mic reactive. Preset "Flow Field" (Cosmic Indigo)
+  in the featured list; soft additive `circlePtsMat` dots. Tunable via
+  symmetry (well count), complexity (turbulence + scale bands), particles
+  (density), luminous (size), glow/intensity (colour).
+- **Touch Preset light — DONE.** Same soft-additive-sprite treatment as Atomic
+  Explosion, so its dots glow like the other presets.
+- **Atomic Explosion** removed from the featured list (still not landing for the
+  show, per request); mode + registry kept.
+
+### Flowfield — deep development (DONE)
+- **Per-particle hue drift** across the radius + over the cycle (vertex colours).
+- **Formation morphing + movement state machine** — `flowFormation` library
+  (disk, sunflower, rings, lattice, spiral) + `FLOW_MOVEMENTS`; six movements
+  crossfade ~75s each, particles spring to the morphing formation so density is
+  preserved through every shape.
+- **Two more flow fields** sharing the engine via `flowFormationFor` /
+  `flowMovementsFor`:
+  - **Flow Walkers** (`flowwalkers`) — formations are walker silhouettes
+    (designs 1–5); the field morphs from one walking figure into the next.
+  - **Flow Sacred** (`flowsacred`) — rose, star polygon, flower-of-life,
+    lissajous formations; psychedelic-sacred.
+
+### Flowfield — further depth (future)
+- GPU/GPGPU rewrite for 50k–200k particles + curl-noise.
+- Wire into a journey (keep symmetry/complexity fixed per stage — rebuild
+  resets velocities).
+- Trails / motion-blur feedback for an optional streak look.
+
+### Pending clarification
+- **Random Pulse → bottom** — no "Random Pulse" featured entry exists; confirm
+  whether this means "Random Burst" or "Chaos Pulse".
