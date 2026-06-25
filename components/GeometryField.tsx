@@ -12467,6 +12467,16 @@ const DEFAULT_SLIDERS: SliderDef[] = [
 ];
 
 const MODE_SLIDERS: Partial<Record<Mode, SliderDef[]>> = {
+  flowfield: [
+    { key: 'symmetry', label: 'Gravity Wells', min: 4, max: 24, step: 1 },
+    { key: 'complexity', label: 'Turbulence', min: 1, max: 10, step: 0.5 },
+    { key: 'glow', label: 'Colour Spread', min: 0, max: 10, step: 0.5 },
+    { key: 'breathSpeed', label: 'Flow Speed', min: 0.05, max: 1.5, step: 0.05 },
+    { key: 'intensity', label: 'Light', min: 0, max: 10, step: 0.5 },
+    { key: 'particles', label: 'Density', min: 1, max: 10, step: 1 },
+    { key: 'luminous', label: 'Dot Size', min: 0, max: 5, step: 0.1 },
+    { key: 'stars', label: 'Stars', min: 0, max: 10, step: 1 },
+  ],
   lissajous: [
     { key: 'symmetry', label: 'Copies', min: 1, max: 12, step: 1 },
     { key: 'complexity', label: 'Curves', min: 1, max: 6, step: 1 },
@@ -14152,10 +14162,10 @@ const FLOW_FIELD_COUNT = 5200;
 
 function buildFlowField(cfg: Cfg, R: number): THREE.Group {
   const group = new THREE.Group();
-  const pal = PAL[cfg.preset] ?? PAL['Cosmic Indigo'];
   const pos = new Float32Array(FLOW_FIELD_COUNT * 3);
   const vel = new Float32Array(FLOW_FIELD_COUNT * 3);
   const seed = new Float32Array(FLOW_FIELD_COUNT * 3);
+  const col = new Float32Array(FLOW_FIELD_COUNT * 3).fill(1);
   for (let i = 0; i < FLOW_FIELD_COUNT; i++) {
     const a = Math.random() * Math.PI * 2;
     const r = Math.sqrt(Math.random()) * R * 0.9;
@@ -14168,9 +14178,20 @@ function buildFlowField(cfg: Cfg, R: number): THREE.Group {
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
   const pts = new THREE.Points(
     geo,
-    circlePtsMat(hdrColor(pal.rgb, cfg.intensity / 10, 2.4), 2.6 + cfg.luminous * 0.6, 0.85),
+    new THREE.PointsMaterial({
+      size: 2.6 + cfg.luminous * 0.6,
+      map: getCircleTex(),
+      vertexColors: true,
+      sizeAttenuation: false,
+      transparent: true,
+      opacity: 0.85,
+      alphaTest: 0.01,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    }),
   );
   pts.userData.tag = 'flowField';
   pts.userData.vel = vel;
@@ -14194,12 +14215,20 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
   const wells = Math.max(2, Math.min(4, Math.round(cfg.symmetry / 4) + 1));
   const turb = 0.4 + cfg.complexity / 10;
   const scaleBands = 4 + Math.round(cfg.complexity);
+  const baseCol = new THREE.Color(pal.rgb[0] / 255, pal.rgb[1] / 255, pal.rgb[2] / 255);
+  const baseHsl = { h: 0, s: 0, l: 0 };
+  baseCol.getHSL(baseHsl);
+  const hueSpread = 0.04 + cfg.glow * 0.03;
+  const bright = iF * (1.5 + cfg.luminous * 0.15);
+  const tmpCol = new THREE.Color();
 
   for (const child of group.children) {
     if (child.userData.tag !== 'flowField') continue;
     const pts = child as THREE.Points;
     const posAttr = pts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const colAttr = pts.geometry.getAttribute('color') as THREE.BufferAttribute;
     const arr = posAttr.array as Float32Array;
+    const cArr = colAttr.array as Float32Array;
     const vel = pts.userData.vel as Float32Array;
     const seed = pts.userData.seed as Float32Array;
     const drawCount = Math.round(lerp(2200, FLOW_FIELD_COUNT, cfg.particles / 10));
@@ -14263,13 +14292,21 @@ function updateFlowField(group: THREE.Group, cfg: Cfg, t: number, R: number): vo
       arr[i * 3] = px + force.x;
       arr[i * 3 + 1] = py + force.y;
       arr[i * 3 + 2] = Math.sin(rad * 0.01 + ph * 3 + s0 * 6) * R * 0.05 + force.z;
+
+      // Per-particle hue drifts outward across the radius and over the cycle.
+      let hue = (baseHsl.h + (rad / R) * hueSpread + cycle * 0.12 + s0 * 0.05) % 1;
+      if (hue < 0) hue += 1;
+      tmpCol.setHSL(hue, Math.min(1, baseHsl.s + 0.18), Math.min(0.72, baseHsl.l + 0.12));
+      cArr[i * 3] = tmpCol.r * bright;
+      cArr[i * 3 + 1] = tmpCol.g * bright;
+      cArr[i * 3 + 2] = tmpCol.b * bright;
     }
     posAttr.needsUpdate = true;
+    colAttr.needsUpdate = true;
     pts.geometry.setDrawRange(0, drawCount);
     const mat = pts.material as THREE.PointsMaterial;
     mat.size = (2.0 + cfg.luminous * 0.7 + sound * 1.5) * (R / 260);
     mat.opacity = Math.min(0.95, 0.55 + iF * 0.3 + sound * 0.15);
-    updateMat(pts, pal.rgb, iF, 2.0 + cfg.luminous * 0.3 + cfg.glow * 0.06);
   }
 }
 
